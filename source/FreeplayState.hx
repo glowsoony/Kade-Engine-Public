@@ -42,9 +42,13 @@ class FreeplayState extends MusicBeatState
 	var diffText:FlxText;
 	var diffCalcText:FlxText;
 	var previewtext:FlxText;
+	var helpText:FlxText;
 	var lerpScore:Int = 0;
+	var intendedaccuracy:Float = 0.00;
 	var intendedScore:Int = 0;
-	var combo:String = '';
+	var letter:String;
+	var combo:String = 'N/A';
+	var lerpaccuracy:Float = 0.00;
 
 	private var grpSongs:FlxTypedGroup<Alphabet>;
 	private var curPlaying:Bool = false;
@@ -174,25 +178,31 @@ class FreeplayState extends MusicBeatState
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
 		// scoreText.alignment = RIGHT;
 
-		var scoreBG:FlxSprite = new FlxSprite(scoreText.x - 6, 0).makeGraphic(Std.int(FlxG.width * 0.4), 135, 0xFF000000);
+		var scoreBG:FlxSprite = new FlxSprite(scoreText.x - 6, 0).makeGraphic(Std.int(FlxG.width * 0.4), 267, 0xFF000000);
 		scoreBG.alpha = 0.6;
 		add(scoreBG);
 
-		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
+		comboText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
+		comboText.font = scoreText.font;
+		add(comboText);
+
+		diffText = new FlxText(scoreText.x, scoreText.y + 76, 0, "", 24);
 		diffText.font = scoreText.font;
 		add(diffText);
 
-		diffCalcText = new FlxText(scoreText.x, scoreText.y + 66, 0, "", 24);
+		diffCalcText = new FlxText(scoreText.x, scoreText.y + 106, 0, "", 24);
 		diffCalcText.font = scoreText.font;
 		add(diffCalcText);
 
-		previewtext = new FlxText(scoreText.x, scoreText.y + 96, 0, "Rate: " + FlxMath.roundDecimal(rate, 2) + "x", 24);
+		previewtext = new FlxText(scoreText.x, scoreText.y + 136, 0, "Rate: < " + FlxMath.roundDecimal(rate, 2) + "x >", 24);
 		previewtext.font = scoreText.font;
 		add(previewtext);
 
-		comboText = new FlxText(diffText.x + 100, diffText.y, 0, "", 24);
-		comboText.font = diffText.font;
-		add(comboText);
+		helpText = new FlxText(scoreText.x, scoreText.y + 181, 0, "", 20);
+		helpText.text = "LEFT-RIGHT to change Difficulty\n\n" + "SHIFT + LEFT-RIGHT to change Rate\n" + "if it's possible\n" + "";
+		helpText.font = scoreText.font;
+		helpText.color = 0xFFfaff96;
+		add(helpText);
 
 		add(scoreText);
 
@@ -306,12 +316,25 @@ class FreeplayState extends MusicBeatState
 		}
 
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, 0.4));
+		lerpaccuracy = FlxMath.lerp(lerpaccuracy, intendedaccuracy, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1) / (openfl.Lib.current.stage.frameRate / 60));
 
 		if (Math.abs(lerpScore - intendedScore) <= 10)
 			lerpScore = intendedScore;
 
+		if (Math.abs(lerpaccuracy - intendedaccuracy) <= 0.001)
+			lerpaccuracy = intendedaccuracy;
+
 		scoreText.text = "PERSONAL BEST:" + lerpScore;
-		comboText.text = combo + '\n';
+		if (combo == "")
+		{
+			comboText.text = "Rank: N/A";
+			comboText.alpha = 0.5;
+		}
+		else
+		{
+			comboText.text = "Rank: " + letter + " | " + combo + " (" + HelperFunctions.truncateFloat(lerpaccuracy, 2) + "%)\n";
+			comboText.alpha = 1;
+		}
 
 		if (FlxG.sound.music.volume > 0.8)
 		{
@@ -362,8 +385,12 @@ class FreeplayState extends MusicBeatState
 		// if (FlxG.keys.justPressed.SPACE && !openedPreview)
 		// openSubState(new DiffOverview());
 
-		if (FlxG.keys.pressed.SHIFT)
+		previewtext.text = "Rate: " + FlxMath.roundDecimal(rate, 2) + "x";
+		previewtext.alpha = 1;
+
+		if (FlxG.keys.pressed.SHIFT && songs[curSelected].songName.toLowerCase() != "tutorial")
 		{
+			var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
 			if (FlxG.keys.justPressed.LEFT)
 			{
 				rate -= 0.05;
@@ -392,7 +419,7 @@ class FreeplayState extends MusicBeatState
 				diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
 			}
 
-			previewtext.text = "Rate: " + FlxMath.roundDecimal(rate, 2) + "x";
+			previewtext.text = "Rate: < " + FlxMath.roundDecimal(rate, 2) + "x >";
 		}
 		else
 		{
@@ -400,6 +427,12 @@ class FreeplayState extends MusicBeatState
 				changeDiff(-1);
 			if (FlxG.keys.justPressed.RIGHT)
 				changeDiff(1);
+		}
+
+		if (songs[curSelected].songName.toLowerCase() == "tutorial")
+		{
+			previewtext.text = "Rate: Unavailable";
+			previewtext.alpha = 0.5;
 		}
 
 		#if cpp
@@ -526,8 +559,8 @@ class FreeplayState extends MusicBeatState
 		if (curDifficulty > 2)
 			curDifficulty = 0;
 
-		// adjusting the highscore song name to be compatible (changeDiff)
 		var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
+		// adjusting the highscore song name to be compatible (changeDiff)
 		switch (songHighscore)
 		{
 			case 'Dad-Battle':
@@ -541,9 +574,11 @@ class FreeplayState extends MusicBeatState
 		#if !switch
 		intendedScore = Highscore.getScore(songHighscore, curDifficulty);
 		combo = Highscore.getCombo(songHighscore, curDifficulty);
+		letter = Highscore.getLetter(songHighscore, curDifficulty);
+		intendedaccuracy = Highscore.getAcc(songHighscore, curDifficulty);
 		#end
 		diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
-		diffText.text = CoolUtil.difficultyFromInt(curDifficulty).toUpperCase();
+		diffText.text = 'DIFFICULTY: < ' + CoolUtil.difficultyFromInt(curDifficulty).toUpperCase() + ' >';
 	}
 
 	function changeSelection(change:Int = 0)
@@ -570,6 +605,11 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
+		if (songs[curSelected].songName.toLowerCase() == "tutorial")
+		{
+			rate = 1.0;
+		}
+
 		// selector.y = (70 * curSelected) + 30;
 
 		// adjusting the highscore song name to be compatible (changeSelection)
@@ -588,11 +628,13 @@ class FreeplayState extends MusicBeatState
 		#if !switch
 		intendedScore = Highscore.getScore(songHighscore, curDifficulty);
 		combo = Highscore.getCombo(songHighscore, curDifficulty);
+		letter = Highscore.getLetter(songHighscore, curDifficulty);
+		intendedaccuracy = Highscore.getAcc(songHighscore, curDifficulty);
 		// lerpScore = 0;
 		#end
 
 		diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
-		diffText.text = CoolUtil.difficultyFromInt(curDifficulty).toUpperCase();
+		diffText.text = 'DIFFICULTY: < ' + CoolUtil.difficultyFromInt(curDifficulty).toUpperCase() + ' >';
 
 		#if PRELOAD_ALL
 		if (songs[curSelected].songCharacter == "sm")

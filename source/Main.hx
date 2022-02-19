@@ -92,6 +92,9 @@ class Main extends Sprite
 		Debug.onInitProgram();
 
 		// Gotta run this before any assets get loaded.
+		#if FEATURE_DISCORD
+		DiscordClient.initialize();
+		#end
 		ModCore.initialize();
 
 		#if !mobile
@@ -150,7 +153,7 @@ class Main extends Sprite
 		openfl.Lib.current.stage.frameRate = cap;
 	}
 
-	public function getFPSCap():Float
+	public static function getFPSCap():Float
 	{
 		return openfl.Lib.current.stage.frameRate;
 	}
@@ -158,5 +161,12 @@ class Main extends Sprite
 	public function getFPS():Float
 	{
 		return fpsCounter.currentFPS;
+	}
+
+	// lov u tails
+	// https://github.com/nebulazorua/tails-gets-trolled-v3/blob/master/source/Main.hx
+	public static function adjustFPS(num:Float):Float
+	{
+		return num * (60 / Main.getFPSCap());
 	}
 }

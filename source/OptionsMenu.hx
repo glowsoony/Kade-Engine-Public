@@ -1,5 +1,6 @@
 package;
 
+import flixel.util.FlxTimer;
 import flixel.FlxCamera;
 import flixel.FlxSubState;
 import flixel.input.gamepad.FlxGamepad;
@@ -17,6 +18,7 @@ import flixel.input.keyboard.FlxKey;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.ui.FlxBar;
 
 class OptionCata extends FlxSprite
 {
@@ -119,14 +121,14 @@ class OptionsMenu extends FlxSubState
 		options = [
 			new OptionCata(50, 40, "Gameplay", [
 				new ScrollSpeedOption("Change your scroll speed. (1 = Chart dependent)"),
-				new OffsetThing("Change the note audio offset (how many milliseconds a note is offset in a chart)"),
+				new OffsetThing("Change the note visual offset (how many milliseconds a note looks like it is offset in a chart)"),
 				new AccuracyDOption("Change how accuracy is calculated. (Accurate = Simple, Complex = Milisecond Based)"),
 				new GhostTapOption("Toggle counting pressing a directional input when no arrow is there as a miss."),
 				new DownscrollOption("Toggle making the notes scroll down rather than up."),
 				new BotPlay("A bot plays for you!"),
 				#if desktop new FPSCapOption("Change your FPS Cap."),
 				#end
-				new ResetButtonOption("Toggle pressing R to gameover."),
+				new ResetButtonOption("Toggle pressing R to gameover. (Use it with caution!)"),
 				new InstantRespawn("Toggle if you instantly respawn after dying."),
 				new CamZoomOption("Toggle the camera zoom in-game."),
 				// new OffsetMenu("Get a note offset based off of your inputs!"),
@@ -135,17 +137,21 @@ class OptionsMenu extends FlxSubState
 				new CustomizeGameplay("Drag and drop gameplay modules to your prefered positions!")
 			]),
 			new OptionCata(345, 40, "Appearance", [
-				new NoteskinOption("Change your current noteskin"), new EditorRes("Not showing the editor grid will greatly increase editor performance"),
+				new NoteskinOption("Change your current noteskin"),
+				new RotateSpritesOption("Rotate the sprites to do color quantization (turn off for bar skins)"),
+				new EditorRes("Not showing the editor grid will greatly increase editor performance"),
 				new DistractionsAndEffectsOption("Toggle stage distractions that can hinder your gameplay."),
 				new MiddleScrollOption("Put your lane in the center or on the right."), new HealthBarOption("Toggles health bar visibility"),
 				new JudgementCounter("Show your judgements that you've gotten in the song"),
 				new LaneUnderlayOption("How transparent your lane is, higher = more visible."),
 				new StepManiaOption("Sets the colors of the arrows depending on quantization instead of direction."),
 				new AccuracyOption("Display accuracy information on the info bar."),
+				new RoundAccuracy("Round your accuracy to the nearest whole number for the score text (cosmetic only)."),
 				new SongPositionOption("Show the song's current position as a scrolling bar."),
 				new Colour("The color behind icons now fit with their theme. (e.g. Pico = green)"),
 				new NPSDisplayOption("Shows your current Notes Per Second on the info bar."),
 				new RainbowFPSOption("Make the FPS Counter flicker through rainbow colors."),
+				new BorderFps("Draw a border around the FPS Text (Consumes a lot of CPU Resources)"),
 				new CpuStrums("Toggle the CPU's strumline lighting up when it hits a note."),
 			]),
 			new OptionCata(640, 40, "Misc", [
@@ -430,7 +436,8 @@ class OptionsMenu extends FlxSubState
 					else
 					{
 						PauseSubState.goBack = true;
-						PlayStateChangeables.scrollSpeed = FlxG.save.data.scrollSpeed * PlayState.songMultiplier;
+						PlayState.instance.updateSettings();
+						PlayStateChangeables.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier : FlxG.save.data.scrollSpeed * PlayState.songMultiplier);
 						close();
 					}
 				}

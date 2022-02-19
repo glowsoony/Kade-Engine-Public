@@ -319,7 +319,7 @@ class DiffOverview extends FlxSubState
 			}
 
 			daNote.y = (playerStrums.members[Math.floor(Math.abs(daNote.noteData))].y
-				- 0.45 * (Conductor.songPosition - daNote.strumTime) * FlxMath.roundDecimal(SONG.speed, 2));
+				- 0.45 * (Conductor.songPosition - daNote.strumTime) * FlxMath.roundDecimal(PlayState.SONG.speed, 2));
 
 			if (daNote.isSustainNote)
 			{
