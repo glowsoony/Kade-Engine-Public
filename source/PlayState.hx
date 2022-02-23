@@ -3159,7 +3159,7 @@ class PlayState extends MusicBeatState
 				}
 				else if ((daNote.mustPress && !PlayStateChangeables.useDownscroll || daNote.mustPress && PlayStateChangeables.useDownscroll)
 					&& daNote.mustPress
-					&& daNote.strumTime / songMultiplier - Conductor.songPosition / songMultiplier < -(166 * Conductor.timeScale)
+					&& Conductor.songPosition > (350 / SONG.speed) + daNote.strumTime
 					&& songStarted)
 				{
 					if (daNote.isSustainNote && daNote.wasGoodHit)
