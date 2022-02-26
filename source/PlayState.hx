@@ -2062,7 +2062,7 @@ class PlayState extends MusicBeatState
 
 		updateScoreText();
 		
-		if (generatedMusic && !paused && startedCountdown && songMultiplier < 1)
+		if (generatedMusic && !paused && songStarted && songMultiplier < 1)
 		{
 			if (Conductor.songPosition * songMultiplier > FlxG.sound.music.time + 25
 				|| Conductor.songPosition * songMultiplier < FlxG.sound.music.time - 25)
