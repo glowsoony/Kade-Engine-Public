@@ -2061,6 +2061,15 @@ class PlayState extends MusicBeatState
 			shownSongScore = songScore;
 
 		updateScoreText();
+		
+		if (generatedMusic && !paused && startedCountdown && songMultiplier < 1)
+		{
+			if (Conductor.songPosition * songMultiplier > FlxG.sound.music.time + 25
+				|| Conductor.songPosition * songMultiplier < FlxG.sound.music.time - 25)
+			{
+				resyncVocals();
+			}
+		}
 
 		if (!PlayStateChangeables.Optimize)
 			Stage.update(elapsed);
@@ -4481,10 +4490,13 @@ class PlayState extends MusicBeatState
 	override function stepHit()
 	{
 		super.stepHit();
-		if (Conductor.songPosition * songMultiplier > FlxG.sound.music.time + 25
-			|| Conductor.songPosition * songMultiplier < FlxG.sound.music.time - 25)
+		if (songMultiplier >= 1)
 		{
-			resyncVocals();
+			if (Conductor.songPosition * songMultiplier > FlxG.sound.music.time + 25
+				|| Conductor.songPosition * songMultiplier < FlxG.sound.music.time - 25)
+			{
+				resyncVocals();
+			}
 		}
 
 		#if FEATURE_LUAMODCHART
