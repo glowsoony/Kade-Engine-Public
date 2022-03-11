@@ -305,13 +305,20 @@ class PlayState extends MusicBeatState
 	// MAKING DEEZ PUBLIC TO MAKE COMPLEX ACCURACY WORK
 	public var msTiming:Float;
 
-	// MAKING DEEZ PUBLIC TO MAKE HOLD LINES TO NOT GO UNDER THE NOTE IN DOWNSCROLL
-	public var stepHeight:Float;
+	public var updatedAcc:Bool = false;
+
+	public var noteKillOffset:Float = 350;
 
 	// SONG MULTIPLIER STUFF
 	public var previousRate:Float = songMultiplier;
 
+	public var scrollMult:Float = 1.0;
+
 	var songFixedName:String = SONG.songName;
+
+	// SCROLL SPEED
+	public var scrollSpeed(default, set):Float = 1.0;
+	public var scrollTween:FlxTween;
 
 	public function addObject(object:FlxBasic)
 	{
@@ -370,9 +377,9 @@ class PlayState extends MusicBeatState
 		PlayStateChangeables.useDownscroll = FlxG.save.data.downscroll;
 		PlayStateChangeables.safeFrames = FlxG.save.data.frames;
 		if (FlxG.save.data.scrollSpeed == 1)
-			PlayStateChangeables.scrollSpeed = SONG.speed * songMultiplier;
+			scrollSpeed = SONG.speed * songMultiplier;
 		else
-			PlayStateChangeables.scrollSpeed = FlxG.save.data.scrollSpeed * songMultiplier;
+			scrollSpeed = FlxG.save.data.scrollSpeed * songMultiplier;
 		PlayStateChangeables.botPlay = FlxG.save.data.botplay;
 		PlayStateChangeables.Optimize = FlxG.save.data.optimize;
 		PlayStateChangeables.zoom = FlxG.save.data.zoom;
@@ -1160,6 +1167,33 @@ class PlayState extends MusicBeatState
 	public static var luaModchart:ModchartState = null;
 	#end
 
+	function set_scrollSpeed(value:Float):Float // STOLEN FROM PSYCH ENGINE ONLY SPRITE SCALING PART.
+	{
+		if (generatedMusic)
+		{
+			var ratio:Float = value / scrollSpeed;
+			for (note in notes)
+			{
+				if (note.isSustainNote && !note.animation.curAnim.name.endsWith('end'))
+				{
+					note.scale.y *= ratio;
+					note.updateHitbox();
+				}
+			}
+			for (note in unspawnNotes)
+			{
+				if (note.isSustainNote && !note.animation.curAnim.name.endsWith('end'))
+				{
+					note.scale.y *= ratio;
+					note.updateHitbox();
+				}
+			}
+		}
+		noteKillOffset = 350 / scrollSpeed;
+		scrollSpeed = value;
+		return value;
+	}
+
 	function startCountdown():Void
 	{
 		inCutscene = false;
@@ -1942,6 +1976,9 @@ class PlayState extends MusicBeatState
 						vocals.pause();
 			}
 
+			if (scrollTween != null)
+				scrollTween.active = false;
+
 			#if FEATURE_DISCORD
 			DiscordClient.changePresence("PAUSED on " + "\n" + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
 				+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
@@ -1976,6 +2013,9 @@ class PlayState extends MusicBeatState
 			{
 				resyncVocals();
 			}
+
+			if (scrollTween != null)
+				scrollTween.active = true;
 
 			if (!startTimer.finished)
 				startTimer.active = true;
@@ -2061,7 +2101,7 @@ class PlayState extends MusicBeatState
 			shownSongScore = songScore;
 
 		updateScoreText();
-		
+
 		if (generatedMusic && !paused && songStarted && songMultiplier < 1)
 		{
 			if (Conductor.songPosition * songMultiplier > FlxG.sound.music.time + 25
@@ -2083,7 +2123,10 @@ class PlayState extends MusicBeatState
 
 		if (unspawnNotes[0] != null)
 		{
-			if (unspawnNotes[0].strumTime - Conductor.songPosition < 14000)
+			var shit:Float = 14000;
+			if (SONG.speed < 1 || scrollSpeed < 1)
+				shit /= scrollSpeed == 1 ? SONG.speed : scrollSpeed;
+			if (unspawnNotes[0].strumTime - Conductor.songPosition < shit)
 			{
 				var dunceNote:Note = unspawnNotes[0];
 				notes.add(dunceNote);
@@ -2210,7 +2253,7 @@ class PlayState extends MusicBeatState
 			}
 
 			if (newScroll != 0)
-				PlayStateChangeables.scrollSpeed *= newScroll;
+				scrollSpeed *= newScroll;
 		}
 
 		if (PlayStateChangeables.botPlay && FlxG.keys.justPressed.ONE)
@@ -2269,7 +2312,7 @@ class PlayState extends MusicBeatState
 				healthBar.visible = true;
 				iconP1.visible = true;
 				iconP2.visible = true;
-				scoreTxt.visible = true;
+				scoreTxt.visible = updatedAcc;
 			}
 
 			var p1 = luaModchart.getVar("strumLine1Visible", 'bool');
@@ -2958,6 +3001,7 @@ class PlayState extends MusicBeatState
 			{
 				// instead of doing stupid y > FlxG.height
 				// we be men and actually calculate the time :)
+				var origin = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].y + Note.swagWidth / 2;
 				if (!daNote.modifiedByLua)
 				{
 					if (PlayStateChangeables.useDownscroll)
@@ -2965,13 +3009,13 @@ class PlayState extends MusicBeatState
 						if (daNote.mustPress)
 							daNote.y = (playerStrums.members[Math.floor(Math.abs(daNote.noteData))].y
 								+
-								0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(PlayStateChangeables.scrollSpeed == 1 ? SONG.speed : PlayStateChangeables.scrollSpeed,
+								0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(scrollSpeed == 1 ? SONG.speed : scrollSpeed,
 									2)))
 								- daNote.noteYOff;
 						else
 							daNote.y = (strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].y
 								+
-								0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(PlayStateChangeables.scrollSpeed == 1 ? SONG.speed : PlayStateChangeables.scrollSpeed,
+								0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(scrollSpeed == 1 ? SONG.speed : scrollSpeed,
 									2)))
 								- daNote.noteYOff;
 						if (daNote.isSustainNote)
@@ -2983,7 +3027,7 @@ class PlayState extends MusicBeatState
 								|| !daNote.mustPress
 								|| daNote.wasGoodHit
 								|| holdArray[Math.floor(Math.abs(daNote.noteData))])
-								&& daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= (strumLine.y + Note.swagWidth / 2))
+								&& daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= origin)
 							{
 								// Clip to strumline
 								var swagRect = new FlxRect(0, 0, daNote.frameWidth * 2, daNote.frameHeight * 2);
@@ -3000,12 +3044,12 @@ class PlayState extends MusicBeatState
 					{
 						if (daNote.mustPress)
 							daNote.y = (playerStrums.members[Math.floor(Math.abs(daNote.noteData))].y
-								- 0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(PlayStateChangeables.scrollSpeed == 1 ? SONG.speed : PlayStateChangeables.scrollSpeed,
+								- 0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(scrollSpeed == 1 ? SONG.speed : scrollSpeed,
 									2)))
 								+ daNote.noteYOff;
 						else
 							daNote.y = (strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].y
-								- 0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(PlayStateChangeables.scrollSpeed == 1 ? SONG.speed : PlayStateChangeables.scrollSpeed,
+								- 0.45 * ((Conductor.songPosition - daNote.strumTime) / songMultiplier) * (FlxMath.roundDecimal(scrollSpeed == 1 ? SONG.speed : scrollSpeed,
 									2)))
 								+ daNote.noteYOff;
 						if (daNote.isSustainNote)
@@ -3014,7 +3058,7 @@ class PlayState extends MusicBeatState
 								|| !daNote.mustPress
 								|| daNote.wasGoodHit
 								|| holdArray[Math.floor(Math.abs(daNote.noteData))])
-								&& daNote.y + daNote.offset.y * daNote.scale.y <= (strumLine.y + Note.swagWidth / 2))
+								&& daNote.y + daNote.offset.y * daNote.scale.y <= origin)
 							{
 								// Clip to strumline
 								var swagRect = new FlxRect(0, 0, daNote.width / daNote.scale.x, daNote.height / daNote.scale.y);
@@ -3121,26 +3165,26 @@ class PlayState extends MusicBeatState
 
 				if (daNote.mustPress && !daNote.modifiedByLua)
 				{
-					daNote.visible = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].visible;
+					// daNote.visible = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].visible;
 					daNote.x = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x;
 					if (!daNote.isSustainNote)
 						daNote.modAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].modAngle;
 					if (daNote.sustainActive)
 					{
-						if (executeModchart)
+						if (executeModchart && daNote.isParent)
 							daNote.alpha = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].alpha;
 					}
 					daNote.modAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].modAngle;
 				}
 				else if (!daNote.wasGoodHit && !daNote.modifiedByLua)
 				{
-					daNote.visible = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].visible;
+					// daNote.visible = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].visible;
 					daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].x;
 					if (!daNote.isSustainNote)
 						daNote.modAngle = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].modAngle;
 					if (daNote.sustainActive)
 					{
-						if (executeModchart)
+						if (executeModchart && daNote.isParent)
 							daNote.alpha = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].alpha;
 					}
 					daNote.modAngle = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].modAngle;
@@ -3159,8 +3203,8 @@ class PlayState extends MusicBeatState
 				// trace(daNote.y);
 				// WIP interpolation shit? Need to fix the pause issue
 				// daNote.y = (strumLine.y - (songTime - daNote.strumTime) * (0.45 * PlayState.SONG.speed));
-
-				if (daNote.isSustainNote && daNote.wasGoodHit && Conductor.songPosition >= daNote.strumTime)
+				noteKillOffset = 350 / SONG.speed;
+				if (daNote.isSustainNote && daNote.wasGoodHit && Conductor.songPosition >= noteKillOffset + daNote.strumTime)
 				{
 					daNote.kill();
 					notes.remove(daNote, true);
@@ -3168,7 +3212,7 @@ class PlayState extends MusicBeatState
 				}
 				else if ((daNote.mustPress && !PlayStateChangeables.useDownscroll || daNote.mustPress && PlayStateChangeables.useDownscroll)
 					&& daNote.mustPress
-					&& Conductor.songPosition > (350 / SONG.speed) + daNote.strumTime
+					&& Conductor.songPosition > noteKillOffset + daNote.strumTime
 					&& songStarted)
 				{
 					if (daNote.isSustainNote && daNote.wasGoodHit)
@@ -3377,7 +3421,7 @@ class PlayState extends MusicBeatState
 		else
 		{
 			PlayStateChangeables.botPlay = false;
-			PlayStateChangeables.scrollSpeed = 1 / songMultiplier;
+			scrollSpeed = 1 / songMultiplier;
 			PlayStateChangeables.useDownscroll = false;
 		}
 
@@ -4294,7 +4338,7 @@ class PlayState extends MusicBeatState
 		totalPlayed += 1;
 		accuracy = Math.max(0, totalNotesHit / totalPlayed * 100);
 		accuracyDefault = Math.max(0, totalNotesHitDefault / totalPlayed * 100);
-
+		updatedAcc = true;
 		scoreTxt.visible = true;
 		judgementCounter.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nShits: ${shits}\nMisses: ${misses}';
 
@@ -4498,6 +4542,19 @@ class PlayState extends MusicBeatState
 				resyncVocals();
 			}
 		}
+		/* INTERLOPE SCROLL SPEED PULSE EFFECT SHIT (TESTING PURPOSES)
+			if (curStep % Math.floor(4 * songMultiplier) == 0)
+			{
+				var scrollSpeedShit:Float = scrollSpeed;
+				scrollSpeed /= scrollSpeed;
+				scrollTween = FlxTween.tween(this, {scrollSpeed: scrollSpeedShit}, 0.25, {
+					ease: FlxEase.sineOut,
+					onComplete: function(twn:FlxTween)
+					{
+						scrollTween = null;
+					}
+				});
+		}*/
 
 		#if FEATURE_LUAMODCHART
 		if (executeModchart && luaModchart != null)
@@ -4730,5 +4787,25 @@ class PlayState extends MusicBeatState
 			add(judgementCounter);
 		if (FlxG.save.data.botplay)
 			add(botPlayState);
+	}
+
+	public function setScrollSpeed(mult:Float, time:Float, ease):Void
+	{
+		var newSpeed = scrollSpeed * mult;
+		if (time <= 0)
+		{
+			scrollSpeed *= newSpeed;
+		}
+		else
+		{
+			scrollTween = FlxTween.tween(this, {scrollSpeed: newSpeed}, time, {
+				ease: ease,
+				onComplete: function(twn:FlxTween)
+				{
+					scrollTween = null;
+				}
+			});
+			scrollMult = mult;
+		}
 	}
 } // u looked :O -ides

@@ -113,7 +113,7 @@ class KadeEngineFPS extends TextField
 		{
 			text = (FlxG.save.data.fps ? "FPS: "
 				+ currentFPS
-				+ (Main.watermarks ? "\nKE Custom Build " + "v" + MainMenuState.kadeEngineVer : "") : (Main.watermarks ? "KE Custom Build " + "v"
+				+ (Main.watermarks ? "\nKade Engine " + "v" + MainMenuState.kadeEngineVer : "") : (Main.watermarks ? "Kade Engine " + "v"
 					+ MainMenuState.kadeEngineVer : ""));
 
 			#if (gl_stats && !disable_cffi && (!html5 || !canvas))
