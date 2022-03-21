@@ -9,6 +9,7 @@ import flixel.util.FlxColor;
 #if polymod
 import polymod.format.ParseRules.TargetSignatureElement;
 #end
+import LuaClass.LuaNote;
 import PlayState;
 
 using StringTools;
@@ -21,6 +22,8 @@ class Note extends FlxSprite
 	public var charterSelected:Bool = false;
 
 	public var rStrumTime:Float = 0;
+
+	public var LuaNote:LuaNote;
 
 	public var mustPress:Bool = false;
 	public var noteData:Int = 0;

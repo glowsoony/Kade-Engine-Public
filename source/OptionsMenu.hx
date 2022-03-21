@@ -437,7 +437,7 @@ class OptionsMenu extends FlxSubState
 					{
 						PauseSubState.goBack = true;
 						PlayState.instance.updateSettings();
-						PlayStateChangeables.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier : FlxG.save.data.scrollSpeed * PlayState.songMultiplier);
+						PlayState.instance.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier * PlayState.instance.scrollMult : FlxG.save.data.scrollSpeed * PlayState.songMultiplier * PlayState.instance.scrollMult);
 						close();
 					}
 				}

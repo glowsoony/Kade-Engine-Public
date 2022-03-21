@@ -20,6 +20,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.tweens.FlxTween;
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
@@ -49,6 +50,11 @@ class FreeplayState extends MusicBeatState
 	var letter:String;
 	var combo:String = 'N/A';
 	var lerpaccuracy:Float = 0.00;
+
+	var intendedColor:Int;
+	var colorTween:FlxTween;
+
+	var bg:FlxSprite;
 
 	private var grpSongs:FlxTypedGroup<Alphabet>;
 	private var curPlaying:Bool = false;
@@ -82,6 +88,8 @@ class FreeplayState extends MusicBeatState
 		list = CoolUtil.coolTextFile(Paths.txt('data/freeplaySonglist'));
 
 		cached = false;
+
+		bg = new FlxSprite().loadGraphic(Paths.loadImage('menuDesat'));
 
 		populateSongData();
 		PlayState.inDaPlay = false;
@@ -146,8 +154,6 @@ class FreeplayState extends MusicBeatState
 		// LOAD MUSIC
 
 		// LOAD CHARACTERS
-
-		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.loadImage('menuBGBlue'));
 		bg.antialiasing = FlxG.save.data.antialiasing;
 		add(bg);
 
@@ -206,6 +212,11 @@ class FreeplayState extends MusicBeatState
 
 		add(scoreText);
 
+		if (curSelected >= songs.length)
+			curSelected = 0;
+		bg.color = songs[curSelected].color;
+		intendedColor = bg.color;
+
 		changeSelection();
 		changeDiff();
 
@@ -239,7 +250,14 @@ class FreeplayState extends MusicBeatState
 		{
 			var data:Array<String> = list[i].split(':');
 			var songId = data[0];
-			var meta = new FreeplaySongMetadata(songId, Std.parseInt(data[2]), data[1]);
+			var color = data[3];
+
+			if (color == null)
+			{
+				color = "#9271fd";
+			}
+
+			var meta = new FreeplaySongMetadata(songId, Std.parseInt(data[2]), data[1], FlxColor.fromString(color));
 
 			var diffs = [];
 			var diffsThatExist = [];
@@ -286,12 +304,12 @@ class FreeplayState extends MusicBeatState
 		}
 	}
 
-	public function addSong(songName:String, weekNum:Int, songCharacter:String)
+	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
 	{
-		songs.push(new FreeplaySongMetadata(songName, weekNum, songCharacter));
+		songs.push(new FreeplaySongMetadata(songName, weekNum, songCharacter, color));
 	}
 
-	public function addWeek(songs:Array<String>, weekNum:Int, ?songCharacters:Array<String>)
+	public function addWeek(songs:Array<String>, weekNum:Int, ?songCharacters:Array<String>, ?color:Int)
 	{
 		if (songCharacters == null)
 			songCharacters = ['dad'];
@@ -299,7 +317,7 @@ class FreeplayState extends MusicBeatState
 		var num:Int = 0;
 		for (song in songs)
 		{
-			addSong(song, weekNum, songCharacters[num]);
+			addSong(song, weekNum, songCharacters[num], color);
 
 			if (songCharacters.length != 1)
 				num++;
@@ -388,7 +406,7 @@ class FreeplayState extends MusicBeatState
 		previewtext.text = "Rate: " + FlxMath.roundDecimal(rate, 2) + "x";
 		previewtext.alpha = 1;
 
-		if (FlxG.keys.pressed.SHIFT && songs[curSelected].songName.toLowerCase() != "tutorial")
+		if (FlxG.keys.pressed.SHIFT) // && songs[curSelected].songName.toLowerCase() != "tutorial")
 		{
 			var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
 			if (FlxG.keys.justPressed.LEFT)
@@ -429,11 +447,11 @@ class FreeplayState extends MusicBeatState
 				changeDiff(1);
 		}
 
-		if (songs[curSelected].songName.toLowerCase() == "tutorial")
-		{
-			previewtext.text = "Rate: Unavailable";
-			previewtext.alpha = 0.5;
-		}
+		/*if (songs[curSelected].songName.toLowerCase() == "tutorial")
+			{
+				previewtext.text = "Rate: Unavailable";
+				previewtext.alpha = 0.5;
+		}*/
 
 		#if cpp
 		@:privateAccess
@@ -446,6 +464,10 @@ class FreeplayState extends MusicBeatState
 		if (controls.BACK)
 		{
 			FlxG.switchState(new MainMenuState());
+			if (colorTween != null)
+			{
+				colorTween.cancel();
+			}
 		}
 
 		if (accepted)
@@ -605,11 +627,26 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		if (songs[curSelected].songName.toLowerCase() == "tutorial")
-		{
-			rate = 1.0;
-		}
+		/*if (songs[curSelected].songName.toLowerCase() == "tutorial")
+			{
+				rate = 1.0;
+		}*/
 
+		var newColor:Int = songs[curSelected].color;
+		if (newColor != intendedColor)
+		{
+			if (colorTween != null)
+			{
+				colorTween.cancel();
+			}
+			intendedColor = newColor;
+			colorTween = FlxTween.color(bg, 0.5, bg.color, intendedColor, {
+				onComplete: function(twn:FlxTween)
+				{
+					colorTween = null;
+				}
+			});
+		}
 		// selector.y = (70 * curSelected) + 30;
 
 		// adjusting the highscore song name to be compatible (changeSelection)
@@ -711,24 +748,26 @@ class FreeplaySongMetadata
 	public var path:String;
 	#end
 	public var songCharacter:String = "";
-
+	public var color:Int = -7179779;
 	public var diffs = [];
 
 	#if FEATURE_STEPMANIA
-	public function new(song:String, week:Int, songCharacter:String, ?sm:SMFile = null, ?path:String = "")
+	public function new(song:String, week:Int, songCharacter:String, ?color:Int, ?sm:SMFile = null, ?path:String = "")
 	{
 		this.songName = song;
 		this.week = week;
 		this.songCharacter = songCharacter;
+		this.color = color;
 		this.sm = sm;
 		this.path = path;
 	}
 	#else
-	public function new(song:String, week:Int, songCharacter:String)
+	public function new(song:String, week:Int, songCharacter:String, ?color:Int)
 	{
 		this.songName = song;
 		this.week = week;
 		this.songCharacter = songCharacter;
+		this.color = color;
 	}
 	#end
 }

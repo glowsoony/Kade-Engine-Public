@@ -249,6 +249,15 @@ class LuaNote extends LuaClass
 				},
 				setter: SetNumProperty
 			},
+			"isDead" => {
+				defaultValue: 0,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushboolean(l, !connectedNote.alive);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
 
 			"mustPress" => {
 				defaultValue: 1,
@@ -271,17 +280,17 @@ class LuaNote extends LuaClass
 			},
 
 			"isSustain" => {
-				defaultValue: 1,
+				defaultValue: 0,
 				getter: function(l:State, data:Any):Int
 				{
-					Lua.pushnumber(l, connectedNote.rawNoteData);
+					Lua.pushboolean(l, connectedNote.isSustainNote);
 					return 1;
 				},
 				setter: SetNumProperty
 			},
 
 			"isParent" => {
-				defaultValue: 1,
+				defaultValue: 0,
 				getter: function(l:State, data:Any):Int
 				{
 					Lua.pushboolean(l, connectedNote.isParent);
@@ -308,6 +317,16 @@ class LuaNote extends LuaClass
 				}
 			},
 
+			"yNoteOff" => {
+				defaultValue: 0,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, connectedNote.noteYOff);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
 			"getChildren" => {
 				defaultValue: 1,
 				getter: function(l:State, data:Any):Int
@@ -317,7 +336,7 @@ class LuaNote extends LuaClass
 					for (i in 0...connectedNote.children.length)
 					{
 						var note = connectedNote.children[i];
-						Lua.pushstring(l, "note_" + note.luaID);
+						Lua.pushstring(l, note.LuaNote.className);
 						Lua.rawseti(l, -2, i);
 					}
 
@@ -430,6 +449,7 @@ class LuaNote extends LuaClass
 		var xp = LuaL.checknumber(state, 2);
 		var yp = LuaL.checknumber(state, 3);
 		var time = LuaL.checknumber(state, 4);
+		var ease = LuaL.checkstring(state, 5);
 
 		Lua.getfield(state, 1, "strumTime");
 		var time = Lua.tonumber(state, -1);
@@ -444,8 +464,7 @@ class LuaNote extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(note, {x: xp, y: yp}, time);
-
+		FlxTween.tween(note, {x: xp, y: yp}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 		return 0;
 	}
 
@@ -456,6 +475,7 @@ class LuaNote extends LuaClass
 		// 3 = time
 		var nangle = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "strumTime");
 		var time = Lua.tonumber(state, -1);
@@ -470,7 +490,7 @@ class LuaNote extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(note, {modAngle: nangle}, time);
+		FlxTween.tween(note, {modAngle: nangle}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -482,6 +502,7 @@ class LuaNote extends LuaClass
 		// 3 = time
 		var nalpha = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "strumTime");
 		var time = Lua.tonumber(state, -1);
@@ -495,7 +516,7 @@ class LuaNote extends LuaClass
 			LuaL.error(state, "Failure to tween (couldn't find note " + time + ")");
 			return 0;
 		}
-		FlxTween.tween(note, {alpha: nalpha}, time);
+		FlxTween.tween(note, {alpha: nalpha}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -533,14 +554,20 @@ class LuaReceptor extends LuaClass
 
 	public var sprite:StaticArrow;
 
+	var defaultY = 0.0;
+	var defaultX = 0.0;
+	var defaultAngle = 0.0;
+
 	public function new(connectedSprite:StaticArrow, name:String)
 	{
 		super();
-		var defaultY = connectedSprite.y;
-		var defaultX = connectedSprite.x;
-		var defaultAngle = connectedSprite.angle;
+		defaultY = connectedSprite.y;
+		defaultX = connectedSprite.x;
+		defaultAngle = connectedSprite.angle;
 
 		sprite = connectedSprite;
+
+		connectedSprite.luaObject = this;
 
 		className = name;
 
@@ -715,19 +742,39 @@ class LuaReceptor extends LuaClass
 		var xp = LuaL.checknumber(state, 2);
 		var yp = LuaL.checknumber(state, 3);
 		var time = LuaL.checknumber(state, 4);
+		var ease = LuaL.checkstring(state, 5);
 
 		Lua.getfield(state, 1, "id");
 		var index = Std.parseInt(Lua.tostring(state, -1).split('_')[1]);
 
 		var receptor = findReceptor(index);
 
+		var luaObject = receptor.luaObject;
+
 		if (receptor == null)
 		{
 			LuaL.error(state, "Failure to tween (couldn't find receptor " + index + ")");
 			return 0;
 		}
-
-		FlxTween.tween(receptor, {x: xp, y: yp}, time);
+		if (yp == receptor.y)
+		{
+			FlxTween.tween(receptor, {x: xp}, time, {
+				ease: ModchartState.getFlxEaseByString(ease),
+				onUpdate: function(tw)
+				{
+					luaObject.defaultX = receptor.x;
+				}
+			});
+		}
+		else
+			FlxTween.tween(receptor, {x: xp, y: yp}, time, {
+				ease: ModchartState.getFlxEaseByString(ease),
+				onUpdate: function(tw)
+				{
+					luaObject.defaultX = receptor.x;
+					luaObject.defaultY = receptor.y;
+				}
+			});
 
 		return 0;
 	}
@@ -739,6 +786,7 @@ class LuaReceptor extends LuaClass
 		// 3 = time
 		var nangle = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Std.parseInt(Lua.tostring(state, -1).split('_')[1]);
@@ -751,7 +799,7 @@ class LuaReceptor extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(receptor, {modAngle: nangle}, time);
+		FlxTween.tween(receptor, {modAngle: nangle}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -763,6 +811,7 @@ class LuaReceptor extends LuaClass
 		// 3 = time
 		var nalpha = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Std.parseInt(Lua.tostring(state, -1).split('_')[1]);
@@ -775,7 +824,7 @@ class LuaReceptor extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(receptor, {alpha: nalpha}, time);
+		FlxTween.tween(receptor, {alpha: nalpha}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -956,6 +1005,7 @@ class LuaCamera extends LuaClass
 		// 3 = time
 		var nzoom = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -976,7 +1026,7 @@ class LuaCamera extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(camera, {zoom: nzoom}, time);
+		FlxTween.tween(camera, {zoom: nzoom}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -992,6 +1042,7 @@ class LuaCamera extends LuaClass
 		var xp = LuaL.checknumber(state, 2);
 		var yp = LuaL.checknumber(state, 3);
 		var time = LuaL.checknumber(state, 4);
+		var ease = LuaL.checkstring(state, 5);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1010,7 +1061,7 @@ class LuaCamera extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(camera, {x: xp, y: yp}, time);
+		FlxTween.tween(camera, {x: xp, y: yp}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1022,6 +1073,7 @@ class LuaCamera extends LuaClass
 		// 3 = time
 		var nangle = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1040,7 +1092,7 @@ class LuaCamera extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(camera, {modAngle: nangle}, time);
+		FlxTween.tween(camera, {modAngle: nangle}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1052,6 +1104,7 @@ class LuaCamera extends LuaClass
 		// 3 = time
 		var nalpha = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1070,7 +1123,7 @@ class LuaCamera extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(camera, {alpha: nalpha}, time);
+		FlxTween.tween(camera, {alpha: nalpha}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1269,6 +1322,7 @@ class LuaCharacter extends LuaClass
 		var xp = LuaL.checknumber(state, 2);
 		var yp = LuaL.checknumber(state, 3);
 		var time = LuaL.checknumber(state, 4);
+		var ease = LuaL.checkstring(state, 5);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1287,7 +1341,7 @@ class LuaCharacter extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(char, {x: xp, y: yp}, time);
+		FlxTween.tween(char, {x: xp, y: yp}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1299,6 +1353,7 @@ class LuaCharacter extends LuaClass
 		// 3 = time
 		var nangle = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1317,7 +1372,7 @@ class LuaCharacter extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(char, {angle: nangle}, time);
+		FlxTween.tween(char, {angle: nangle}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1329,6 +1384,7 @@ class LuaCharacter extends LuaClass
 		// 3 = time
 		var nalpha = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1347,7 +1403,7 @@ class LuaCharacter extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(char, {alpha: nalpha}, time);
+		FlxTween.tween(char, {alpha: nalpha}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1617,6 +1673,7 @@ class LuaSprite extends LuaClass
 		var xp = LuaL.checknumber(state, 2);
 		var yp = LuaL.checknumber(state, 3);
 		var time = LuaL.checknumber(state, 4);
+		var ease = LuaL.checkstring(state, 5);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1635,7 +1692,7 @@ class LuaSprite extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(sprite, {x: xp, y: yp}, time);
+		FlxTween.tween(sprite, {x: xp, y: yp}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1647,6 +1704,7 @@ class LuaSprite extends LuaClass
 		// 3 = time
 		var nangle = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1665,7 +1723,7 @@ class LuaSprite extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(sprite, {angle: nangle}, time);
+		FlxTween.tween(sprite, {angle: nangle}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1677,6 +1735,7 @@ class LuaSprite extends LuaClass
 		// 3 = time
 		var nalpha = LuaL.checknumber(state, 2);
 		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
 
 		Lua.getfield(state, 1, "id");
 		var index = Lua.tostring(state, -1);
@@ -1695,7 +1754,7 @@ class LuaSprite extends LuaClass
 			return 0;
 		}
 
-		FlxTween.tween(sprite, {alpha: nalpha}, time);
+		FlxTween.tween(sprite, {alpha: nalpha}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
@@ -1761,7 +1820,7 @@ class LuaWindow extends LuaClass
 	public function new()
 	{
 		super();
-		className = "Window";
+		className = "window";
 
 		properties = [
 			"x" => {
@@ -1829,8 +1888,9 @@ class LuaWindow extends LuaClass
 		var xp = LuaL.checknumber(state, 2);
 		var yp = LuaL.checknumber(state, 3);
 		var time = LuaL.checknumber(state, 4);
+		var ease = LuaL.checkstring(state, 5);
 
-		FlxTween.tween(Application.current.window, {x: xp, y: yp}, time);
+		FlxTween.tween(Application.current.window, {x: xp, y: yp}, time, {ease: ModchartState.getFlxEaseByString(ease)});
 
 		return 0;
 	}
