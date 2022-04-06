@@ -32,6 +32,21 @@ class CoolUtil
 		return Math.max(min, Math.min(max, value));
 	}
 
+	public static function dashToSpace(string:String):String
+	{
+		return string.replace("-", " ");
+	}
+
+	public static function spaceToDash(string:String):String
+	{
+		return string.replace(" ", "-");
+	}
+
+	public static function swapSpaceDash(string:String):String
+	{
+		return StringTools.contains(string, '-') ? dashToSpace(string) : spaceToDash(string);
+	}
+
 	public static function coolStringFile(path:String):Array<String>
 	{
 		var daList:Array<String> = path.trim().split('\n');

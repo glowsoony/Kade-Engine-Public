@@ -9,7 +9,7 @@ import flixel.util.FlxColor;
 #if polymod
 import polymod.format.ParseRules.TargetSignatureElement;
 #end
-import LuaClass.LuaNote;
+import LuaClass;
 import PlayState;
 
 using StringTools;
@@ -22,9 +22,9 @@ class Note extends FlxSprite
 	public var charterSelected:Bool = false;
 
 	public var rStrumTime:Float = 0;
-
+	#if FEATURE_LUAMODCHART
 	public var LuaNote:LuaNote;
-
+	#end
 	public var mustPress:Bool = false;
 	public var noteData:Int = 0;
 	public var rawNoteData:Int = 0;
@@ -89,7 +89,6 @@ class Note extends FlxSprite
 		this.prevNote = prevNote;
 		isSustainNote = sustainNote;
 
-		x += 50;
 		// MAKE SURE ITS DEFINITELY OFF SCREEN?
 		y -= 2000;
 
@@ -118,7 +117,14 @@ class Note extends FlxSprite
 
 		this.noteData = noteData;
 
-		var daStage:String = ((PlayState.instance != null && !PlayStateChangeables.Optimize) ? PlayState.Stage.curStage : 'stage');
+		// YOOO WTF IT WORKED???!!!
+		if (FlxG.save.data.mirror)
+		{
+			this.noteData = Std.int(Math.abs(3 - noteData));
+			noteData = Std.int(Math.abs(3 - noteData));
+		}
+
+		var daStage:String = ((PlayState.instance != null && !FlxG.save.data.optimize) ? PlayState.Stage.curStage : 'stage');
 
 		// defaults if no noteStyle was found in chart
 		var noteTypeCheck:String = 'normal';
@@ -186,7 +192,7 @@ class Note extends FlxSprite
 			}
 		}
 
-		x += swagWidth * noteData;
+		x += swagWidth * (noteData % 4);
 		animation.play(dataColor[noteData] + 'Scroll');
 		originColor = noteData; // The note's origin color will be checked by its sustain notes
 

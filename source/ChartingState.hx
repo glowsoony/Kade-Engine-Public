@@ -46,6 +46,7 @@ import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
+import openfl.Lib;
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
@@ -158,7 +159,6 @@ class ChartingState extends MusicBeatState
 		#end
 
 		curSection = lastSection;
-
 		Debug.logTrace(1 > Math.POSITIVE_INFINITY);
 
 		Debug.logTrace(PlayState.noteskinSprite);
@@ -2651,6 +2651,7 @@ class ChartingState extends MusicBeatState
 
 					toRemove = []; // clear memory
 
+					FlxG.save.data.mirror = PlayState.leMirror;
 					LoadingState.loadAndSwitchState(new PlayState());
 				}
 

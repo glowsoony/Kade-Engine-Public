@@ -7,6 +7,11 @@ import Controls.KeyboardScheme;
 import flixel.FlxG;
 import openfl.display.FPS;
 import openfl.Lib;
+#if FEATURE_DISCORD
+import Discord.DiscordClient;
+#end
+import OptionsMenu;
+import KadeEngineData;
 
 class Option
 {
@@ -16,6 +21,7 @@ class Option
 	}
 
 	private var description:String = "";
+
 	private var display:String;
 	private var acceptValues:Bool = false;
 
@@ -82,7 +88,7 @@ class DFJKOption extends Option
 	public override function press():Bool
 	{
 		OptionsMenu.instance.selectedCatIndex = 4;
-		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[4], false);
+		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[5], false);
 		return false;
 	}
 
@@ -783,13 +789,15 @@ class DistractionsAndEffectsOption extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = desc + " (RESTART REQUIRED)";
+			description = "This option cannot be toggled in the pause menu.";
 		else
 			description = desc;
 	}
 
 	public override function left():Bool
 	{
+		if (OptionsMenu.isInPause || FlxG.save.data.optimize || !FlxG.save.data.background)
+			return false;
 		FlxG.save.data.distractions = !FlxG.save.data.distractions;
 		display = updateDisplay();
 		return true;
@@ -817,6 +825,8 @@ class Colour extends Option
 
 	public override function left():Bool
 	{
+		if (!FlxG.save.data.healthBar)
+			return false;
 		FlxG.save.data.colour = !FlxG.save.data.colour;
 		display = updateDisplay();
 		return true;
@@ -1050,7 +1060,7 @@ class Judgement extends Option
 	public override function press():Bool
 	{
 		OptionsMenu.instance.selectedCatIndex = 5;
-		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[5], false);
+		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[6], false);
 		return true;
 	}
 
@@ -1136,9 +1146,9 @@ class FPSCapOption extends Option
 
 	override function right():Bool
 	{
-		if (FlxG.save.data.fpsCap >= 600)
+		if (FlxG.save.data.fpsCap >= 300)
 		{
-			FlxG.save.data.fpsCap = 600;
+			FlxG.save.data.fpsCap = 300;
 			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(700);
 		}
 		else
@@ -1150,8 +1160,8 @@ class FPSCapOption extends Option
 
 	override function left():Bool
 	{
-		if (FlxG.save.data.fpsCap > 1000)
-			FlxG.save.data.fpsCap = 1000;
+		if (FlxG.save.data.fpsCap > 300)
+			FlxG.save.data.fpsCap = 300;
 		else if (FlxG.save.data.fpsCap < 60)
 			FlxG.save.data.fpsCap = Application.current.window.displayMode.refreshRate;
 		else
@@ -1355,16 +1365,11 @@ class WatermarkOption extends Option
 	public function new(desc:String)
 	{
 		super();
-		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
-		else
-			description = desc;
+		description = desc;
 	}
 
 	public override function left():Bool
 	{
-		if (OptionsMenu.isInPause)
-			return false;
 		Main.watermarks = !Main.watermarks;
 		FlxG.save.data.watermark = Main.watermarks;
 		display = updateDisplay();
@@ -1506,11 +1511,16 @@ class BotPlay extends Option
 	public function new(desc:String)
 	{
 		super();
-		description = desc;
+		if (PlayState.isStoryMode)
+			description = 'BOTPLAY is disabled on Story Mode.'
+		else
+			description = desc;
 	}
 
 	public override function left():Bool
 	{
+		if (PlayState.isStoryMode)
+			return false;
 		FlxG.save.data.botplay = !FlxG.save.data.botplay;
 		trace('BotPlay : ' + FlxG.save.data.botplay);
 		display = updateDisplay();
@@ -1540,6 +1550,8 @@ class CamZoomOption extends Option
 
 	public override function left():Bool
 	{
+		if (FlxG.save.data.optimize)
+			return false;
 		FlxG.save.data.camzoom = !FlxG.save.data.camzoom;
 		display = updateDisplay();
 		return true;
@@ -1614,6 +1626,70 @@ class MiddleScrollOption extends Option
 	}
 }
 
+class Background extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+			description = "This option cannot be toggled in the pause menu."
+		else
+			description = desc;
+	}
+
+	public override function left():Bool
+	{
+		if (OptionsMenu.isInPause || FlxG.save.data.optimize)
+			return false;
+		FlxG.save.data.background = !FlxG.save.data.background;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Background Stage: < " + (FlxG.save.data.background ? "Enabled" : "Disabled") + " >";
+	}
+}
+
+class OptimizeOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+			description = "This option cannot be toggled in the pause menu."
+		else
+			description = desc;
+	}
+
+	public override function left():Bool
+	{
+		if (OptionsMenu.isInPause)
+			return false;
+		FlxG.save.data.optimize = !FlxG.save.data.optimize;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Optimization: < " + (FlxG.save.data.optimize ? "Enabled" : "Disabled") + " >";
+	}
+}
+
 class RotateSpritesOption extends Option
 {
 	public function new(desc:String)
@@ -1643,6 +1719,40 @@ class RotateSpritesOption extends Option
 		return "Rotate Sprites: < " + (FlxG.save.data.rotateSprites ? "Enabled" : "Disabled") + " >";
 	}
 }
+
+#if FEATURE_DISCORD
+class DiscordOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+	}
+
+	public override function left():Bool
+	{
+		FlxG.save.data.discordMode--;
+		if (FlxG.save.data.discordMode < 0)
+			FlxG.save.data.discordMode = DiscordClient.getRCPmode().length - 1;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		FlxG.save.data.discordMode++;
+		if (FlxG.save.data.discordMode > DiscordClient.getRCPmode().length - 1)
+			FlxG.save.data.discordMode = 0;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function getValue():String
+	{
+		return "Discord RCP mode: < " + DiscordClient.getRCPmodeByID(FlxG.save.data.discordMode) + " >";
+	}
+}
+#end
 
 class NoteskinOption extends Option
 {
@@ -1686,16 +1796,11 @@ class HealthBarOption extends Option
 	public function new(desc:String)
 	{
 		super();
-		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
-		else
-			description = desc;
+		description = desc;
 	}
 
 	public override function left():Bool
 	{
-		if (OptionsMenu.isInPause)
-			return false;
 		FlxG.save.data.healthBar = !FlxG.save.data.healthBar;
 		display = updateDisplay();
 		return true;
@@ -1801,6 +1906,43 @@ class LockWeeksOption extends Option
 	private override function updateDisplay():String
 	{
 		return confirm ? "Confirm Story Reset" : "Reset Story Progress";
+	}
+}
+
+class ResetModifiersOption extends Option
+{
+	var confirm:Bool = false;
+
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+			description = "This option cannot be toggled in the pause menu.";
+		else
+			description = desc;
+	}
+
+	public override function press():Bool
+	{
+		if (OptionsMenu.isInPause)
+			return false;
+		if (!confirm)
+		{
+			confirm = true;
+			display = updateDisplay();
+			return true;
+		}
+
+		KadeEngineData.resetModifiers();
+		confirm = false;
+		trace('Modifiers went brrrr');
+		display = updateDisplay();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return confirm ? "Confirm Modifiers reset" : "Reset Modifiers";
 	}
 }
 

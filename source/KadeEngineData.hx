@@ -31,10 +31,13 @@ class KadeEngineData
 			FlxG.save.data.offset = 0;
 
 		if (FlxG.save.data.songPosition == null)
-			FlxG.save.data.songPosition = false;
+			FlxG.save.data.songPosition = true;
 
 		if (FlxG.save.data.fps == null)
-			FlxG.save.data.fps = false;
+			FlxG.save.data.fps = true;
+
+		if (FlxG.save.data.memoryDisplay == null)
+			FlxG.save.data.memoryDisplay = true;
 
 		if (FlxG.save.data.fpsBorder == null)
 			FlxG.save.data.fpsBorder = false;
@@ -65,7 +68,7 @@ class KadeEngineData
 			FlxG.save.data.scrollSpeed = 1;
 
 		if (FlxG.save.data.npsDisplay == null)
-			FlxG.save.data.npsDisplay = false;
+			FlxG.save.data.npsDisplay = true;
 
 		if (FlxG.save.data.frames == null)
 			FlxG.save.data.frames = 10;
@@ -101,7 +104,7 @@ class KadeEngineData
 			FlxG.save.data.botplay = false;
 
 		if (FlxG.save.data.cpuStrums == null)
-			FlxG.save.data.cpuStrums = false;
+			FlxG.save.data.cpuStrums = true;
 
 		if (FlxG.save.data.strumline == null)
 			FlxG.save.data.strumline = false;
@@ -120,6 +123,9 @@ class KadeEngineData
 
 		if (FlxG.save.data.optimize == null)
 			FlxG.save.data.optimize = false;
+
+		if (FlxG.save.data.discordMode == null)
+			FlxG.save.data.discordMode = 2;
 
 		if (FlxG.save.data.roundAccuracy == null)
 			FlxG.save.data.roundAccuracy = false;
@@ -169,6 +175,33 @@ class KadeEngineData
 		if (FlxG.save.data.noteskin == null)
 			FlxG.save.data.noteskin = 0;
 
+		if (FlxG.save.data.hgain == null)
+			FlxG.save.data.hgain = 1;
+
+		if (FlxG.save.data.hloss == null)
+			FlxG.save.data.hloss = 1;
+
+		if (FlxG.save.data.hdrain == null)
+			FlxG.save.data.hdrain = false;
+
+		if (FlxG.save.data.sustains == null)
+			FlxG.save.data.sustains = true;
+
+		if (FlxG.save.data.noMisses == null)
+			FlxG.save.data.noMisses = false;
+
+		if (FlxG.save.data.modcharts == null)
+			FlxG.save.data.modcharts = true;
+
+		if (FlxG.save.data.practice == null)
+			FlxG.save.data.practice = false;
+
+		if (FlxG.save.data.opponent == null)
+			FlxG.save.data.opponent = false;
+
+		if (FlxG.save.data.mirror == null)
+			FlxG.save.data.mirror = false;
+
 		// Gonna make this an option on another PR
 		if (FlxG.save.data.overrideNoteskins == null)
 			FlxG.save.data.overrideNoteskins = false;
@@ -184,5 +217,18 @@ class KadeEngineData
 		Main.watermarks = FlxG.save.data.watermark;
 
 		(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
+	}
+
+	public static function resetModifiers():Void
+	{
+		FlxG.save.data.hgain = 1;
+		FlxG.save.data.hloss = 1;
+		FlxG.save.data.hdrain = false;
+		FlxG.save.data.sustains = true;
+		FlxG.save.data.noMisses = false;
+		FlxG.save.data.modcharts = true;
+		FlxG.save.data.practice = false;
+		FlxG.save.data.opponent = false;
+		FlxG.save.data.mirror = false;
 	}
 }

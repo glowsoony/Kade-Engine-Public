@@ -8,6 +8,8 @@ using StringTools;
 
 class DiscordClient
 {
+	public static var modesArray:Array<String> = ['Disabled', 'Per Beat', 'Per Frame', 'Real Time'];
+
 	public function new()
 	{
 		trace("Discord Client starting...");
@@ -61,6 +63,16 @@ class DiscordClient
 			new DiscordClient();
 		});
 		trace("Discord Client initialized");
+	}
+
+	public static function getRCPmode()
+	{
+		return modesArray;
+	}
+
+	public static function getRCPmodeByID(id:Int)
+	{
+		return modesArray[id];
 	}
 
 	public static function changePresence(details:String, state:Null<String>, ?smallImageKey:String, ?hasStartTimestamp:Bool, ?endTimestamp:Float)

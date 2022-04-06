@@ -1,5 +1,6 @@
 package;
 
+import flixel.graphics.FlxGraphic;
 import openfl.display.Bitmap;
 import lime.app.Application;
 #if FEATURE_DISCORD
@@ -24,7 +25,7 @@ class Main extends Sprite
 	var initialState:Class<FlxState> = TitleState; // The FlxState the game starts with.
 	var zoom:Float = -1; // If -1, zoom is automatically calculated to fit the window dimensions.
 	var framerate:Int = 120; // How many frames per second the game should run at.
-	var skipSplash:Bool = true; // Whether to skip the flixel splash screen that appears in release mode.
+	var skipSplash:Bool = false; // Whether to skip the flixel splash screen that appears in release mode.
 	var startFullscreen:Bool = false; // Whether to start the game in fullscreen on desktop targets
 
 	public static var bitmapFPS:Bitmap;
@@ -92,9 +93,6 @@ class Main extends Sprite
 		Debug.onInitProgram();
 
 		// Gotta run this before any assets get loaded.
-		#if FEATURE_DISCORD
-		DiscordClient.initialize();
-		#end
 		ModCore.initialize();
 
 		#if !mobile
@@ -136,6 +134,7 @@ class Main extends Sprite
 			}
 		}
 		Assets.cache.clear("songs");
+		Assets.cache.clear("images");
 		// */
 	}
 

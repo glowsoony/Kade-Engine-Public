@@ -25,6 +25,7 @@ import llua.LuaL;
 import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
+import openfl.Lib;
 
 using StringTools;
 
@@ -437,6 +438,7 @@ class ModchartState
 		{
 			Application.current.window.alert("LUA COMPILE ERROR:\n" + Lua.tostring(lua, result), "Kade Engine Modcharts");
 			FlxG.switchState(new FreeplayState());
+			PlayState.instance.clean();
 			return;
 		}
 

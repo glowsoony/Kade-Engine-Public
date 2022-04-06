@@ -88,6 +88,8 @@ class StoryMenuState extends MusicBeatState
 
 	override function create()
 	{
+		Main.dumpCache();
+		Paths.clearStoredMemory();
 		weekUnlocked = unlockWeeks();
 
 		PlayState.currentSong = "bruh";
@@ -234,6 +236,7 @@ class StoryMenuState extends MusicBeatState
 		trace("Line 165");
 
 		super.create();
+		Paths.clearUnusedMemory();
 	}
 
 	override function update(elapsed:Float)
@@ -328,6 +331,7 @@ class StoryMenuState extends MusicBeatState
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			movedBack = true;
 			FlxG.switchState(new MainMenuState());
+			clean();
 		}
 
 		if (FlxG.sound.music != null)

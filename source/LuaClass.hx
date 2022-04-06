@@ -558,6 +558,8 @@ class LuaReceptor extends LuaClass
 	var defaultX = 0.0;
 	var defaultAngle = 0.0;
 
+	public static var receptorTween:FlxTween;
+
 	public function new(connectedSprite:StaticArrow, name:String)
 	{
 		super();
@@ -758,21 +760,29 @@ class LuaReceptor extends LuaClass
 		}
 		if (yp == receptor.y)
 		{
-			FlxTween.tween(receptor, {x: xp}, time, {
+			receptorTween = FlxTween.tween(receptor, {x: xp}, time, {
 				ease: ModchartState.getFlxEaseByString(ease),
 				onUpdate: function(tw)
 				{
 					luaObject.defaultX = receptor.x;
+				},
+				onComplete: function(twn:FlxTween)
+				{
+					receptorTween = null;
 				}
 			});
 		}
 		else
-			FlxTween.tween(receptor, {x: xp, y: yp}, time, {
+			receptorTween = FlxTween.tween(receptor, {x: xp, y: yp}, time, {
 				ease: ModchartState.getFlxEaseByString(ease),
 				onUpdate: function(tw)
 				{
 					luaObject.defaultX = receptor.x;
 					luaObject.defaultY = receptor.y;
+				},
+				onComplete: function(twn:FlxTween)
+				{
+					receptorTween = null;
 				}
 			});
 
@@ -978,6 +988,19 @@ class LuaCamera extends LuaClass
 					return 0;
 				}
 			},
+			"shake" => {
+				defaultValue: 0,
+				getter: function(l:State, data:Any)
+				{
+					Lua.pushcfunction(l, shakeC);
+					return 1;
+				},
+				setter: function(l:State)
+				{
+					LuaL.error(l, "Shake is read-only.");
+					return 0;
+				}
+			}
 		];
 
 		LuaStorage.ListOfCameras.push(this);
@@ -1128,9 +1151,39 @@ class LuaCamera extends LuaClass
 		return 0;
 	}
 
+	private static function shake(l:StatePointer):Int
+	{
+		// 1 = self
+		// 2 = alpha
+		// 3 = time
+		var namp = LuaL.checknumber(state, 2);
+
+		Lua.getfield(state, 1, "id");
+		var index = Lua.tostring(state, -1);
+
+		var camera:FlxCamera = null;
+
+		for (i in LuaStorage.ListOfCameras)
+		{
+			if (i.className == index)
+				camera = i.cam;
+		}
+
+		if (camera == null)
+		{
+			LuaL.error(state, "Failure to shake (couldn't find camera " + index + ")");
+			return 0;
+		}
+
+		camera.shake(namp);
+
+		return 0;
+	}
+
 	private static var tweenPosC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenPos);
 	private static var tweenAngleC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenAngle);
 	private static var tweenAlphaC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenAlpha);
+	private static var shakeC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(shake);
 
 	override function Register(l:State)
 	{
@@ -1817,6 +1870,21 @@ class LuaWindow extends LuaClass
 { // again, stolen from andromeda but improved a lot for better thinking interoperability (I made that up)
 	private static var state:State;
 
+	private function SetNumProperty(l:State)
+	{
+		// 1 = self
+		// 2 = key
+		// 3 = value
+		// 4 = metatable
+		if (Lua.type(l, 3) != Lua.LUA_TNUMBER)
+		{
+			LuaL.error(l, "invalid argument #3 (number expected, got " + Lua.typename(l, Lua.type(l, 3)) + ")");
+			return 0;
+		}
+		Reflect.setProperty(Application.current.window, Lua.tostring(l, 2), Lua.tonumber(l, 3));
+		return 0;
+	}
+
 	public function new()
 	{
 		super();
@@ -1876,6 +1944,33 @@ class LuaWindow extends LuaClass
 					return 0;
 				},
 			},
+
+			"boundsWidth" => { // TODO: turn into a table w/ bounds.x and bounds.y
+				defaultValue: Lib.application.window.display.bounds.width,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, Lib.application.window.display.bounds.width);
+					return 1;
+				},
+				setter: function(l:State)
+				{
+					LuaL.error(l, "boundsWidth is read-only.");
+					return 0;
+				}
+			},
+			"boundsHeight" => { // TODO: turn into a table w/ bounds.x and bounds.y
+				defaultValue: Lib.application.window.display.bounds.height,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, Lib.application.window.display.bounds.height);
+					return 1;
+				},
+				setter: function(l:State)
+				{
+					LuaL.error(l, "boundsHeight is read-only.");
+					return 0;
+				}
+			}
 		];
 	}
 
@@ -1890,27 +1985,14 @@ class LuaWindow extends LuaClass
 		var time = LuaL.checknumber(state, 4);
 		var ease = LuaL.checkstring(state, 5);
 
-		FlxTween.tween(Application.current.window, {x: xp, y: yp}, time, {ease: ModchartState.getFlxEaseByString(ease)});
+		FlxTween.tween(Application.current.window, {x: xp, y: yp}, time, {
+			ease: ModchartState.getFlxEaseByString(ease)
+		});
 
 		return 0;
 	}
 
 	private static var tweenPosC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenPos);
-
-	private function SetNumProperty(l:State)
-	{
-		// 1 = self
-		// 2 = key
-		// 3 = value
-		// 4 = metatable
-		if (Lua.type(l, 3) != Lua.LUA_TNUMBER)
-		{
-			LuaL.error(l, "invalid argument #3 (number expected, got " + Lua.typename(l, Lua.type(l, 3)) + ")");
-			return 0;
-		}
-		Reflect.setProperty(Application.current.window, Lua.tostring(l, 2), Lua.tonumber(l, 3));
-		return 0;
-	}
 
 	override function Register(l:State)
 	{

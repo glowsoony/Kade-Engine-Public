@@ -52,6 +52,8 @@ class DiffOverview extends FlxSubState
 
 	override function create()
 	{
+		Main.dumpCache();
+		Paths.clearStoredMemory();
 		Conductor.songPosition = 0;
 		Conductor.lastSongPos = 0;
 
@@ -120,6 +122,7 @@ class DiffOverview extends FlxSubState
 
 		trace('pog');
 
+		Paths.clearUnusedMemory();
 		super.create();
 	}
 

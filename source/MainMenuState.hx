@@ -17,6 +17,7 @@ import lime.app.Application;
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
+import PlayState;
 
 using StringTools;
 
@@ -39,7 +40,7 @@ class MainMenuState extends MusicBeatState
 
 	public static var nightly:String = "";
 
-	public static var kadeEngineVer:String = "1.8.1" + "\nFNF v0.2.7.1" + "\nCustom Build v1.2.2" + nightly;
+	public static var kadeEngineVer:String = "1.8.1" + "\nFNF v0.2.7.1" + "\nCustom Build v1.3" + nightly;
 	public static var gameVer:String = "0.2.7.1";
 
 	var magenta:FlxSprite;
@@ -47,24 +48,31 @@ class MainMenuState extends MusicBeatState
 
 	public static var finishedFunnyMove:Bool = false;
 
+	public static var freakyPlaying:Bool;
+
 	override function create()
 	{
+		Main.dumpCache();
+		Paths.clearStoredMemory();
+		Paths.clearUnusedMemory();
 		trace(0 / 2);
-		clean();
 		PlayState.inDaPlay = false;
 		#if FEATURE_DISCORD
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
+		PlayState.isStoryMode = false;
+
 		if (!FlxG.sound.music.playing)
 		{
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			freakyPlaying = true;
 		}
 
 		persistentUpdate = persistentDraw = true;
 
-		var bg:FlxSprite = new FlxSprite(-100).loadGraphic(Paths.loadImage('menuBG'));
+		var bg:FlxSprite = new FlxSprite(-100).loadGraphic(Paths.image('menuBG'));
 		bg.scrollFactor.x = 0;
 		bg.scrollFactor.y = 0.10;
 		bg.setGraphicSize(Std.int(bg.width * 1.1));
@@ -76,7 +84,7 @@ class MainMenuState extends MusicBeatState
 		camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
 
-		magenta = new FlxSprite(-80).loadGraphic(Paths.loadImage('menuDesat'));
+		magenta = new FlxSprite(-80).loadGraphic(Paths.image('menuDesat'));
 		magenta.scrollFactor.x = 0;
 		magenta.scrollFactor.y = 0.10;
 		magenta.setGraphicSize(Std.int(magenta.width * 1.1));
@@ -242,7 +250,7 @@ class MainMenuState extends MusicBeatState
 	function goToState()
 	{
 		var daChoice:String = optionShit[curSelected];
-
+		clean();
 		switch (daChoice)
 		{
 			case 'story mode':

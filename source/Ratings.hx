@@ -5,9 +5,6 @@ class Ratings
 	public static function GenerateComboRank(accuracy:Float) // generate a letter ranking
 	{
 		var comboranking:String = "N/A";
-		if (FlxG.save.data.botplay && !PlayState.loadRep)
-			comboranking = "BotPlay";
-
 		if (PlayState.misses == 0 && PlayState.bads == 0 && PlayState.shits == 0 && PlayState.goods == 0) // Marvelous (SICK) Full Combo
 			comboranking = "(MFC)";
 		else if (PlayState.misses == 0 && PlayState.bads == 0 && PlayState.shits == 0 && PlayState.goods >= 1) // Good Full Combo (Nothing but Goods & Sicks)
@@ -89,10 +86,12 @@ class Ratings
 				break;
 			}
 		}
-		if (accuracy == 0)
+		if (accuracy == 0 && !FlxG.save.data.practice)
 			letterRanking = "You suck lmao";
-		else if (FlxG.save.data.botplay && !PlayState.loadRep)
+		else if (PlayStateChangeables.botPlay && !PlayState.loadRep)
 			letterRanking = "BotPlay";
+		else if (FlxG.save.data.practice)
+			letterRanking = "PRACTICE";
 		return letterRanking;
 	}
 
@@ -136,14 +135,16 @@ class Ratings
 				|| PlayState.loadRep ? "Score:" + (Conductor.safeFrames != 10 ? score + " (" + scoreDef + ")" : "" + score) + // Score
 					(FlxG.save.data.accuracyDisplay ? // Accuracy Toggle
 						" | Combo Breaks:"
-						+ PlayState.misses
-						+ // 	Misses/Combo Breaks
-						" | Accuracy:"
+						+ PlayState.misses // 	Misses/Combo Breaks
+						+ (!FlxG.save.data.healthBar ? " | Health:"
+							+ (!FlxG.save.data.opponent ? Math.round(PlayState.instance.health * 50) : Math.round(100 - (PlayState.instance.health * 50)))
+							+ "%" : "")
+						+ " | Accuracy:"
 						+ (PlayStateChangeables.botPlay && !PlayState.loadRep ? "N/A" : HelperFunctions.truncateFloat(accuracy, 2) + " %")
 						+ // 	Accuracy
 						" | "
 						+ GenerateComboRank(accuracy)
 						+ " "
-						+ GenerateLetterRank(accuracy) : "") : ""); // 	Letter Rank
+						+ (!FlxG.save.data.pratice ? GenerateLetterRank(accuracy) : 'PRACTICE') : "") : ""); // 	Letter Rank
 	}
 }

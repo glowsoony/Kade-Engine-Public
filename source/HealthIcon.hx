@@ -43,7 +43,7 @@ class HealthIcon extends FlxSprite
 		if (!OpenFlAssets.exists(Paths.image('icons/icon-' + char)))
 			char = 'face';
 
-		loadGraphic(Paths.loadImage('icons/icon-' + char), true, 150, 150);
+		loadGraphic(Paths.image('icons/icon-' + char), true, 150, 150);
 
 		if (char.endsWith('-pixel') || char.startsWith('senpai') || char.startsWith('spirit'))
 			antialiasing = false
