@@ -137,7 +137,8 @@ class Ratings
 						" | Combo Breaks:"
 						+ PlayState.misses // 	Misses/Combo Breaks
 						+ (!FlxG.save.data.healthBar ? " | Health:"
-							+ (!FlxG.save.data.opponent ? Math.round(PlayState.instance.health * 50) : Math.round(100 - (PlayState.instance.health * 50)))
+							+ (!PlayStateChangeables.opponentMode ? Math.round(PlayState.instance.health * 50) : Math.round(100
+								- (PlayState.instance.health * 50)))
 							+ "%" : "")
 						+ " | Accuracy:"
 						+ (PlayStateChangeables.botPlay && !PlayState.loadRep ? "N/A" : HelperFunctions.truncateFloat(accuracy, 2) + " %")

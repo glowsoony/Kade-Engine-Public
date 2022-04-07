@@ -278,6 +278,17 @@ class FreeplayState extends MusicBeatState
 
 		var swag:Alphabet = new Alphabet(1, 0, "swag");
 
+		PlayStateChangeables.modchart = FlxG.save.data.modcharts;
+		PlayStateChangeables.botPlay = FlxG.save.data.botplay;
+		PlayStateChangeables.opponentMode = FlxG.save.data.opponent;
+		PlayStateChangeables.mirrorMode = FlxG.save.data.mirror;
+		PlayStateChangeables.holds = FlxG.save.data.sustains;
+		PlayStateChangeables.healthDrain = FlxG.save.data.hdrain;
+		PlayStateChangeables.healthGain = FlxG.save.data.hgain;
+		PlayStateChangeables.healthLoss = FlxG.save.data.hloss;
+		PlayStateChangeables.practiceMode = FlxG.save.data.practice;
+		PlayStateChangeables.skillIssue = FlxG.save.data.noMisses;
+
 		super.create();
 	}
 

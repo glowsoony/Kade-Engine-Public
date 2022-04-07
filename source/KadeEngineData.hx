@@ -172,6 +172,10 @@ class KadeEngineData
 			FlxG.save.data.sickMs
 		];
 
+		
+		if (FlxG.save.data.background == null)
+			FlxG.save.data.background = true;
+
 		if (FlxG.save.data.noteskin == null)
 			FlxG.save.data.noteskin = 0;
 

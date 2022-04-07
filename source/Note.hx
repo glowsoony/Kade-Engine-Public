@@ -118,7 +118,7 @@ class Note extends FlxSprite
 		this.noteData = noteData;
 
 		// YOOO WTF IT WORKED???!!!
-		if (FlxG.save.data.mirror)
+		if (PlayStateChangeables.mirrorMode)
 		{
 			this.noteData = Std.int(Math.abs(3 - noteData));
 			noteData = Std.int(Math.abs(3 - noteData));

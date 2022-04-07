@@ -233,6 +233,17 @@ class StoryMenuState extends MusicBeatState
 			bullShit++;
 		}
 
+		PlayStateChangeables.modchart = true;
+		PlayStateChangeables.botPlay = false;
+		PlayStateChangeables.opponentMode = false;
+		PlayStateChangeables.mirrorMode = false;
+		PlayStateChangeables.holds = true;
+		PlayStateChangeables.healthDrain = false;
+		PlayStateChangeables.healthGain = 1;
+		PlayStateChangeables.healthLoss = 1;
+		PlayStateChangeables.practiceMode = false;
+		PlayStateChangeables.skillIssue = false;
+
 		trace("Line 165");
 
 		super.create();

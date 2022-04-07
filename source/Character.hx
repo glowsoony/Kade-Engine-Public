@@ -142,7 +142,7 @@ class Character extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
-		if (!isPlayer && !FlxG.save.data.opponent)
+		if (!isPlayer && !PlayStateChangeables.opponentMode)
 		{
 			if (animation.curAnim.name.startsWith('sing'))
 				holdTimer += elapsed;
@@ -156,7 +156,7 @@ class Character extends FlxSprite
 			}
 		}
 
-		if (FlxG.save.data.opponent && !isPlayer)
+		if (PlayStateChangeables.opponentMode && !isPlayer)
 		{
 			if (animation.curAnim.name.startsWith('sing'))
 				holdTimer += elapsed;
