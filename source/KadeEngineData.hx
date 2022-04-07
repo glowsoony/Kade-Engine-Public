@@ -55,9 +55,6 @@ class KadeEngineData
 		if (FlxG.save.data.fpsRain == null)
 			FlxG.save.data.fpsRain = false;
 
-		if (FlxG.save.data.memoryDisplay == null)
-			FlxG.save.data.memoryDisplay = false;
-
 		if (FlxG.save.data.fpsCap == null)
 			FlxG.save.data.fpsCap = 120;
 
@@ -172,7 +169,6 @@ class KadeEngineData
 			FlxG.save.data.sickMs
 		];
 
-		
 		if (FlxG.save.data.background == null)
 			FlxG.save.data.background = true;
 

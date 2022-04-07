@@ -2019,6 +2019,7 @@ class ResetSettings extends Option
 			display = updateDisplay();
 			return true;
 		}
+		FlxG.save.data.background = null;
 		FlxG.save.data.weekUnlocked = null;
 		FlxG.save.data.newInput = null;
 		FlxG.save.data.downscroll = null;
@@ -2055,6 +2056,11 @@ class ResetSettings extends Option
 		FlxG.save.data.cacheImages = null;
 		FlxG.save.data.editor = null;
 		FlxG.save.data.laneTransparency = 0;
+		FlxG.save.data.middleScroll = null;
+		FlxG.save.data.healthBar = null;
+		FlxG.save.data.instantRespawn = null;
+		FlxG.save.data.memoryDisplay = null;
+		FlxG.save.data.noteskin = null;
 
 		KadeEngineData.initSave();
 		confirm = false;
