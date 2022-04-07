@@ -209,6 +209,7 @@ class PauseSubState extends MusicBeatSubstate
 			{
 				case "Resume":
 					close();
+					PlayState.instance.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier * PlayState.instance.scrollMult : FlxG.save.data.scrollSpeed * PlayState.songMultiplier * PlayState.instance.scrollMult);
 				case "Restart Song":
 					PlayState.startTime = 0;
 					if (PlayState.instance.useVideo)

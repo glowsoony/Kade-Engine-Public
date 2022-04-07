@@ -68,7 +68,7 @@ class OptionCata extends FlxSprite
 		for (i in 0...options.length)
 		{
 			var opt = options[i];
-			text = new FlxText((middleType ? 1180 / 2 : 72), 116 + 54 + (46 * i), 0, opt.getValue());
+			text = new FlxText((middleType ? 1180 / 2 : 72), 120 + 54 + (46 * i), 0, opt.getValue());
 			if (middleType)
 			{
 				text.screenCenter(X);
@@ -560,7 +560,6 @@ class OptionsMenu extends FlxSubState
 					{
 						PauseSubState.goBack = true;
 						PlayState.instance.updateSettings();
-						PlayState.instance.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier * PlayState.instance.scrollMult : FlxG.save.data.scrollSpeed * PlayState.songMultiplier * PlayState.instance.scrollMult);
 						close();
 					}
 				}

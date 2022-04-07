@@ -303,7 +303,6 @@ class Note extends FlxSprite
 		}
 		if (mustPress)
 		{
-			// ok river
 			if (strumTime > Conductor.songPosition - Conductor.safeZoneOffset
 				&& strumTime < Conductor.songPosition + Conductor.safeZoneOffset)
 				canBeHit = true;

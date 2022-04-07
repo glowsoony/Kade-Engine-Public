@@ -66,7 +66,7 @@ class ModMenu extends FlxSubState
 			new HealthLoss("Toggle how many health you want to loss.")
 		];
 
-		titleObject = new FlxText(180, 49, 0, 'GAMEPLAY MODIFIERS');
+		titleObject = new FlxText(176, 49, 0, 'GAMEPLAY MODIFIERS');
 		titleObject.setFormat(Paths.font("vcr.ttf"), 35, FlxColor.WHITE, FlxTextAlign.CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		titleObject.borderSize = 3;
 
