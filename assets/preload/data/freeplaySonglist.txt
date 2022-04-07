@@ -1,4 +1,4 @@
-tutorial:gf:0:#9271fd
+tutorial:gf:0:#A5004D
 bopeebo:dad:1:#9271fd
 fresh:dad:1:#9271fd
 dadbattle:dad:1:#9271fd
@@ -16,4 +16,4 @@ eggnog:parents-christmas:5:#8DA5CE
 winter-horrorland:monster-christmas:5:#a10000
 senpai:senpai:6:#B25C93
 roses:senpai:6:#B25C93
-thorns:spirit:6:#2e4580
+thorns:spirit:6:#17005c
