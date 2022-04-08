@@ -109,7 +109,7 @@ class OptionsMenu extends FlxSubState
 
 	public var shownStuff:FlxTypedGroup<FlxText>;
 
-	public static var visibleRange = [154, 640];
+	public static var visibleRange = [164, 640];
 
 	var changedOption = false;
 
@@ -276,9 +276,9 @@ class OptionsMenu extends FlxSubState
 	{
 		try
 		{
-			visibleRange = [154, 640];
-			if (cat.middle)
-				visibleRange = [Std.int(cat.titleObject.y), 640];
+			visibleRange = [164, 640];
+			/*if (cat.middle)
+				visibleRange = [Std.int(cat.titleObject.y), 640]; */
 			if (selectedOption != null)
 			{
 				var object = selectedCat.optionObjects.members[selectedOptionIndex];
