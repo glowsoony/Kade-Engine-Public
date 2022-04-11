@@ -53,39 +53,6 @@ class Paths
 	 */
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = [];
 
-	static public function loadImage(key:String, ?library:String):FlxGraphic
-	{
-		var path = getPath('images/$key.png', IMAGE, library);
-
-		/*#if FEATURE_FILESYSTEM
-			if (Caching.bitmapData != null)
-			{
-				if (Caching.bitmapData.exists(key))
-				{
-					Debug.logTrace('Loading image from bitmap cache: $key');
-					// Get data from cache.
-					return Caching.bitmapData.get(key);
-				}
-			}
-			#end */
-
-		if (OpenFlAssets.exists(path, IMAGE))
-		{
-			if (!currentTrackedAssets.exists(path))
-			{
-				var newGraphic:FlxGraphic = FlxG.bitmap.add(path, false, path);
-				currentTrackedAssets.set(path, newGraphic);
-			}
-			localTrackedAssets.push(path);
-			return currentTrackedAssets.get(path);
-		}
-		else
-		{
-			Debug.logWarn('Could not find image at path $path');
-			return null;
-		}
-	}
-
 	public static var currentTrackedSounds:Map<String, Sound> = [];
 
 	public static function loadSound(path:String, key:String, ?library:String)
@@ -273,7 +240,11 @@ class Paths
 
 	inline static public function image(key:String, ?library:String)
 	{
-		return getPath('images/$key.png', IMAGE, library);
+		var returnAsset = getPath('images/$key.png', IMAGE, library);
+		localTrackedAssets.push(returnAsset);
+		var newGraphic:FlxGraphic = FlxG.bitmap.add(returnAsset, false, returnAsset);
+		currentTrackedAssets.set(returnAsset, newGraphic);
+		return currentTrackedAssets.get(returnAsset);
 	}
 
 	inline static public function font(key:String)
@@ -349,7 +320,16 @@ class Paths
 		localTrackedAssets = [];
 		openfl.Assets.cache.clear("songs");
 	}
-
+	
+	inline static public function fileExists(key:String, type:AssetType, ?library:String)
+	{
+		if (OpenFlAssets.exists(getPath(key, type)))
+		{
+			return true;
+		}
+		return false;
+	}
+				
 	static public function getSparrowAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
 	{
 		if (isCharacter)
