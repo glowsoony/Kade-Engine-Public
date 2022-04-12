@@ -2938,8 +2938,8 @@ class ChartingState extends MusicBeatState
 
 		// fail-safe
 		// TODO: Refactor this to use OpenFlAssets.
-		if (!Paths.fileExists("images/icons/icon-" + head.split("-")[0] + ".png")
-			&& !Paths.fileExists("images/icons/icon-" + head + ".png"))
+		if (!Paths.fileExists("images/icons/icon-" + head.split("-")[0] + ".png",IMAGE)
+			&& !Paths.fileExists("images/icons/icon-" + head + ".png",IMAGE))
 		{
 			if (i.icon.animation.curAnim == null)
 				iconUpdate(true);
