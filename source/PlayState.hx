@@ -455,14 +455,8 @@ class PlayState extends MusicBeatState
 			executeModchart = FileSystem.exists(pathToSm + "/modchart.lua") && PlayStateChangeables.modchart;
 		/*if (executeModchart)
 			FlxG.save.data.optimize = false; */
-		#end
-		#if !cpp
-		executeModchart = false; // FORCE disable for non cpp targets
-		#end
-
-		Debug.logInfo('Searching for mod chart? ($executeModchart) at ${Paths.lua('songs/${PlayState.SONG.songId}/modchart')}');
-
-		// EXPERIMENTAL HAXESCRIPT MODCHART
+		
+				// EXPERIMENTAL HAXESCRIPT MODCHART
 		if (FileSystem.exists(Sys.getCwd() + 'assets/data/${SONG.song.toLowerCase()}/haxeModchart.hx') && PlayStateChangeables.modchart)
 		{
 			var expr = Paths.getHaxeScript(SONG.song.toLowerCase());
@@ -471,6 +465,14 @@ class PlayState extends MusicBeatState
 			var interp = new hscript.Interp();
 			trace(interp.execute(ast));
 		}
+		#end
+		#if !cpp
+		executeModchart = false; // FORCE disable for non cpp targets
+		#end
+
+		Debug.logInfo('Searching for mod chart? ($executeModchart) at ${Paths.lua('songs/${PlayState.SONG.songId}/modchart')}');
+
+
 
 		/*if (executeModchart)
 			songMultiplier = 1; */
