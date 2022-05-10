@@ -3778,6 +3778,7 @@ class PlayState extends MusicBeatState
 		}
 		else
 		{
+			#if FEAUTURE_DISCORD
 			if (FlxG.save.data.scoreScreen)
 			{
 				if (FlxG.save.data.discordMode != 0)
@@ -3788,6 +3789,7 @@ class PlayState extends MusicBeatState
 				else
 					DiscordClient.changePresence('RESULTS SCREEN -- ' + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", iconRPC);
 			}
+			#end
 			if (isStoryMode)
 			{
 				campaignScore += Math.round(songScore);
