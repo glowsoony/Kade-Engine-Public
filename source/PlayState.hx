@@ -1915,19 +1915,7 @@ class PlayState extends MusicBeatState
 
 				if (PlayStateChangeables.holds)
 				{
-					var speedRatio = scrollSpeed / SONG.speed;
-					var susRatio = (songMultiplier > 1 ? speedRatio / songMultiplier : 1);
-					swagNote.sustainLength = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(songNotes[2] / songMultiplier)));
-					if (swagNote.sustainLength <= 0)
-						swagNote.sustainLength = 1;
-
-					if (songMultiplier > 1)
-					{
-						if (swagNote.sustainLength <= 200)
-							swagNote.sustainLength = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(songNotes[2] / (songMultiplier / (susRatio * 0.75)))));
-						else if (swagNote.sustainLength > 200 && swagNote.sustainLength < 300)
-							swagNote.sustainLength = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(songNotes[2] / (songMultiplier / (susRatio * 0.45)))));
-					}
+					swagNote.sustainLength = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(songNotes[2] / songMultiplier )));		
 				}
 				else
 				{
@@ -1953,31 +1941,34 @@ class PlayState extends MusicBeatState
 					swagNote.isParent = true;
 
 				var type = 0;
-
-				for (susNote in 0...Math.floor(susLength))
+				var floorSus:Int = Math.floor(susLength);
+				if (floorSus > 0)
 				{
-					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
-
-					var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, oldNote, true);
-					sustainNote.scrollFactor.set();
-					unspawnNotes.push(sustainNote);
-					sustainNote.isAlt = songNotes[3]
-						|| ((section.altAnim || section.CPUAltAnim) && !gottaHitNote)
-						|| (section.playerAltAnim && gottaHitNote)
-						|| (PlayStateChangeables.opponentMode && gottaHitNote && (section.altAnim || section.CPUAltAnim))
-						|| (PlayStateChangeables.opponentMode && !gottaHitNote && section.playerAltAnim);
-
-					sustainNote.mustPress = gottaHitNote;
-
-					if (sustainNote.mustPress)
+					for (susNote in 0...floorSus + 1)
 					{
-						sustainNote.x += FlxG.width / 2; // general offset
-					}
+						oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
-					sustainNote.parent = swagNote;
-					swagNote.children.push(sustainNote);
-					sustainNote.spotInLine = type;
-					type++;
+						var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, oldNote, true);
+						sustainNote.scrollFactor.set();
+						unspawnNotes.push(sustainNote);
+						sustainNote.isAlt = songNotes[3]
+							|| ((section.altAnim || section.CPUAltAnim) && !gottaHitNote)
+							|| (section.playerAltAnim && gottaHitNote)
+							|| (PlayStateChangeables.opponentMode && gottaHitNote && (section.altAnim || section.CPUAltAnim))
+							|| (PlayStateChangeables.opponentMode && !gottaHitNote && section.playerAltAnim);
+
+						sustainNote.mustPress = gottaHitNote;
+
+						if (sustainNote.mustPress)
+						{
+							sustainNote.x += FlxG.width / 2; // general offset
+						}
+
+						sustainNote.parent = swagNote;
+						swagNote.children.push(sustainNote);
+						sustainNote.spotInLine = type;
+						type++;
+					}
 				}
 
 				swagNote.mustPress = gottaHitNote;
