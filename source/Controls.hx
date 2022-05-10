@@ -488,9 +488,9 @@ class Controls extends FlxActionSet
 
 	public function setKeyboardScheme(scheme:KeyboardScheme, reset = true)
 	{
-		#if !html5
+		
 		loadKeyBinds();
-		#end
+		
 		/*if (reset)
 				removeKeyboard();
 
