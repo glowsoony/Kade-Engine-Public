@@ -7,7 +7,7 @@ class KadeEngineData
 	public static function initSave()
 	{
 		if (FlxG.save.data.weekUnlocked == null)
-			FlxG.save.data.weekUnlocked = 7;
+			FlxG.save.data.weekUnlocked == 5;
 
 		if (FlxG.save.data.newInput == null)
 			FlxG.save.data.newInput = true;
@@ -38,6 +38,9 @@ class KadeEngineData
 
 		if (FlxG.save.data.memoryDisplay == null)
 			FlxG.save.data.memoryDisplay = true;
+
+		if (FlxG.save.data.lerpScore == null)
+			FlxG.save.data.lerpScore = false;
 
 		if (FlxG.save.data.fpsBorder == null)
 			FlxG.save.data.fpsBorder = false;

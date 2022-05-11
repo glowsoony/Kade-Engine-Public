@@ -46,6 +46,7 @@ class ResultsScreen extends FlxSubState
 	public var contText:FlxText;
 	public var settingsText:FlxText;
 
+	public var songText:FlxText;
 	public var music:FlxSound;
 
 	public var graphData:BitmapData;
@@ -76,11 +77,22 @@ class ResultsScreen extends FlxSubState
 		text.scrollFactor.set();
 		add(text);
 
+		if (!PlayState.isStoryMode)
+		{
+			songText = new FlxText(20, -65, FlxG.width,
+				'Played on ${PlayState.instance.songFixedName} - ${CoolUtil.difficultyFromInt(PlayState.storyDifficulty).toUpperCase()}');
+			songText.size = 34;
+			songText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 4, 1);
+			songText.color = FlxColor.WHITE;
+			songText.scrollFactor.set();
+			add(songText);
+		}
+
 		var score = PlayState.instance.songScore;
 		if (PlayState.isStoryMode)
 		{
 			score = PlayState.campaignScore;
-			text.text = "Week Cleared!";
+			text.text = 'Week Cleared! on ${CoolUtil.difficultyFromInt(PlayState.storyDifficulty).toUpperCase()}';
 		}
 
 		var sicks = PlayState.isStoryMode ? PlayState.campaignSicks : PlayState.sicks;
@@ -109,6 +121,7 @@ class ResultsScreen extends FlxSubState
 		anotherBackground.alpha = 0;
 		add(anotherBackground);
 
+		#if !html5
 		graph = new HitGraph(FlxG.width - 500, 45, 495, 240);
 		graph.alpha = 0;
 
@@ -118,6 +131,7 @@ class ResultsScreen extends FlxSubState
 		graphSprite.alpha = 0;
 
 		add(graphSprite);
+		#end
 
 		var sicks = HelperFunctions.truncateFloat(PlayState.sicks / PlayState.goods, 1);
 		var goods = HelperFunctions.truncateFloat(PlayState.goods / PlayState.bads, 1);
@@ -153,8 +167,9 @@ class ResultsScreen extends FlxSubState
 			sicks = 0;
 		if (goods == Math.POSITIVE_INFINITY || goods == Math.NaN)
 			goods = 0;
-
+		#if !html5
 		graph.update();
+		#end
 
 		mean = HelperFunctions.truncateFloat(mean / PlayState.rep.replay.songNotes.length, 2);
 
@@ -167,10 +182,13 @@ class ResultsScreen extends FlxSubState
 		add(settingsText);
 
 		FlxTween.tween(background, {alpha: 0.5}, 0.5);
+		if (!PlayState.isStoryMode)
+			FlxTween.tween(songText, {y: 65}, 0.5, {ease: FlxEase.expoInOut});
 		FlxTween.tween(text, {y: 20}, 0.5, {ease: FlxEase.expoInOut});
 		FlxTween.tween(comboText, {y: 145}, 0.5, {ease: FlxEase.expoInOut});
 		FlxTween.tween(contText, {y: FlxG.height - 45}, 0.5, {ease: FlxEase.expoInOut});
 		FlxTween.tween(settingsText, {y: FlxG.height - 35}, 0.5, {ease: FlxEase.expoInOut});
+		#if !html5
 		FlxTween.tween(anotherBackground, {alpha: 0.6}, 0.5, {
 			onUpdate: function(tween:FlxTween)
 			{
@@ -178,6 +196,7 @@ class ResultsScreen extends FlxSubState
 				graphSprite.alpha = FlxMath.lerp(0, 1, tween.percent);
 			}
 		});
+		#end
 
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
@@ -217,10 +236,10 @@ class ResultsScreen extends FlxSubState
 			{
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				Conductor.changeBPM(102);
-				FlxG.switchState(new MainMenuState());
+				MusicBeatState.switchState(new MainMenuState());
 			}
 			else
-				FlxG.switchState(new FreeplayState());
+				MusicBeatState.switchState(new FreeplayState());
 			PlayState.instance.clean();
 		}
 

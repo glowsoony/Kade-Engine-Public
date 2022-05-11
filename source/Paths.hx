@@ -7,10 +7,8 @@ import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
 import openfl.system.System;
 import haxe.Json;
-import openfl.display.BitmapData;
 import flash.media.Sound;
 import lime.utils.Assets;
-import flixel.util.FlxDestroyUtil;
 
 using StringTools;
 
@@ -62,11 +60,8 @@ class Paths
 		gottenPath = gottenPath.substring(gottenPath.indexOf(':') + 1, gottenPath.length);
 		// trace(gottenPath);
 		if (!currentTrackedSounds.exists(gottenPath))
-			#if MODS_ALLOWED
-			currentTrackedSounds.set(gottenPath, Sound.fromFile('./' + gottenPath));
-			#else
-			currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(getPath('$path/$key.$SOUND_EXT', SOUND, library)));
-			#end
+			currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(getPath('$path/$key.$SOUND_EXT', MUSIC, library)));
+
 		localTrackedAssets.push(gottenPath);
 		return currentTrackedSounds.get(gottenPath);
 	}
@@ -109,6 +104,9 @@ class Paths
 	inline static function getLibraryPathForce(file:String, library:String)
 	{
 		var returnPath = '$library:assets/$library/$file';
+		if (library == 'songs')
+			returnPath = '$library:assets/$file';
+
 		return returnPath;
 	}
 
@@ -166,7 +164,7 @@ class Paths
 
 	inline static public function voices(song:String):Any
 	{
-		var songLowercase = StringTools.replace(song, " ", "-").toLowerCase();
+		var songLowercase = StringTools.replace(song, " ", "-").toLowerCase() + '/Voices';
 		switch (songLowercase)
 		{
 			case 'dad-battle':
@@ -176,14 +174,16 @@ class Paths
 			case 'm.i.l.f':
 				songLowercase = 'milf';
 		}
-		var result = 'songs:assets/songs/${songLowercase}/Voices.$SOUND_EXT';
+		var file;
+		file = loadSound('songs', songLowercase, 'songs');
+
+		return file;
 		// Return null if the file does not exist.
-		return doesSoundAssetExist(result) ? result : null;
 	}
 
 	inline static public function inst(song:String):Any
 	{
-		var songLowercase = StringTools.replace(song, " ", "-").toLowerCase();
+		var songLowercase = StringTools.replace(song, " ", "-").toLowerCase() + '/Inst';
 		switch (songLowercase)
 		{
 			case 'dad-battle':
@@ -193,39 +193,41 @@ class Paths
 			case 'm.i.l.f':
 				songLowercase = 'milf';
 		}
-		return 'songs:assets/songs/${songLowercase}/Inst.$SOUND_EXT';
+		var file;
+		file = loadSound('songs', songLowercase, 'songs');
+
+		return file;
 	}
 
-	static public function listSongsToCache()
-	{
-		// We need to query OpenFlAssets, not the file system, because of Polymod.
-		var soundAssets = OpenFlAssets.list(AssetType.MUSIC).concat(OpenFlAssets.list(AssetType.SOUND));
-
-		// TODO: Maybe rework this to pull from a text file rather than scan the list of assets.
-		var songNames = [];
-
-		for (sound in soundAssets)
+	/*static public function listSongsToCache()
 		{
-			// Parse end-to-beginning to support mods.
-			var path = sound.split('/');
-			path.reverse();
+			// We need to query OpenFlAssets, not the file system, because of Polymod.
+			var soundAssets = OpenFlAssets.list(AssetType.MUSIC).concat(OpenFlAssets.list(AssetType.SOUND));
 
-			var fileName = path[0];
-			var songName = path[1];
+			// TODO: Maybe rework this to pull from a text file rather than scan the list of assets.
+			var songNames = [];
 
-			if (path[2] != 'songs')
-				continue;
+			for (sound in soundAssets)
+			{
+				// Parse end-to-beginning to support mods.
+				var path = sound.split('/');
+				path.reverse();
 
-			// Remove duplicates.
-			if (songNames.indexOf(songName) != -1)
-				continue;
+				var fileName = path[0];
+				var songName = path[1];
 
-			songNames.push(songName);
-		}
+				if (path[2] != 'songs')
+					continue;
 
-		return songNames;
-	}
+				// Remove duplicates.
+				if (songNames.indexOf(songName) != -1)
+					continue;
 
+				songNames.push(songName);
+			}
+
+			return songNames;
+	}*/
 	static public function doesSoundAssetExist(path:String)
 	{
 		if (path == null || path == "")
@@ -238,11 +240,14 @@ class Paths
 		return OpenFlAssets.exists(path, AssetType.TEXT);
 	}
 
-	inline static public function image(key:String, ?library:String)
+	inline static public function image(key:String, ?library:String):FlxGraphic
 	{
 		var returnAsset = getPath('images/$key.png', IMAGE, library);
 		localTrackedAssets.push(returnAsset);
 		var newGraphic:FlxGraphic = FlxG.bitmap.add(returnAsset, false, returnAsset);
+		#if !html5
+		newGraphic.persist = true;
+		#end
 		currentTrackedAssets.set(returnAsset, newGraphic);
 		return currentTrackedAssets.get(returnAsset);
 	}
@@ -320,7 +325,7 @@ class Paths
 		localTrackedAssets = [];
 		openfl.Assets.cache.clear("songs");
 	}
-	
+
 	inline static public function fileExists(key:String, type:AssetType, ?library:String)
 	{
 		if (OpenFlAssets.exists(getPath(key, type)))
@@ -329,7 +334,7 @@ class Paths
 		}
 		return false;
 	}
-				
+
 	static public function getSparrowAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
 	{
 		if (isCharacter)

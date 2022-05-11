@@ -183,7 +183,8 @@ class FreeplayState extends MusicBeatState
 
 		for (i in 0...songs.length)
 		{
-			songText = new Alphabet(0, (70 * i) + 30, songs[i].songName, true, false, true);
+			var songFixedName = StringTools.replace(songs[i].songName, "-", " ");
+			songText = new Alphabet(0, (70 * i) + 30, songFixedName, true, false, true);
 			songText.isMenuItem = true;
 			songText.targetY = i;
 			grpSongs.add(songText);
@@ -428,7 +429,7 @@ class FreeplayState extends MusicBeatState
 
 		var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
 
-		if (!openMod)
+		if (!openMod && !MusicBeatState.switchingState)
 		{
 			if (gamepad != null)
 			{
@@ -469,15 +470,16 @@ class FreeplayState extends MusicBeatState
 		previewtext.text = "Rate: " + FlxMath.roundDecimal(rate, 2) + "x";
 		previewtext.alpha = 1;
 
-		if (FlxG.keys.justPressed.CONTROL && !openMod)
+		if (FlxG.keys.justPressed.CONTROL && !openMod && !MusicBeatState.switchingState)
 		{
 			openMod = true;
 			FlxG.sound.play(Paths.sound('scrollMenu'));
 			openSubState(new FreeplaySubState.ModMenu());
 		}
 
-		if (!openMod)
+		if (!openMod && !MusicBeatState.switchingState)
 		{
+			#if desktop
 			if (FlxG.keys.pressed.SHIFT) // && songs[curSelected].songName.toLowerCase() != "tutorial")
 			{
 				var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
@@ -518,6 +520,12 @@ class FreeplayState extends MusicBeatState
 				if (FlxG.keys.justPressed.RIGHT)
 					changeDiff(1);
 			}
+			#else
+			if (FlxG.keys.justPressed.LEFT)
+				changeDiff(-1);
+			if (FlxG.keys.justPressed.RIGHT)
+				changeDiff(1);
+			#end
 
 			if (FlxG.keys.justPressed.SPACE)
 			{
@@ -534,17 +542,18 @@ class FreeplayState extends MusicBeatState
 		}
 		#end
 
-		/*if (songs[curSelected].songName.toLowerCase() == "tutorial")
-			{
-				previewtext.text = "Rate: Unavailable";
-				previewtext.alpha = 0.5;
-		}*/
+		#if html5
+		diffCalcText.text = "RATING: N/A";
+		diffCalcText.alpha = 0.5;
+		previewtext.text = "Rate: Unavailable";
+		previewtext.alpha = 0.5;
+		#end
 
-		if (!openMod)
+		if (!openMod && !MusicBeatState.switchingState)
 		{
 			if (controls.BACK)
 			{
-				FlxG.switchState(new MainMenuState());
+				MusicBeatState.switchState(new MainMenuState());
 				clean();
 				if (colorTween != null)
 				{
@@ -798,7 +807,7 @@ class FreeplayState extends MusicBeatState
 
 		var bullShit:Int = 0;
 
-		if (!openMod)
+		if (!openMod && !MusicBeatState.switchingState)
 		{
 			for (i in 0...iconArray.length)
 			{
@@ -819,7 +828,7 @@ class FreeplayState extends MusicBeatState
 
 		for (item in grpSongs.members)
 		{
-			if (!openMod)
+			if (!openMod && !MusicBeatState.switchingState)
 			{
 				item.targetY = bullShit - curSelected;
 				bullShit++;

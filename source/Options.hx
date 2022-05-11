@@ -1146,6 +1146,9 @@ class FPSCapOption extends Option
 
 	override function right():Bool
 	{
+		#if html5
+		return false;
+		#end
 		if (FlxG.save.data.fpsCap >= 300)
 		{
 			FlxG.save.data.fpsCap = 300;
@@ -1160,6 +1163,9 @@ class FPSCapOption extends Option
 
 	override function left():Bool
 	{
+		#if html5
+		return false;
+		#end
 		if (FlxG.save.data.fpsCap > 300)
 			FlxG.save.data.fpsCap = 300;
 		else if (FlxG.save.data.fpsCap < 60)
@@ -1292,7 +1298,7 @@ class ReplayOption extends Option
 	public override function press():Bool
 	{
 		trace("switch");
-		FlxG.switchState(new LoadReplayState());
+		MusicBeatState.switchState(new LoadReplayState());
 		return false;
 	}
 
@@ -1350,7 +1356,7 @@ class CustomizeGameplay extends Option
 		if (OptionsMenu.isInPause)
 			return false;
 		trace("switch");
-		FlxG.switchState(new GameplayCustomizeState());
+		MusicBeatState.switchState(new GameplayCustomizeState());
 		return false;
 	}
 
@@ -1852,6 +1858,34 @@ class LaneUnderlayOption extends Option
 	}
 }
 
+class ScoreSmoothing extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+	}
+
+	public override function left():Bool
+	{
+		FlxG.save.data.lerpScore = !FlxG.save.data.lerpScore;
+
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Smooth Score PopUp: < " + (FlxG.save.data.lerpScore ? "on" : "off") + " >";
+	}
+}
+
 class DebugMode extends Option
 {
 	public function new(desc:String)
@@ -1862,7 +1896,7 @@ class DebugMode extends Option
 
 	public override function press():Bool
 	{
-		FlxG.switchState(new AnimationDebug());
+		MusicBeatState.switchState(new AnimationDebug());
 		return false;
 	}
 
@@ -2061,6 +2095,7 @@ class ResetSettings extends Option
 		FlxG.save.data.instantRespawn = null;
 		FlxG.save.data.memoryDisplay = null;
 		FlxG.save.data.noteskin = null;
+		FlxG.save.data.lerpScore = null;
 
 		KadeEngineData.initSave();
 		confirm = false;

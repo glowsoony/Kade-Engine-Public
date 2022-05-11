@@ -40,8 +40,9 @@ class MainMenuState extends MusicBeatState
 
 	public static var nightly:String = "";
 
-	public static var kadeEngineVer:String = "1.8.1" + "\nFNF v0.2.7.1" + "\nCustom Build v1.3.1" + nightly;
 	public static var gameVer:String = "0.2.7.1";
+
+	public static var kadeEngineVer:String = "1.8.1" + "\nFNF v" + gameVer + "\nCustom Build v1.3.2" + nightly;
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
@@ -188,7 +189,7 @@ class MainMenuState extends MusicBeatState
 
 			if (controls.BACK)
 			{
-				FlxG.switchState(new TitleState());
+				MusicBeatState.switchState(new TitleState());
 			}
 
 			if (controls.ACCEPT)
@@ -254,15 +255,15 @@ class MainMenuState extends MusicBeatState
 		switch (daChoice)
 		{
 			case 'story mode':
-				FlxG.switchState(new StoryMenuState());
+				MusicBeatState.switchState(new StoryMenuState());
 				trace("Story Menu Selected");
 			case 'freeplay':
-				FlxG.switchState(new FreeplayState());
+				MusicBeatState.switchState(new FreeplayState());
 
 				trace("Freeplay Menu Selected");
 
 			case 'options':
-				FlxG.switchState(new OptionsDirect());
+				MusicBeatState.switchState(new OptionsDirect());
 		}
 	}
 

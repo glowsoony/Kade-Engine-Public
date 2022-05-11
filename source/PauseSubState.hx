@@ -62,12 +62,17 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		super();
 
+		Paths.clearUnusedMemory();
 		if (PlayState.instance.useVideo)
 		{
 			menuItems.remove("Resume");
 			if (GlobalVideo.get().playing)
 				GlobalVideo.get().pause();
 		}
+
+		/*#if html5
+			menuItems.remove("Options");
+			#end */
 
 		if (FlxG.sound.music.playing)
 			FlxG.sound.music.pause();
@@ -219,7 +224,7 @@ class PauseSubState extends MusicBeatSubstate
 						PlayState.instance.removedVideo = true;
 					}
 					PlayState.instance.clean();
-					FlxG.resetState();
+					MusicBeatState.resetState();
 					PlayState.stageTesting = false;
 				case "Options":
 					goToOptions = true;
@@ -261,11 +266,11 @@ class PauseSubState extends MusicBeatSubstate
 						GameplayCustomizeState.freeplayStage = 'stage';
 						GameplayCustomizeState.freeplaySong = 'bopeebo';
 						GameplayCustomizeState.freeplayWeek = 1;
-						FlxG.switchState(new StoryMenuState());
+						MusicBeatState.switchState(new StoryMenuState());
 					}
 					else
 					{
-						FlxG.switchState(new FreeplayState());
+						MusicBeatState.switchState(new FreeplayState());
 					}
 			}
 		}

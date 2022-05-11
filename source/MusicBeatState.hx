@@ -25,6 +25,9 @@ class MusicBeatState extends FlxUIState
 	private var curStep:Int = 0;
 	private var curBeat:Int = 0;
 	private var curDecimalBeat:Float = 0;
+
+	public static var switchingState:Bool = false;
+
 	private var controls(get, never):Controls;
 
 	inline function get_controls():Controls
@@ -83,6 +86,15 @@ class MusicBeatState extends FlxUIState
 
 		if (transIn != null)
 			trace('reg ' + transIn.region);
+
+		var skip:Bool = FlxTransitionableState.skipNextTransOut;
+
+		// Custom made Trans out
+		if (!skip)
+		{
+			openSubState(new PsychTransition(0.85, true));
+		}
+		FlxTransitionableState.skipNextTransOut = false;
 
 		super.create();
 	}
@@ -181,6 +193,44 @@ class MusicBeatState extends FlxUIState
 		super.update(elapsed);
 	}
 
+	// ALL CREDITS TO SHADOWMARIO
+	public static function switchState(nextState:FlxState)
+	{
+		MusicBeatState.switchingState = true;
+		var curState:Dynamic = FlxG.state;
+		var leState:MusicBeatState = curState;
+		if (!FlxTransitionableState.skipNextTransIn)
+		{
+			leState.openSubState(new PsychTransition(0.75, false));
+			if (nextState == FlxG.state)
+			{
+				PsychTransition.finishCallback = function()
+				{
+					MusicBeatState.switchingState = false;
+					FlxG.resetState();
+				};
+				// trace('resetted');
+			}
+			else
+			{
+				PsychTransition.finishCallback = function()
+				{
+					MusicBeatState.switchingState = false;
+					FlxG.switchState(nextState);
+				};
+				// trace('changed state');
+			}
+			return;
+		}
+		FlxTransitionableState.skipNextTransIn = false;
+		FlxG.switchState(nextState);
+	}
+
+	public static function resetState()
+	{
+		MusicBeatState.switchState(FlxG.state);
+	}
+
 	private function updateBeat():Void
 	{
 		lastBeat = curBeat;
@@ -227,8 +277,10 @@ class MusicBeatState extends FlxUIState
 	{
 		if (PlayState.inDaPlay)
 		{
-			PlayState.instance.vocals.pause();
-			FlxG.sound.music.pause();
+			if (PlayState.instance.vocals != null)
+				PlayState.instance.vocals.pause();
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.pause();
 			if (!PlayState.instance.paused && !PlayState.instance.endingSong && PlayState.instance.songStarted)
 			{
 				Debug.logTrace("Lost Focus");

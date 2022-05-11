@@ -191,8 +191,8 @@ class Note extends FlxSprite
 					antialiasing = FlxG.save.data.antialiasing;
 			}
 		}
-
 		x += swagWidth * (noteData % 4);
+
 		animation.play(dataColor[noteData] + 'Scroll');
 		originColor = noteData; // The note's origin color will be checked by its sustain notes
 
@@ -233,7 +233,9 @@ class Note extends FlxSprite
 		// then what is this lol
 		// BRO IT LITERALLY SAYS IT FLIPS IF ITS A TRAIL AND ITS DOWNSCROLL
 		if (FlxG.save.data.downscroll && sustainNote)
+		{
 			flipY = true;
+		}
 
 		stepHeight = (((0.45 * Conductor.stepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
 			2)) / PlayState.songMultiplier;
@@ -269,7 +271,13 @@ class Note extends FlxSprite
 				prevNote.updateHitbox();
 
 				if (antialiasing)
-					prevNote.scale.y *= 0.995 + (1.0 / prevNote.frameHeight);
+					switch (FlxG.save.data.noteskin)
+					{
+						case 0:
+							prevNote.scale.y *= 1.0037 + (1.0 / prevNote.frameHeight);
+						default:
+							prevNote.scale.y *= 0.995 + (1.0 / prevNote.frameHeight);
+					}
 			}
 		}
 	}

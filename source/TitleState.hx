@@ -103,10 +103,10 @@ class TitleState extends MusicBeatState
 		super.create();
 
 		#if FREEPLAY
-		FlxG.switchState(new FreeplayState());
+		MusicBeatState.switchState(new FreeplayState());
 		clean();
 		#elseif CHARTING
-		FlxG.switchState(new ChartingState());
+		MusicBeatState.switchState(new ChartingState());
 		clean();
 		#else
 		#if !cpp
@@ -207,14 +207,15 @@ class TitleState extends MusicBeatState
 			skipIntro();
 		else
 		{
-			var diamond:FlxGraphic = FlxGraphic.fromClass(GraphicTransTileDiamond);
-			diamond.persist = true;
-			diamond.destroyOnNoUse = false;
+			/*var diamond:FlxGraphic = FlxGraphic.fromClass(GraphicTransTileDiamond);
+				diamond.persist = true;
+				diamond.destroyOnNoUse = false;
 
-			FlxTransitionableState.defaultTransIn = new TransitionData(FADE, FlxColor.BLACK, 1, new FlxPoint(0, -1), {asset: diamond, width: 32, height: 32},
-				new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4));
-			FlxTransitionableState.defaultTransOut = new TransitionData(FADE, FlxColor.BLACK, 0.7, new FlxPoint(0, 1),
-				{asset: diamond, width: 32, height: 32}, new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4));
+				FlxTransitionableState.defaultTransIn = new TransitionData(FADE, FlxColor.BLACK, 1, new FlxPoint(0, -1), {asset: diamond, width: 32, height: 32},
+					new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4));
+				FlxTransitionableState.defaultTransOut = new TransitionData(FADE, FlxColor.BLACK, 0.7, new FlxPoint(0, 1),
+					{asset: diamond, width: 32, height: 32}, new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4));
+			 */
 
 			transIn = FlxTransitionableState.defaultTransIn;
 			transOut = FlxTransitionableState.defaultTransOut;
@@ -308,12 +309,12 @@ class TitleState extends MusicBeatState
 						trace('outdated lmao! ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
 						OutdatedSubState.needVer = returnedData[0];
 						OutdatedSubState.currChanges = returnedData[1];
-						FlxG.switchState(new OutdatedSubState());
+						MusicBeatState.switchState(new OutdatedSubState());
 						clean();
 					}
 					else
 					{
-						FlxG.switchState(new MainMenuState());
+						MusicBeatState.switchState(new MainMenuState());
 						clean();
 					}
 				}
@@ -321,7 +322,7 @@ class TitleState extends MusicBeatState
 				http.onError = function(error)
 				{
 					trace('error: $error');
-					FlxG.switchState(new MainMenuState()); // fail but we go anyway
+					MusicBeatState.switchState(new MainMenuState()); // fail but we go anyway
 					clean();
 				}
 

@@ -142,41 +142,44 @@ class Character extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
-		if (!isPlayer && !PlayStateChangeables.opponentMode)
+		if (animation.curAnim != null)
 		{
-			if (animation.curAnim.name.startsWith('sing'))
-				holdTimer += elapsed;
-
-			if (holdTimer >= Conductor.stepCrochet * holdLength * 0.001)
+			if (!isPlayer && !PlayStateChangeables.opponentMode)
 			{
-				if (isDancing)
-					playAnim('danceLeft'); // overridden by dance correctly later
-				dance();
-				holdTimer = 0;
+				if (animation.curAnim.name.startsWith('sing'))
+					holdTimer += elapsed;
+
+				if (holdTimer >= Conductor.stepCrochet * holdLength * 0.001)
+				{
+					if (isDancing)
+						playAnim('danceLeft'); // overridden by dance correctly later
+					dance();
+					holdTimer = 0;
+				}
 			}
-		}
 
-		if (PlayStateChangeables.opponentMode && !isPlayer)
-		{
-			if (animation.curAnim.name.startsWith('sing'))
-				holdTimer += elapsed;
-			else
-				holdTimer = 0;
-
-			if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
-				playAnim('idle', true, false, 10);
-		}
-
-		if (!debugMode)
-		{
-			var nextAnim = animNext.get(animation.curAnim.name);
-			var forceDanced = animDanced.get(animation.curAnim.name);
-
-			if (nextAnim != null && animation.curAnim.finished)
+			if (PlayStateChangeables.opponentMode && !isPlayer)
 			{
-				if (isDancing && forceDanced != null)
-					danced = forceDanced;
-				playAnim(nextAnim);
+				if (animation.curAnim.name.startsWith('sing'))
+					holdTimer += elapsed;
+				else
+					holdTimer = 0;
+
+				if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
+					playAnim('idle', true, false, 10);
+			}
+
+			if (!debugMode)
+			{
+				var nextAnim = animNext.get(animation.curAnim.name);
+				var forceDanced = animDanced.get(animation.curAnim.name);
+
+				if (nextAnim != null && animation.curAnim.finished)
+				{
+					if (isDancing && forceDanced != null)
+						danced = forceDanced;
+					playAnim(nextAnim);
+				}
 			}
 		}
 
@@ -194,35 +197,38 @@ class Character extends FlxSprite
 		{
 			if (!FlxG.save.data.optimize)
 			{
-				var canInterrupt = animInterrupt.get(animation.curAnim.name);
-
-				if (canInterrupt)
+				if (animation.curAnim != null)
 				{
-					if (isDancing)
-					{
-						danced = !danced;
+					var canInterrupt = animInterrupt.get(animation.curAnim.name);
 
-						if (altAnim && animation.getByName('danceRight-alt') != null && animation.getByName('danceLeft-alt') != null)
-						{
-							if (danced)
-								playAnim('danceRight-alt');
-							else
-								playAnim('danceLeft-alt');
-						}
-						else
-						{
-							if (danced)
-								playAnim('danceRight');
-							else
-								playAnim('danceLeft');
-						}
-					}
-					else
+					if (canInterrupt)
 					{
-						if (altAnim && animation.getByName('idle-alt') != null)
-							playAnim('idle-alt', forced);
+						if (isDancing)
+						{
+							danced = !danced;
+
+							if (altAnim && animation.getByName('danceRight-alt') != null && animation.getByName('danceLeft-alt') != null)
+							{
+								if (danced)
+									playAnim('danceRight-alt');
+								else
+									playAnim('danceLeft-alt');
+							}
+							else
+							{
+								if (danced)
+									playAnim('danceRight');
+								else
+									playAnim('danceLeft');
+							}
+						}
 						else
-							playAnim('idle', forced);
+						{
+							if (altAnim && animation.getByName('idle-alt') != null)
+								playAnim('idle-alt', forced);
+							else
+								playAnim('idle', forced);
+						}
 					}
 				}
 			}

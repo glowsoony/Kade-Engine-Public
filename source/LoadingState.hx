@@ -75,16 +75,20 @@ class LoadingState extends MusicBeatState
 		if (!OpenFlAssets.cache.hasSound(path))
 		{
 			var library = OpenFlAssets.getLibrary("songs");
-			final symbolPath = path.split(":").pop();
-			// @:privateAccess
-			// library.types.set(symbolPath, SOUND);
-			// @:privateAccess
-			// library.pathGroups.set(symbolPath, [library.__cacheBreak(symbolPath)]);
-			var callback = callbacks.add("song:" + path);
-			OpenFlAssets.loadSound(path).onComplete(function(_)
+			var daPath = path + '';
+			final symbolPath = daPath.split(":").pop();
+			/*@:privateAccess
+				library.types.set(symbolPath, SOUND);
+				@:privateAccess
+				library.pathGroups.set(symbolPath, [library.__cacheBreak(symbolPath)]); */
+			if (path != null)
 			{
-				callback();
-			});
+				var callback = callbacks.add("song:" + daPath);
+				OpenFlAssets.loadSound(daPath).onComplete(function(_)
+				{
+					callback();
+				});
+			}
 		}
 	}
 
@@ -132,7 +136,7 @@ class LoadingState extends MusicBeatState
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
 
-		FlxG.switchState(target);
+		MusicBeatState.switchState(target);
 	}
 
 	static function getSongPath()
@@ -147,7 +151,7 @@ class LoadingState extends MusicBeatState
 
 	inline static public function loadAndSwitchState(target:FlxState, stopMusic = false)
 	{
-		FlxG.switchState(getNextState(target, stopMusic));
+		MusicBeatState.switchState(getNextState(target, stopMusic));
 	}
 
 	static function getNextState(target:FlxState, stopMusic = false):FlxState

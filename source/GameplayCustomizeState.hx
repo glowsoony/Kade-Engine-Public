@@ -243,13 +243,13 @@ class GameplayCustomizeState extends MusicBeatState
 			strumLine.y = FlxG.height - 165;
 
 		laneunderlayOpponent = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height * 2);
-		laneunderlayOpponent.alpha = 1 - FlxG.save.data.laneTransparency;
+		laneunderlayOpponent.alpha = FlxG.save.data.laneTransparency;
 		laneunderlayOpponent.color = FlxColor.BLACK;
 		laneunderlayOpponent.scrollFactor.set();
 		laneunderlayOpponent.cameras = [camHUD];
 
 		laneunderlay = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height * 2);
-		laneunderlay.alpha = 1 - FlxG.save.data.laneTransparency;
+		laneunderlay.alpha = FlxG.save.data.laneTransparency;
 		laneunderlay.color = FlxColor.BLACK;
 		laneunderlay.scrollFactor.set();
 		laneunderlay.cameras = [camHUD];
@@ -477,7 +477,7 @@ class GameplayCustomizeState extends MusicBeatState
 		{
 			FlxG.mouse.visible = false;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			FlxG.switchState(new OptionsDirect());
+			MusicBeatState.switchState(new OptionsDirect());
 		}
 	}
 
