@@ -34,11 +34,11 @@ Links: **[play in browser](https://bolo24.itch.io/kade-engine-181) ⋅ [latest s
 
 ![Freeplay](art/readme/KadeEngineFreeplay.png)
 
+![Freeplay Modifiers](art/readme/KadeEngineModifiers.png)
+
 ![Options](art/readme/KadeEngineOptions.png)
 
 ![Senpai Gameplay (Hard, Upscroll)](art/readme/KadeEnginePixelGameplay.png)
-
-![Roses Dialogue](art/readme/KadeEngineDialogue.png)
 
 ![Pause Screen](art/readme/KadeEnginePauseScreen.png)
 
