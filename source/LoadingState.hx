@@ -73,7 +73,6 @@ class LoadingState extends MusicBeatState
 		loadBar.antialiasing = FlxG.save.data.antialiasing;
 		add(loadBar);
 
-		checkFukinSongLib(); // Check if the library exists before loading it to avoid crashes.
 		initSongsManifest().onComplete(function(lib)
 		{
 			callbacks = new MultiCallback(onLoad);
@@ -95,19 +94,6 @@ class LoadingState extends MusicBeatState
 			var fadeTime = 0.5;
 			FlxG.camera.fade(FlxG.camera.bgColor, fadeTime, true);
 			new FlxTimer().start(fadeTime + MIN_TIME, function(_) introComplete());
-		});
-	}
-
-	function checkFukinSongLib()
-	{
-		var songCallback;
-		OpenFlAssets.loadLibrary("songs").onComplete(function(_)
-		{
-			if (songCallback != null)
-			{
-				songCallback = callbacks.add("Library: songs");
-				songCallback();
-			}
 		});
 	}
 
