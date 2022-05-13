@@ -166,6 +166,7 @@ class LoadingState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
 		#if debug
 		if (FlxG.keys.justPressed.SPACE)
 			Debug.logTrace('fired: ' + callbacks.getFired() + " unfired:" + callbacks.getUnfired());
@@ -207,9 +208,9 @@ class LoadingState extends MusicBeatState
 		#if NO_PRELOAD_ALL
 		var loaded:Bool = false;
 		if (PlayState.SONG != null)
-			loaded = isLibraryLoaded("shared")
+			loaded = isSoundLoaded(getSongPath())
 				&& (!PlayState.SONG.needsVoices || isSoundLoaded(getVocalPath()))
-				&& isSoundLoaded(getSongPath());
+				&& isLibraryLoaded("shared");
 
 		if (!loaded)
 			return new LoadingState(target, stopMusic);

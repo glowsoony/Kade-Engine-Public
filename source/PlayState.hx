@@ -5019,7 +5019,7 @@ class PlayState extends MusicBeatState
 		{
 			boyfriend.playAnim('hey', true);
 		}
-		if (curStep == Math.floor(190 * songMultiplier) || curStep == Math.floor(446 * songMultiplier))
+		if ((curStep == Math.floor(190 * songMultiplier) || curStep == Math.floor(446 * songMultiplier)) && SONG.songId == 'bopeebo')
 		{
 			boyfriend.playAnim('hey', true);
 		}

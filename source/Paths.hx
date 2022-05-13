@@ -323,6 +323,7 @@ class Paths
 		}
 
 		// clear all sounds that are cached
+		#if PRELOAD_ALL
 		for (key in currentTrackedSounds.keys())
 		{
 			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key) && key != null)
@@ -334,7 +335,7 @@ class Paths
 		}
 		// flags everything to be cleared out next unused memory clear
 		localTrackedAssets = [];
-		#if PRELOAD_ALL
+
 		openfl.Assets.cache.clear("songs");
 		#end
 	}
