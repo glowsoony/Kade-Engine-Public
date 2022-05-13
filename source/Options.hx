@@ -2054,7 +2054,6 @@ class ResetSettings extends Option
 			return true;
 		}
 		FlxG.save.data.background = null;
-		FlxG.save.data.weekUnlocked = null;
 		FlxG.save.data.newInput = null;
 		FlxG.save.data.downscroll = null;
 		FlxG.save.data.antialiasing = null;
@@ -2096,6 +2095,7 @@ class ResetSettings extends Option
 		FlxG.save.data.memoryDisplay = null;
 		FlxG.save.data.noteskin = null;
 		FlxG.save.data.lerpScore = null;
+		FlxG.save.data.npsDisplay == null;
 
 		KadeEngineData.initSave();
 		confirm = false;

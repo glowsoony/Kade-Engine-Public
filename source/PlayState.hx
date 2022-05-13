@@ -1026,8 +1026,8 @@ class PlayState extends MusicBeatState
 		add(camFollow);
 
 		FlxG.camera.follow(camFollow, LOCKON,
-			#if !html5 0.04 * (30 / (cast(Lib.current.getChildAt(0), Main))
-				.getFPS()) * songMultiplier #else 0.1 * (30 / Main.instance.getFPS()) * songMultiplier #end);
+			#if !html5 0.04 * (30 / (cast(Lib.current.getChildAt(0), Main)).getFPS()) * songMultiplier #else 0.09 * (30 / (cast(Lib.current.getChildAt(0),
+				Main)).getFPS()) * songMultiplier #end);
 		// FlxG.camera.setScrollBounds(0, FlxG.width, 0, FlxG.height);
 		FlxG.camera.zoom = Stage.camZoom;
 		FlxG.camera.focusOn(camFollow.getPosition());
@@ -1446,6 +1446,8 @@ class PlayState extends MusicBeatState
 				case 1:
 					var ready:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[0], week6Bullshit));
 					ready.scrollFactor.set();
+					ready.scale.set(0.7, 0.7);
+					ready.cameras = [camHUD];
 					ready.updateHitbox();
 
 					if (SONG.noteStyle == 'pixel')
@@ -1453,7 +1455,7 @@ class PlayState extends MusicBeatState
 
 					ready.screenCenter();
 					add(ready);
-					FlxTween.tween(ready, {y: ready.y += 100, alpha: 0}, Conductor.crochet / 1000, {
+					FlxTween.tween(ready, {alpha: 0}, Conductor.crochet / 1000, {
 						ease: FlxEase.cubeInOut,
 						onComplete: function(twn:FlxTween)
 						{
@@ -1464,13 +1466,13 @@ class PlayState extends MusicBeatState
 				case 2:
 					var set:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[1], week6Bullshit));
 					set.scrollFactor.set();
-
+					set.scale.set(0.7, 0.7);
 					if (SONG.noteStyle == 'pixel')
 						set.setGraphicSize(Std.int(set.width * CoolUtil.daPixelZoom));
-
+					set.cameras = [camHUD];
 					set.screenCenter();
 					add(set);
-					FlxTween.tween(set, {y: set.y += 100, alpha: 0}, Conductor.crochet / 1000, {
+					FlxTween.tween(set, {alpha: 0}, Conductor.crochet / 1000, {
 						ease: FlxEase.cubeInOut,
 						onComplete: function(twn:FlxTween)
 						{
@@ -1481,7 +1483,8 @@ class PlayState extends MusicBeatState
 				case 3:
 					var go:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[2], week6Bullshit));
 					go.scrollFactor.set();
-
+					go.scale.set(0.7, 0.7);
+					go.cameras = [camHUD];
 					if (SONG.noteStyle == 'pixel')
 						go.setGraphicSize(Std.int(go.width * CoolUtil.daPixelZoom));
 
@@ -1489,7 +1492,7 @@ class PlayState extends MusicBeatState
 
 					go.screenCenter();
 					add(go);
-					FlxTween.tween(go, {y: go.y += 100, alpha: 0}, Conductor.crochet / 1000, {
+					FlxTween.tween(go, {alpha: 0}, Conductor.crochet / 1000, {
 						ease: FlxEase.cubeInOut,
 						onComplete: function(twn:FlxTween)
 						{
@@ -1746,8 +1749,8 @@ class PlayState extends MusicBeatState
 			Std.int(songPosBG.height + 6), this, 'songPositionBar', 0, songLength);
 		songPosBar.alpha = 0;
 		songPosBar.scrollFactor.set();
-		songPosBar.createFilledBar(FlxColor.BLACK, FlxColor.fromRGB(0, 225, 128));
-		songPosBar.numDivisions = 800;
+		songPosBar.createGradientBar([FlxColor.BLACK], [boyfriend.barColor, dad.barColor]);
+		songPosBar.numDivisions = !FlxG.save.data.optimize ? 800 : 100;
 		add(songPosBar);
 
 		bar = new FlxSprite(songPosBar.x, songPosBar.y).makeGraphic(Math.floor(songPosBar.width), Math.floor(songPosBar.height), FlxColor.TRANSPARENT);
@@ -1809,6 +1812,7 @@ class PlayState extends MusicBeatState
 				trace("pitched to " + songMultiplier);
 		}*/
 
+		// FLIXEL HTML5 AND FLASH VERSIONS DON'T SUPPORT PITCH SHIFTING FUCK
 		#if cpp
 		@:privateAccess
 		{
@@ -2293,6 +2297,11 @@ class PlayState extends MusicBeatState
 		#if !debug
 		perfectMode = false;
 		#end
+
+		FlxG.camera.follow(camFollow, LOCKON,
+			#if !html5 0.04 * (30 / (cast(Lib.current.getChildAt(0), Main)).getFPS()) * songMultiplier #else 0.09 * (30 / (cast(Lib.current.getChildAt(0),
+				Main)).getFPS()) * songMultiplier #end);
+
 		shownSongScore = Math.floor(FlxMath.lerp(shownSongScore, songScore, CoolUtil.boundTo(Main.adjustFPS(0.1), 0, 1)));
 		shownAccuracy = FlxMath.lerp(shownAccuracy, accuracy, CoolUtil.boundTo(Main.adjustFPS(0.1), 0, 1));
 
@@ -3298,7 +3307,7 @@ class PlayState extends MusicBeatState
 
 				if (!daNote.mustPress && Conductor.songPosition >= daNote.strumTime)
 				{
-					if (SONG.songId != 'tutorial')
+					if (SONG.songId != 'tutorial' && !FlxG.save.data.optimize)
 						camZooming = FlxG.save.data.camzoom;
 
 					var altAnim:String = "";
@@ -3702,6 +3711,7 @@ class PlayState extends MusicBeatState
 
 	function endSong():Void
 	{
+		camZooming = false;
 		endingSong = true;
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
@@ -5003,7 +5013,13 @@ class PlayState extends MusicBeatState
 			camHUD.zoom += 0.03 / songMultiplier;
 		}
 
-		if (curStep % Math.floor(32 * songMultiplier) == Math.floor(28 * songMultiplier) && SONG.songId == 'bopeebo')
+		if (curStep % Math.floor(32 * songMultiplier) == Math.floor(28 * songMultiplier) #if cpp
+			&& curStep != Math.floor(316 * songMultiplier) #end
+			&& SONG.songId == 'bopeebo')
+		{
+			boyfriend.playAnim('hey', true);
+		}
+		if (curStep == Math.floor(190 * songMultiplier) || curStep == Math.floor(446 * songMultiplier))
 		{
 			boyfriend.playAnim('hey', true);
 		}

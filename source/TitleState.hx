@@ -47,7 +47,9 @@ class TitleState extends MusicBeatState
 	{
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
+		#if !html5
 		Main.dumpCache();
+		#end
 		// TODO: Refactor this to use OpenFlAssets.
 		#if FEATURE_FILESYSTEM
 		if (!sys.FileSystem.exists(Sys.getCwd() + "/assets/replays"))

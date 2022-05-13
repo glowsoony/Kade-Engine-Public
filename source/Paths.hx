@@ -60,9 +60,12 @@ class Paths
 		gottenPath = gottenPath.substring(gottenPath.indexOf(':') + 1, gottenPath.length);
 		// trace(gottenPath);
 		if (!currentTrackedSounds.exists(gottenPath))
-			currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(getPath('$path/$key.$SOUND_EXT', MUSIC, library)));
+		{
+			currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(getPath('$path/$key.$SOUND_EXT', SOUND, library)));
+		}
 
 		localTrackedAssets.push(gottenPath);
+
 		return currentTrackedSounds.get(gottenPath);
 	}
 
@@ -175,9 +178,14 @@ class Paths
 				songLowercase = 'milf';
 		}
 		var file;
+		#if PRELOAD_ALL
 		file = loadSound('songs', songLowercase, 'songs');
+		#else
+		file = 'songs:assets/songs/$songLowercase.$SOUND_EXT';
+		#end
 
 		return file;
+
 		// Return null if the file does not exist.
 	}
 
@@ -194,8 +202,11 @@ class Paths
 				songLowercase = 'milf';
 		}
 		var file;
+		#if PRELOAD_ALL
 		file = loadSound('songs', songLowercase, 'songs');
-
+		#else
+		file = 'songs:assets/songs/$songLowercase.$SOUND_EXT';
+		#end
 		return file;
 	}
 
@@ -323,7 +334,9 @@ class Paths
 		}
 		// flags everything to be cleared out next unused memory clear
 		localTrackedAssets = [];
+		#if PRELOAD_ALL
 		openfl.Assets.cache.clear("songs");
+		#end
 	}
 
 	inline static public function fileExists(key:String, type:AssetType, ?library:String)

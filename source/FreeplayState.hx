@@ -96,8 +96,7 @@ class FreeplayState extends MusicBeatState
 	public static var list:Array<String> = [];
 
 	override function create()
-	{
-		Main.dumpCache();
+	{#if !html5 Main.dumpCache(); #end
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 		if (!FlxG.sound.music.playing)
@@ -214,12 +213,13 @@ class FreeplayState extends MusicBeatState
 		bottomBG.alpha = 0.6;
 		add(bottomBG);
 
-		var bottomText:String = "  Press SPACE to listen to the Song Instrumental / Your offset is "
-			+ FlxG.save.data.offset
-			+ "ms /"
-			+ " Optimization is"
-			+ (FlxG.save.data.optimize ? " Enabled" : " Disabled")
-			+ kadebigdick;
+		var bottomText:String = #if PRELOAD_ALL "  Press SPACE to listen to the Song Instrumental  / " + #end
+		" Your offset is "
+		+ FlxG.save.data.offset
+		+ "ms /"
+		+ " Optimization is"
+		+ (FlxG.save.data.optimize ? " Enabled" : " Disabled")
+		+ kadebigdick;
 		var downText:FlxText = new FlxText(bottomBG.x, bottomBG.y + 4, FlxG.width, bottomText, 16);
 		downText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
 		downText.scrollFactor.set();
@@ -527,11 +527,13 @@ class FreeplayState extends MusicBeatState
 				changeDiff(1);
 			#end
 
+			#if PRELOAD_ALL
 			if (FlxG.keys.justPressed.SPACE)
 			{
 				FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
 				MainMenuState.freakyPlaying = false;
 			}
+			#end
 		}
 
 		#if cpp

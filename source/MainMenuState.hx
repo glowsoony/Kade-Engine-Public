@@ -53,7 +53,9 @@ class MainMenuState extends MusicBeatState
 
 	override function create()
 	{
+		#if !html5
 		Main.dumpCache();
+		#end
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 		trace(0 / 2);
@@ -288,7 +290,7 @@ class MainMenuState extends MusicBeatState
 				camFollow.setPosition(spr.getGraphicMidpoint().x, spr.getGraphicMidpoint().y);
 			}
 
-			spr.animation.curAnim.frameRate = 24 * (60 / FlxG.save.data.fpsCap);
+			spr.animation.curAnim.frameRate = 15;
 
 			spr.updateHitbox();
 		});
