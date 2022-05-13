@@ -20,7 +20,7 @@ Links: **[itch.io page](https://ninja-muffin24.itch.io/funkin) ⋅ [Newgrounds](
 ## Kade Engine
 **Kade Engine** is a mod for Friday Night Funkin', including a full engine rework, replays, and more.
 
-Links: **[play in browser](https://bolo24.itch.io/kade-engine-181) ⋅ [latest stable release](https://github.com/BoloVEVO/Kade-Engine/releases/latest)**
+Links: **[play in browser](https://v6p9d9t4.ssl.hwcdn.net/html/5775911/index.html) ⋅ [itch.io page](https://bolo24.itch.io/kade-engine-181) ⋅ [latest stable release](https://github.com/BoloVEVO/Kade-Engine/releases/latest)**
 
 **REMEMBER**: This is a **mod**. This is not the vanilla game and should be treated as a **modification**. This is not and probably will never be official, so don't get confused.
 
