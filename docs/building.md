@@ -19,6 +19,7 @@
 	 - `haxelib install flixel-tools`
 	 - `haxelib install flixel-ui`
 	 - `haxelib install hscript`
+	 - `haxelib install hxcpp-debug-server`
 	 - `haxelib install flixel-addons`
 	 - `haxelib install actuate`
 	 - `haxelib run lime setup`
