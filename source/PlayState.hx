@@ -436,21 +436,12 @@ class PlayState extends MusicBeatState
 		PlayStateChangeables.useDownscroll = FlxG.save.data.downscroll;
 		PlayStateChangeables.safeFrames = FlxG.save.data.frames;
 		if (FlxG.save.data.scrollSpeed == 1) // YOOO WTFFFFF IS THIS FUCKING THING A FIX???
-		{
-			scrollSpeed = 3.3 * songMultiplier;
-			new FlxTimer().start(0.01, function(tmr)
-			{
-				scrollSpeed = SONG.speed * songMultiplier;
-			});
-		}
+			scrollSpeed = SONG.speed * songMultiplier;
+		
 		else
-		{
-			scrollSpeed = 3.3 * songMultiplier;
-			new FlxTimer().start(0.01, function(tmr)
-			{
-				scrollSpeed = FlxG.save.data.scrollSpeed * songMultiplier;
-			});
-		}
+			scrollSpeed = FlxG.save.data.scrollSpeed * songMultiplier;
+		
+		
 		if (!isStoryMode)
 		{
 			PlayStateChangeables.modchart = FlxG.save.data.modcharts;
