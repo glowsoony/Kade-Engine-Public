@@ -75,6 +75,10 @@ class Note extends FlxSprite
 
 	public var stepHeight:Float = 0;
 
+	var leSpeed:Float = 0;
+
+	var leBpm:Float = 0;
+
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?inCharter:Bool = false, ?isAlt:Bool = false, ?bet:Float = 0)
 	{
 		super();
@@ -278,6 +282,8 @@ class Note extends FlxSprite
 						default:
 							prevNote.scale.y *= 0.995 + (1.0 / prevNote.frameHeight);
 					}
+				prevNote.updateHitbox();
+				updateHitbox();
 			}
 		}
 	}
@@ -285,8 +291,10 @@ class Note extends FlxSprite
 	override function update(elapsed:Float)
 	{
 		// This updates hold notes height to current scroll Speed in case of scroll Speed changes.
-		var newStepHeight = (((0.45 * Conductor.stepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
-			2)) * PlayState.songMultiplier;
+
+		var newStepHeight = (((0.45 * PlayState.fakeNoteStepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
+			2));
+
 		if (stepHeight != newStepHeight)
 		{
 			stepHeight = newStepHeight;

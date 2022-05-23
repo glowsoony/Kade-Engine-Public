@@ -149,7 +149,7 @@ class Character extends FlxSprite
 				if (animation.curAnim.name.startsWith('sing'))
 					holdTimer += elapsed;
 
-				if (holdTimer >= Conductor.stepCrochet * holdLength * 0.001)
+				if (holdTimer >= Conductor.stepCrochet * holdLength * 0.001 * PlayState.songMultiplier)
 				{
 					if (isDancing)
 						playAnim('danceLeft'); // overridden by dance correctly later
@@ -162,7 +162,8 @@ class Character extends FlxSprite
 			{
 				if (animation.curAnim.name.startsWith('sing'))
 					holdTimer += elapsed;
-				else
+
+				if (holdTimer >= Conductor.stepCrochet * holdLength * 0.001 * PlayState.songMultiplier)
 					holdTimer = 0;
 
 				if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)

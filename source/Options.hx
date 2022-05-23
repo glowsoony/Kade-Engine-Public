@@ -1356,7 +1356,7 @@ class CustomizeGameplay extends Option
 		if (OptionsMenu.isInPause)
 			return false;
 		trace("switch");
-		MusicBeatState.switchState(new GameplayCustomizeState());
+		LoadingState.loadAndSwitchState(new GameplayCustomizeState());
 		return false;
 	}
 

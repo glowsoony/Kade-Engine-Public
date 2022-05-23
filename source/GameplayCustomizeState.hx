@@ -60,6 +60,8 @@ class GameplayCustomizeState extends MusicBeatState
 	public static var freeplaySong:String = 'bopeebo';
 	public static var freeplayWeek:Int = 1;
 
+	var changedPos:Bool = false;
+
 	public override function create()
 	{
 		super.create();
@@ -241,6 +243,8 @@ class GameplayCustomizeState extends MusicBeatState
 
 		if (FlxG.save.data.downscroll)
 			strumLine.y = FlxG.height - 165;
+		else
+			strumLine.y += 60;
 
 		laneunderlayOpponent = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height * 2);
 		laneunderlayOpponent.alpha = FlxG.save.data.laneTransparency;
@@ -306,8 +310,7 @@ class GameplayCustomizeState extends MusicBeatState
 		laneunderlayOpponent.screenCenter(Y);
 
 		text = new FlxText(5, FlxG.height + 40, 0,
-			"Click and drag around gameplay elements to customize their positions. Press R to reset. Q/E to change zoom. C to show combo. Escape to exit.",
-			12);
+			"Use Arrows or Mouse to move your combo Rate around. Press R to reset. Q/E to change zoom. C to show combo. Escape to exit.", 12);
 		text.scrollFactor.set();
 		text.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 
@@ -350,13 +353,41 @@ class GameplayCustomizeState extends MusicBeatState
 		if (FlxG.save.data.zoom > 1.2)
 			FlxG.save.data.zoom = 1.2;
 
-		FlxG.camera.zoom = FlxMath.lerp(Stage.camZoom, FlxG.camera.zoom, 0.95);
-		camHUD.zoom = FlxMath.lerp(FlxG.save.data.zoom, camHUD.zoom, 0.95);
+		var bpmRatio = Conductor.bpm / 100;
+		FlxG.camera.zoom = FlxMath.lerp(Stage.camZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio), 0, 1));
+		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio), 0, 1));
+
+		if (FlxG.keys.justPressed.LEFT || FlxG.keys.pressed.LEFT)
+		{
+			sick.x -= 2;
+			sick.y -= 0;
+			changedPos = true;
+		}
+		if (FlxG.keys.justPressed.RIGHT || FlxG.keys.pressed.RIGHT)
+		{
+			sick.x += 2;
+			sick.y -= 0;
+			changedPos = true;
+		}
+		if (FlxG.keys.justPressed.UP || FlxG.keys.pressed.UP)
+		{
+			sick.y -= 2;
+			sick.x += 0;
+			changedPos = true;
+		}
+		if (FlxG.keys.justPressed.DOWN || FlxG.keys.pressed.DOWN)
+		{
+			sick.y += 2;
+			sick.x += 0;
+			changedPos = true;
+		}
+		var mousePos:FlxPoint = FlxG.mouse.getScreenPosition();
 
 		if (FlxG.mouse.overlaps(sick) && FlxG.mouse.pressed)
 		{
 			sick.x = (FlxG.mouse.x - (sick.width + 145));
 			sick.y = (FlxG.mouse.y - (sick.height + 145));
+			changedPos = true;
 		}
 
 		for (i in playerStrums)
@@ -376,7 +407,7 @@ class GameplayCustomizeState extends MusicBeatState
 			camHUD.zoom = FlxG.save.data.zoom;
 		}
 
-		if (FlxG.mouse.overlaps(sick) && FlxG.mouse.justReleased)
+		if (changedPos)
 		{
 			FlxG.save.data.changedHitX = sick.x;
 			FlxG.save.data.changedHitY = sick.y;
@@ -390,6 +421,31 @@ class GameplayCustomizeState extends MusicBeatState
 			var seperatedScore:Array<Int> = [];
 
 			var comboSplit:Array<String> = (FlxG.random.int(10, 420) + "").split('');
+
+			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2, pixelShitPart3));
+			comboSpr.screenCenter();
+			comboSpr.x = sick.x - 150;
+			comboSpr.y = sick.y + 135;
+			if (freeplayWeek == 6)
+			{
+				comboSpr.x += 75;
+				comboSpr.y += 35;
+			}
+			comboSpr.cameras = [camHUD];
+			comboSpr.acceleration.y = 600;
+			comboSpr.velocity.y -= 150;
+
+			add(comboSpr);
+
+			if (freeplayWeek != 6)
+			{
+				comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.6));
+				comboSpr.antialiasing = FlxG.save.data.antialiasing;
+			}
+			else
+			{
+				comboSpr.setGraphicSize(Std.int(comboSpr.width * CoolUtil.daPixelZoom * 0.7));
+			}
 
 			// make sure we have 3 digits to display (looks weird otherwise lol)
 			if (comboSplit.length == 1)
@@ -460,6 +516,14 @@ class GameplayCustomizeState extends MusicBeatState
 
 				daLoop++;
 			}
+
+			FlxTween.tween(comboSpr, {alpha: 0}, 0.2, {
+				onComplete: function(tween:FlxTween)
+				{
+					comboSpr.destroy();
+				},
+				startDelay: Conductor.crochet * 0.001
+			});
 		}
 
 		if (FlxG.keys.justPressed.R)
@@ -497,8 +561,11 @@ class GameplayCustomizeState extends MusicBeatState
 
 		if (!FlxG.keys.pressed.SPACE)
 		{
-			FlxG.camera.zoom += 0.015;
-			camHUD.zoom += 0.010;
+			if (curBeat % 4 == 0)
+			{
+				FlxG.camera.zoom += 0.015;
+				camHUD.zoom += 0.010;
+			}
 		}
 
 		trace('beat');

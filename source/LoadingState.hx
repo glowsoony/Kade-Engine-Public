@@ -88,6 +88,8 @@ class LoadingState extends MusicBeatState
 			checkLibrary("shared");
 			if (PlayState.storyWeek > 0)
 				checkLibrary("week" + PlayState.storyWeek);
+			else if (GameplayCustomizeState.freeplayWeek > 0)
+				checkLibrary("week" + GameplayCustomizeState.freeplayWeek);
 			else
 				checkLibrary("tutorial");
 

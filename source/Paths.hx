@@ -185,8 +185,6 @@ class Paths
 		#end
 
 		return file;
-
-		// Return null if the file does not exist.
 	}
 
 	inline static public function inst(song:String):Any

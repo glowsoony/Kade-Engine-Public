@@ -557,6 +557,8 @@ class LuaReceptor extends LuaClass
 	var defaultY = 0.0;
 	var defaultX = 0.0;
 	var defaultAngle = 0.0;
+	var defaultScaleX = 0.0;
+	var defaultScaleY = 0.0;
 
 	public static var receptorTween:FlxTween;
 
@@ -566,6 +568,8 @@ class LuaReceptor extends LuaClass
 		defaultY = connectedSprite.y;
 		defaultX = connectedSprite.x;
 		defaultAngle = connectedSprite.angle;
+		defaultScaleX = connectedSprite.scale.x;
+		defaultScaleY = connectedSprite.scale.y;
 
 		sprite = connectedSprite;
 
@@ -689,6 +693,46 @@ class LuaReceptor extends LuaClass
 				}
 			},
 
+			"scaleX" => {
+				defaultValue: connectedSprite.scale.x,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, connectedSprite.scale.x);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
+			"scaleY" => {
+				defaultValue: connectedSprite.scale.y,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, connectedSprite.scale.y);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
+			"defaultScaleX" => {
+				defaultValue: defaultScaleX,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, defaultScaleX);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
+			"defaultScaleY" => {
+				defaultValue: defaultScaleY,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, defaultScaleY);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
 			"tweenAngle" => {
 				defaultValue: 0,
 				getter: function(l:State, data:Any)
@@ -699,6 +743,20 @@ class LuaReceptor extends LuaClass
 				setter: function(l:State)
 				{
 					LuaL.error(l, "tweenAngle is read-only.");
+					return 0;
+				}
+			},
+
+			"tweenScale" => {
+				defaultValue: 0,
+				getter: function(l:State, data:Any)
+				{
+					Lua.pushcfunction(l, tweenScaleC);
+					return 1;
+				},
+				setter: function(l:State)
+				{
+					LuaL.error(l, "tweenScale is read-only.");
 					return 0;
 				}
 			},
@@ -838,6 +896,40 @@ class LuaReceptor extends LuaClass
 
 		return 0;
 	}
+
+	private static function tweenScale(l:StatePointer):Int
+	{
+		var nscaleX = LuaL.checknumber(state, 2);
+		var nscaleY = LuaL.checknumber(state, 3);
+		var time = LuaL.checknumber(state, 4);
+		var ease = LuaL.checkstring(state, 5);
+
+		Lua.getfield(state, 1, "id");
+		var index = Std.parseInt(Lua.tostring(state, -1).split('_')[1]);
+
+		var receptor = findReceptor(index);
+
+		var luaObject = receptor.luaObject;
+
+		if (receptor == null)
+		{
+			LuaL.error(state, "Failure to tween (couldn't find receptor " + index + ")");
+			return 0;
+		}
+
+		FlxTween.tween(receptor.scale, {x: nscaleX, y: nscaleY}, time, {
+			ease: ModchartState.getFlxEaseByString(ease),
+			onUpdate: function(twn)
+			{
+				luaObject.defaultScaleX = receptor.scale.x;
+				luaObject.defaultScaleY = receptor.scale.y;
+			}
+		});
+
+		return 0;
+	}
+
+	private static var tweenScaleC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenScale);
 
 	private static var tweenPosC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenPos);
 	private static var tweenAngleC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenAngle);

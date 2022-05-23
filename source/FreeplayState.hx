@@ -479,7 +479,6 @@ class FreeplayState extends MusicBeatState
 
 		if (!openMod && !MusicBeatState.switchingState)
 		{
-			#if desktop
 			if (FlxG.keys.pressed.SHIFT) // && songs[curSelected].songName.toLowerCase() != "tutorial")
 			{
 				var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
@@ -520,14 +519,8 @@ class FreeplayState extends MusicBeatState
 				if (FlxG.keys.justPressed.RIGHT)
 					changeDiff(1);
 			}
-			#else
-			if (FlxG.keys.justPressed.LEFT)
-				changeDiff(-1);
-			if (FlxG.keys.justPressed.RIGHT)
-				changeDiff(1);
-			#end
 
-			#if PRELOAD_ALL
+			#if desktop
 			if (FlxG.keys.justPressed.SPACE)
 			{
 				FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
@@ -540,15 +533,31 @@ class FreeplayState extends MusicBeatState
 		@:privateAccess
 		{
 			if (FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
+			{
+				#if (lime >= "8.0.0")
+				FlxG.sound.music._channel.__source.__backend.setPitch(rate);
+				#else
 				lime.media.openal.AL.sourcef(FlxG.sound.music._channel.__source.__backend.handle, lime.media.openal.AL.PITCH, rate);
+				#end
+			}
+		}
+		#elseif html5
+		@:privateAccess
+		{
+			if (FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
+			{
+				#if (lime >= "8.0.0" && lime_howlerjs)
+				FlxG.sound.music._channel.__source.__backend.setPitch(rate);
+				#else
+				FlxG.sound.music._channel.__source.__backend.parent.buffer.__srcHowl.rate(rate);
+				#end
+			}
 		}
 		#end
 
 		#if html5
 		diffCalcText.text = "RATING: N/A";
 		diffCalcText.alpha = 0.5;
-		previewtext.text = "Rate: Unavailable";
-		previewtext.alpha = 0.5;
 		#end
 
 		if (!openMod && !MusicBeatState.switchingState)

@@ -157,7 +157,7 @@ class ChartingState extends MusicBeatState
 		#if FEATURE_DISCORD
 		DiscordClient.changePresence("Chart Editor", null, null, true);
 		#end
-
+		speed = PlayState.songMultiplier;
 		curSection = lastSection;
 		Debug.logTrace(1 > Math.POSITIVE_INFINITY);
 
@@ -1943,16 +1943,49 @@ class ChartingState extends MusicBeatState
 				{
 					@:privateAccess
 					{
+						// No more Native restrictions bitches. https://github.com/openfl/lime/pull/1510. WEEK 8 LEAK??
 						#if desktop
-						// The __backend.handle attribute is only available on native.
+						#if (lime >= "8.0.0")
+						FlxG.sound.music._channel.__source.__backend.setPitch(speed);
+						#else
 						lime.media.openal.AL.sourcef(FlxG.sound.music._channel.__source.__backend.handle, lime.media.openal.AL.PITCH, speed);
+						#end
+
 						try
 						{
 							// We need to make CERTAIN vocals exist and are non-empty
 							// before we try to play them. Otherwise the game crashes.
 							if (vocals != null && vocals.length > 0)
 							{
+								#if (lime >= "8.0.0")
+								vocals._channel.__source.__backend.setPitch(speed);
+								#else
 								lime.media.openal.AL.sourcef(vocals._channel.__source.__backend.handle, lime.media.openal.AL.PITCH, speed);
+								#end
+							}
+						}
+						catch (e)
+						{
+							// Debug.logTrace("failed to pitch vocals (probably cuz they don't exist)");
+						}
+						#elseif html5
+						#if (lime >= "8.0.0" && lime_howlerjs)
+						FlxG.sound.music._channel.__source.__backend.setPitch(speed);
+						#else
+						FlxG.sound.music._channel.__source.__backend.parent.buffer.__srcHowl.rate(speed);
+						#end
+
+						try
+						{
+							// We need to make CERTAIN vocals exist and are non-empty
+							// before we try to play them. Otherwise the game crashes.
+							if (vocals != null && vocals.length > 0)
+							{
+								#if (lime >= "8.0.0")
+								vocals._channel.__source.__backend.setPitch(speed);
+								#else
+								vocals._channel.__source.__backend.parent.buffer.__srcHowl.rate(speed);
+								#end
 							}
 						}
 						catch (e)
