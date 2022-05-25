@@ -3946,18 +3946,15 @@ class PlayState extends MusicBeatState
 
 	private function popUpScore(daNote:Note):Void
 	{
-		var noteDiff:Float;
-		if (daNote != null)
-			noteDiff = -(daNote.strumTime - Conductor.songPosition);
-		else
-			noteDiff = Conductor.safeZoneOffset; // Assumed SHIT if no note was given
-		var wife:Float;
-		if (msTiming > 0)
-			wife = EtternaFunctions.wife3(noteDiff, Conductor.timeScale);
-		else
-			wife = EtternaFunctions.wife3(-noteDiff, Conductor.timeScale);
+		var noteDiff:Float = (daNote.strumTime - Conductor.songPosition) + FlxG.save.data.offset + songOffset;
+		var noteDiffAbs = Math.abs(noteDiff);
 
 		// boyfriend.playAnim('hey');
+
+		var wife:Float = 0;
+		if (!daNote.isSustainNote)
+			wife = EtternaFunctions.wife3(noteDiffAbs, Conductor.timeScale);
+		
 		vocals.volume = 1;
 		var placement:String = Std.string(combo);
 
