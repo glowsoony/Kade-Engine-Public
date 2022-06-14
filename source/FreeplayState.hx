@@ -78,6 +78,8 @@ class FreeplayState extends MusicBeatState
 
 	public static var songData:Map<String, Array<SongData>> = [];
 
+	public static var instance:FreeplayState;
+
 	public static function loadDiff(diff:Int, songId:String, array:Array<SongData>)
 	{
 		var diffName:String = "";
@@ -99,6 +101,7 @@ class FreeplayState extends MusicBeatState
 	{Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 
+		instance = this;
 		if (!FlxG.sound.music.playing)
 		{
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
@@ -519,29 +522,29 @@ class FreeplayState extends MusicBeatState
 				if (FlxG.keys.justPressed.LEFT)
 				{
 					rate -= 0.05;
-					diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
+					updateDiffCalc();
 				}
 				if (FlxG.keys.justPressed.RIGHT)
 				{
 					rate += 0.05;
-					diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
+					updateDiffCalc();
 				}
 
 				if (FlxG.keys.justPressed.R)
 				{
 					rate = 1;
-					diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
+					updateDiffCalc();
 				}
 
 				if (rate > 3)
 				{
 					rate = 3;
-					diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
+					updateDiffCalc();
 				}
 				else if (rate < 0.5)
 				{
 					rate = 0.5;
-					diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
+					updateDiffCalc();
 				}
 
 				previewtext.text = "Rate: < " + FlxMath.roundDecimal(rate, 2) + "x >";
@@ -762,6 +765,8 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
+		updateDiffCalc();
+
 		/*if (songs[curSelected].songName.toLowerCase() == "tutorial")
 			{
 				rate = 1.0;
@@ -886,6 +891,11 @@ class FreeplayState extends MusicBeatState
 				item.alpha = 0;
 			}
 		}
+	}
+
+	public function updateDiffCalc():Void
+	{
+		diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
 	}
 }
 

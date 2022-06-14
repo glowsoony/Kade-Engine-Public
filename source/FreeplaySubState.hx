@@ -50,6 +50,8 @@ class ModMenu extends FlxSubState
 
 	public var text:FlxText;
 
+	var changedMod = false;
+
 	override function create()
 	{
 		modObjects = new FlxTypedGroup();
@@ -192,6 +194,8 @@ class ModMenu extends FlxSubState
 		var any = false;
 		var escape = false;
 
+		changedMod = false;
+
 		accept = FlxG.keys.justPressed.ENTER || (gamepad != null ? gamepad.justPressed.A : false);
 		right = FlxG.keys.justPressed.RIGHT || (gamepad != null ? gamepad.justPressed.DPAD_RIGHT : false);
 		left = FlxG.keys.justPressed.LEFT || (gamepad != null ? gamepad.justPressed.DPAD_LEFT : false);
@@ -317,7 +321,7 @@ class ModMenu extends FlxSubState
 				selectedModifier.right();
 
 				FlxG.save.flush();
-
+				changedMod = true;
 				object.text = "> " + selectedModifier.getValue();
 				Debug.logTrace("New text: " + object.text);
 			}
@@ -326,7 +330,7 @@ class ModMenu extends FlxSubState
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 				var object = modObjects.members[selectedModifierIndex];
 				selectedModifier.left();
-
+				changedMod = true;
 				FlxG.save.flush();
 
 				object.text = "> " + selectedModifier.getValue();
@@ -364,6 +368,8 @@ class ModMenu extends FlxSubState
 						}
 					}
 			}
+			if (changedMod)
+				FreeplayState.instance.updateDiffCalc();
 		}
 	}
 }

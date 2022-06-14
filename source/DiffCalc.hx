@@ -1,6 +1,7 @@
 import openfl.system.System;
 import flixel.math.FlxMath;
 import Song.SongData;
+import flixel.FlxG;
 
 class SmallNote // basically Note.hx but small as fuck
 {
@@ -39,9 +40,12 @@ class DiffCalc
 			{
 				var gottaHitNote:Bool = i.mustHitSection;
 
-				if (ii[1] >= 3 && gottaHitNote)
-					cleanedNotes.push(new SmallNote(ii[0] / FreeplayState.rate, Math.floor(Math.abs(ii[1]))));
-				if (ii[1] <= 4 && !gottaHitNote)
+				if (ii[1] > 3)
+					gottaHitNote = !i.mustHitSection;
+				else if (FlxG.save.data.opponent)
+					gottaHitNote = !gottaHitNote;
+
+				if (gottaHitNote)
 					cleanedNotes.push(new SmallNote(ii[0] / FreeplayState.rate, Math.floor(Math.abs(ii[1]))));
 			}
 		}
