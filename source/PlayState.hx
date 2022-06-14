@@ -5226,6 +5226,9 @@ class PlayState extends MusicBeatState
 
 	function goodNoteHit(note:Note, resetMashViolation = true):Void
 	{
+		if (PlayStateChangeables.opponentMode)
+			camZooming = FlxG.save.data.camzoom;
+
 		if (mashing != 0)
 			mashing = 0;
 
