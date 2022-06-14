@@ -337,7 +337,7 @@ class Paths
 				Debug.logTrace('Cleared and removed $counterAssets cached assets.');
 			}
 		}
-
+		#if PRELOAD_ALL
 		// clear all sounds that are cached
 
 		for (key in currentTrackedSounds.keys())
@@ -353,7 +353,7 @@ class Paths
 		}
 		// flags everything to be cleared out next unused memory clear
 		localTrackedAssets = [];
-		#if PRELOAD_ALL
+
 		openfl.Assets.cache.clear("songs");
 		#end
 	}
