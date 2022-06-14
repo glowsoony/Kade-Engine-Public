@@ -644,8 +644,8 @@ class Stage extends MusicBeatState
 
 					if (FlxG.save.data.distractions)
 					{
-						var foreGround5 = new FlxSprite(1300, 1200);
-						foreGround5.scrollFactor.set(1.5, 1.5);
+						var foreGround5 = new FlxSprite(1400, 1250);
+						foreGround5.scrollFactor.set(3.5, 2.5);
 						foreGround5.antialiasing = FlxG.save.data.antialiasing;
 						foreGround5.frames = Paths.getSparrowAtlas('tank3', 'week7');
 						foreGround5.animation.addByPrefix('idle', 'fg tankhead 4 instance ', Std.int(24 * PlayState.songMultiplier));

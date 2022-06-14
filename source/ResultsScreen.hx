@@ -196,7 +196,14 @@ class ResultsScreen extends FlxSubState
 			&& Ratings.timingWindows[0] == 160
 			&& FlxG.save.data.accuracyMod == 0
 			&& (!PlayStateChangeables.botPlay || !PlayState.usedBot)
-			&& !FlxG.save.data.practice ? '| Accepted' : '| Rejected');
+			&& !FlxG.save.data.practice
+			&& PlayStateChangeables.holds
+			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthGain, 2) <= 1
+			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthLoss, 2) >= 1 ? '| Accepted' : '| Rejected');
+
+		if (!PlayStateChangeables.modchart #if FEATURE_LUAMODCHART
+			&& FileSystem.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart')) #else && PlayState.instance.sourceModchart #end)
+			acceptShit = '| Rejected';
 
 		if (PlayState.isStoryMode)
 			acceptShit = '';

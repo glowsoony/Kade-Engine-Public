@@ -971,14 +971,14 @@ class PlayState extends MusicBeatState
 		noteskinSprite = NoteskinHelpers.generateNoteskinSprite(FlxG.save.data.noteskin);
 		noteskinPixelSpriteEnds = NoteskinHelpers.generatePixelSprite(FlxG.save.data.noteskin, true);
 
-		if (!FlxG.save.data.middleScroll || executeModchart || sourceModchart)
+		if (!FlxG.save.data.middleScroll || ((executeModchart || sourceModchart) && PlayStateChangeables.modchart))
 		{
 			generateStaticArrows(0);
 			generateStaticArrows(1);
 		}
 		else
 		{
-			if (#if FEATURE_LUAMODCHART !executeModchart || !sourceModchart #else !sourceModchart #end)
+			if (#if FEATURE_LUAMODCHART !executeModchart #else !sourceModchart #end || !PlayStateChangeables.modchart)
 			{
 				if (!PlayStateChangeables.opponentMode)
 					generateStaticArrows(1);
@@ -1331,11 +1331,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		// Song duration in a float, useful for the time left feature
-
 		super.create();
-		Paths.clearUnusedMemory();
-		PsychTransition.nextCamera = mainCam;
 
 		if (FlxG.save.data.distractions && FlxG.save.data.background && !FlxG.save.data.optimize)
 		{
@@ -1368,6 +1364,11 @@ class PlayState extends MusicBeatState
 		if (!isStoryMode)
 			tankIntroEnd = true;
 
+		precacheList.set('alphabet', 'frame');
+
+		cacheCountdown();
+		cachePopUpScore();
+
 		for (key => type in precacheList)
 		{
 			switch (type)
@@ -1384,6 +1385,10 @@ class PlayState extends MusicBeatState
 					Paths.music(key);
 			}
 		}
+
+		Paths.clearUnusedMemory();
+
+		PsychTransition.nextCamera = mainCam;
 	}
 
 	function removeStaticArrows(?destroy:Bool = false)
@@ -6112,4 +6117,47 @@ class PlayState extends MusicBeatState
 			}, updateCamZoom.bind(FlxG.camera));
 	}
 	#end
+
+	// https://github.com/ShadowMario/FNF-PsychEngine/pull/9015
+	// Seems like a good pull request. Credits: Raltyro.
+	private function cachePopUpScore()
+	{
+		var pixelShitPart1:String = '';
+		var pixelShitPart2:String = '';
+		if (SONG.noteStyle == 'pixel')
+		{
+			pixelShitPart1 = 'pixelUI/';
+			pixelShitPart2 = '-pixel';
+		}
+
+		Paths.image(pixelShitPart1 + "sick" + pixelShitPart2);
+		Paths.image(pixelShitPart1 + "good" + pixelShitPart2);
+		Paths.image(pixelShitPart1 + "bad" + pixelShitPart2);
+		Paths.image(pixelShitPart1 + "shit" + pixelShitPart2);
+		Paths.image(pixelShitPart1 + "combo" + pixelShitPart2);
+
+		for (i in 0...10)
+		{
+			Paths.image(pixelShitPart1 + 'num' + i + pixelShitPart2);
+		}
+	}
+
+	function cacheCountdown()
+	{
+		var introAssets:Map<String, Array<String>> = new Map<String, Array<String>>();
+		introAssets.set('default', ['ready', 'set', 'go']);
+		introAssets.set('pixel', ['pixelUI/ready-pixel', 'pixelUI/set-pixel', 'pixelUI/date-pixel']);
+
+		var introAlts:Array<String> = introAssets.get('default');
+		if (SONG.noteStyle == 'pixel')
+			introAlts = introAssets.get('pixel');
+
+		for (asset in introAlts)
+			Paths.image(asset);
+
+		Paths.sound('intro3' + altSuffix);
+		Paths.sound('intro2' + altSuffix);
+		Paths.sound('intro1' + altSuffix);
+		Paths.sound('introGo' + altSuffix);
+	}
 } // u looked :O -ides
