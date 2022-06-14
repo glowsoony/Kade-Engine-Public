@@ -33,7 +33,7 @@ class StoryMenuState extends MusicBeatState
 			['satin-panties', "high", "milf"],
 			['cocoa', 'eggnog', 'winter-horrorland'],
 			['senpai', 'roses', 'thorns'],
-			['ugh','guns', 'stress']
+			['ugh', 'guns', 'stress']
 		];
 	}
 
@@ -331,7 +331,7 @@ class StoryMenuState extends MusicBeatState
 					changeDifficulty(-1);
 			}
 
-			if (controls.ACCEPT)
+			if (controls.ACCEPT && !FlxG.keys.pressed.ALT)
 			{
 				selectWeek();
 			}

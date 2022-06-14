@@ -644,7 +644,7 @@ class Stage extends MusicBeatState
 
 					if (FlxG.save.data.distractions)
 					{
-						var foreGround5 = new FlxSprite(1400, 1250);
+						var foreGround5 = new FlxSprite(1400, 1290);
 						foreGround5.scrollFactor.set(3.5, 2.5);
 						foreGround5.antialiasing = FlxG.save.data.antialiasing;
 						foreGround5.frames = Paths.getSparrowAtlas('tank3', 'week7');

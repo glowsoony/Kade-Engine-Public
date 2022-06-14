@@ -25,8 +25,8 @@ class LoadingState extends MusicBeatState
 	var callbacks:MultiCallback;
 
 	var logo:FlxSprite;
-	var gfDance:FlxSprite;
-	var danceLeft = false;
+
+	var danceLeft:Bool = false;
 
 	var loadBar:FlxSprite;
 	var targetShit:Float = 0;
@@ -37,6 +37,8 @@ class LoadingState extends MusicBeatState
 		this.target = target;
 		this.stopMusic = stopMusic;
 	}
+
+	var gfDance:FlxSprite;
 
 	override function create()
 	{
@@ -90,8 +92,8 @@ class LoadingState extends MusicBeatState
 			checkLibrary("shared");
 			if (PlayState.storyWeek > 0)
 				checkLibrary("week" + PlayState.storyWeek);
-			else if (GameplayCustomizeState.freeplayWeek > 0)
-				checkLibrary("week" + GameplayCustomizeState.freeplayWeek);
+			else if (GameplayCustomizeState.freeplayNoteStyle == 'pixel')
+				checkLibrary("week6");
 			else
 				checkLibrary("tutorial");
 
@@ -140,17 +142,19 @@ class LoadingState extends MusicBeatState
 		}
 	}
 
-	override function beatHit()
+	override function stepHit()
 	{
-		super.beatHit();
+		super.stepHit();
+		if (curStep % 4 == 0)
+		{
+			logo.animation.play('bump');
+			danceLeft = !danceLeft;
 
-		logo.animation.play('bump');
-		danceLeft = !danceLeft;
-
-		if (danceLeft)
-			gfDance.animation.play('danceRight');
-		else
-			gfDance.animation.play('danceLeft');
+			if (danceLeft)
+				gfDance.animation.play('danceRight');
+			else
+				gfDance.animation.play('danceLeft');
+		}
 	}
 
 	override function update(elapsed:Float)

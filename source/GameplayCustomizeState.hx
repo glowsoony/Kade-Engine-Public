@@ -340,8 +340,8 @@ class GameplayCustomizeState extends MusicBeatState
 			comboSpr.y = sick.y + 125;
 			if (freeplayNoteStyle == 'pixel')
 			{
-				comboSpr.x += 137.5;
-				comboSpr.y += 55;
+				comboSpr.x += 142.5;
+				comboSpr.y += 65;
 			}
 			comboSpr.cameras = [camHUD];
 			comboSpr.acceleration.y = 600;

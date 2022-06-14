@@ -268,6 +268,8 @@ class PlayState extends MusicBeatState
 	var skipText:FlxText;
 	var skipTo:Float;
 
+	var accText:FlxText;
+
 	public static var campaignScore:Int = 0;
 
 	var newLerp:Float = 0;
@@ -602,6 +604,9 @@ class PlayState extends MusicBeatState
 		FlxG.cameras.add(mainCam);
 
 		camHUD.zoom = PlayStateChangeables.zoom;
+		camSustains.zoom = PlayStateChangeables.zoom;
+		camNotes.zoom = PlayStateChangeables.zoom;
+
 		FlxCamera.defaultCameras = [camGame];
 
 		PsychTransition.nextCamera = mainCam;
@@ -811,12 +816,13 @@ class PlayState extends MusicBeatState
 			case 'halloween':
 				camPos = new FlxPoint(gf.getMidpoint().x + dad.camPos[0], gf.getMidpoint().y + dad.camPos[1]);
 			case 'tank':
-				camPos = new FlxPoint(436.5, 534.5);
+				if (SONG.player2 == 'tankman')
+					camPos = new FlxPoint(436.5, 534.5);
 			case 'stage':
-				if (SONG.songId == 'tutorial')
-				{
-					camPos = new FlxPoint(boyfriend.getMidpoint().x + boyfriend.camPos[0], boyfriend.getMidpoint().y + boyfriend.camPos[1]);
-				}
+				if (dad.replacesGF)
+					camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0] - 200, dad.getGraphicMidpoint().y + dad.camPos[1]);
+			case 'mallEvil':
+				camPos = new FlxPoint(boyfriend.getMidpoint().x - 100 + boyfriend.camPos[0], boyfriend.getMidpoint().y - 100 + boyfriend.camPos[1]);
 			default:
 				camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0], dad.getGraphicMidpoint().y + dad.camPos[1]);
 		}
@@ -1127,7 +1133,7 @@ class PlayState extends MusicBeatState
 		add(kadeEngineWatermark);
 
 		// ACCURACY WATERMARK
-		var accText:FlxText = new FlxText(4, FlxG.height * 0.9 + 45 - 20, 0, "Accuracy Mode: " + accMode, 16);
+		accText = new FlxText(4, FlxG.height * 0.9 + 45 - 20, 0, "Accuracy Mode: " + accMode, 16);
 		accText.scrollFactor.set();
 		accText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(accText);
@@ -1228,6 +1234,8 @@ class PlayState extends MusicBeatState
 			if (gf.curCharacter != 'pico-speaker')
 				gf.dance();
 		}
+
+		cacheCountdown();
 
 		if (isStoryMode)
 		{
@@ -1366,7 +1374,6 @@ class PlayState extends MusicBeatState
 
 		precacheList.set('alphabet', 'frame');
 
-		cacheCountdown();
 		cachePopUpScore();
 
 		for (key => type in precacheList)
@@ -2637,6 +2644,10 @@ class PlayState extends MusicBeatState
 					Debug.logTrace("we're fuckin ending the song ");
 					if (FlxG.save.data.songPosition)
 					{
+						FlxTween.tween(accText, {alpha: 0}, 1, {ease: FlxEase.circIn});
+						FlxTween.tween(judgementCounter, {alpha: 0}, 1, {ease: FlxEase.circIn});
+						FlxTween.tween(scoreTxt, {alpha: 0}, 1, {ease: FlxEase.circIn});
+						FlxTween.tween(kadeEngineWatermark, {alpha: 0}, 1, {ease: FlxEase.circIn});
 						FlxTween.tween(songName, {alpha: 0}, 1, {ease: FlxEase.circIn});
 						FlxTween.tween(songPosBar, {alpha: 0}, 1, {ease: FlxEase.circIn});
 						FlxTween.tween(bar, {alpha: 0}, 1, {ease: FlxEase.circIn});
@@ -3455,7 +3466,7 @@ class PlayState extends MusicBeatState
 				vocals.stop();
 				FlxG.sound.music.stop();
 
-				if (FlxG.save.data.InstantRespawn || FlxG.save.data.optimize)
+				if (FlxG.save.data.InstantRespawn || FlxG.save.data.optimize || PlayStateChangeables.opponentMode)
 				{
 					PsychTransition.nextCamera = mainCam;
 					MusicBeatState.switchState(new PlayState());
@@ -3502,7 +3513,7 @@ class PlayState extends MusicBeatState
 				vocals.stop();
 				FlxG.sound.music.stop();
 
-				if (FlxG.save.data.InstantRespawn || FlxG.save.data.optimize)
+				if (FlxG.save.data.InstantRespawn || FlxG.save.data.optimize || PlayStateChangeables.opponentMode)
 				{
 					PsychTransition.nextCamera = mainCam;
 					MusicBeatState.switchState(new PlayState());
@@ -4490,8 +4501,8 @@ class PlayState extends MusicBeatState
 			{
 				currentTimingShown.x -= 15;
 				currentTimingShown.y -= 15;
-				comboSpr.x += 6.5;
-				comboSpr.y += 35;
+				comboSpr.x += 5.5;
+				comboSpr.y += 29.5;
 			}
 			currentTimingShown.y = rating.y + 100;
 			currentTimingShown.acceleration.y = 600;
@@ -6124,21 +6135,23 @@ class PlayState extends MusicBeatState
 	{
 		var pixelShitPart1:String = '';
 		var pixelShitPart2:String = '';
+		var pixelShitPart3:String = null;
 		if (SONG.noteStyle == 'pixel')
 		{
-			pixelShitPart1 = 'pixelUI/';
+			pixelShitPart1 = 'weeb/pixelUI/';
 			pixelShitPart2 = '-pixel';
+			pixelShitPart3 = 'week6';
 		}
 
-		Paths.image(pixelShitPart1 + "sick" + pixelShitPart2);
-		Paths.image(pixelShitPart1 + "good" + pixelShitPart2);
-		Paths.image(pixelShitPart1 + "bad" + pixelShitPart2);
-		Paths.image(pixelShitPart1 + "shit" + pixelShitPart2);
-		Paths.image(pixelShitPart1 + "combo" + pixelShitPart2);
+		Paths.image(pixelShitPart1 + "sick" + pixelShitPart2, pixelShitPart3);
+		Paths.image(pixelShitPart1 + "good" + pixelShitPart2, pixelShitPart3);
+		Paths.image(pixelShitPart1 + "bad" + pixelShitPart2, pixelShitPart3);
+		Paths.image(pixelShitPart1 + "shit" + pixelShitPart2, pixelShitPart3);
+		Paths.image(pixelShitPart1 + "combo" + pixelShitPart2, pixelShitPart3);
 
 		for (i in 0...10)
 		{
-			Paths.image(pixelShitPart1 + 'num' + i + pixelShitPart2);
+			Paths.image(pixelShitPart1 + 'num' + i + pixelShitPart2, pixelShitPart3);
 		}
 	}
 
@@ -6146,14 +6159,18 @@ class PlayState extends MusicBeatState
 	{
 		var introAssets:Map<String, Array<String>> = new Map<String, Array<String>>();
 		introAssets.set('default', ['ready', 'set', 'go']);
-		introAssets.set('pixel', ['pixelUI/ready-pixel', 'pixelUI/set-pixel', 'pixelUI/date-pixel']);
+		introAssets.set('pixel', ['weeb/pixelUI/ready-pixel', 'weeb/pixelUI/set-pixel', 'weeb/pixelUI/date-pixel']);
 
+		var week6Bullshit = null;
 		var introAlts:Array<String> = introAssets.get('default');
 		if (SONG.noteStyle == 'pixel')
+		{
 			introAlts = introAssets.get('pixel');
+			week6Bullshit = 'week6';
+		}
 
 		for (asset in introAlts)
-			Paths.image(asset);
+			Paths.image(asset, week6Bullshit);
 
 		Paths.sound('intro3' + altSuffix);
 		Paths.sound('intro2' + altSuffix);

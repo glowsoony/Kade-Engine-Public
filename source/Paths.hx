@@ -264,7 +264,9 @@ class Paths
 		var returnAsset = getPath('images/$key.png', IMAGE, library);
 		localTrackedAssets.push(returnAsset);
 		var newGraphic:FlxGraphic = FlxG.bitmap.add(returnAsset, false, returnAsset);
+		#if PRELOAD_ALL
 		newGraphic.persist = true;
+		#end
 		currentTrackedAssets.set(returnAsset, newGraphic);
 		return currentTrackedAssets.get(returnAsset);
 	}
