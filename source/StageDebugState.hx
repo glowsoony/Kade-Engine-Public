@@ -12,6 +12,7 @@ import flixel.util.FlxCollision;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.net.FileReference;
+import AtlasFrameMaker;
 
 using StringTools;
 
@@ -39,6 +40,8 @@ class StageDebugState extends FlxState
 	var oldMousePosY:Int;
 	var camHUD:FlxCamera;
 	var camGame:FlxCamera;
+
+	var mainCam:FlxCamera;
 	var charMode:Bool = true;
 	var usedObjects:Array<FlxSprite> = [];
 
@@ -54,6 +57,9 @@ class StageDebugState extends FlxState
 
 	override function create()
 	{
+		/* For some reason stage debug state throws null exceptions 
+			when you have AtlasFrame sprites like the Pico Cutscene in week 7
+			I really need to fix that. */
 		FlxG.sound.music.stop();
 		FlxG.mouse.visible = true;
 
@@ -98,9 +104,12 @@ class StageDebugState extends FlxState
 		camHUD = new FlxCamera();
 		camHUD.bgColor.alpha = 0;
 		camGame = new FlxCamera();
+		mainCam = new FlxCamera();
+		mainCam.bgColor.alpha = 0;
 		FlxG.camera.zoom = 0.7;
 		FlxG.cameras.add(camGame);
 		FlxG.cameras.add(camHUD);
+		FlxG.cameras.add(mainCam);
 		FlxCamera.defaultCameras = [camGame];
 		FlxG.camera = camGame;
 		FlxG.camera.follow(camFollow);
@@ -209,36 +218,8 @@ class StageDebugState extends FlxState
 
 		if (FlxG.keys.justPressed.ESCAPE)
 		{
-			MusicBeatState.switchState(new PlayState());
+			FlxG.switchState(new PlayState());
 			PlayState.stageTesting = true;
-			for (i in Stage.toAdd)
-			{
-				remove(i);
-			}
-
-			for (group in Stage.swagGroup)
-			{
-				remove(group);
-			}
-
-			for (index => array in Stage.layInFront)
-			{
-				switch (index)
-				{
-					case 0:
-						remove(gf);
-						for (bg in array)
-							remove(bg);
-					case 1:
-						remove(dad);
-						for (bg in array)
-							remove(bg);
-					case 2:
-						remove(boyfriend);
-						for (bg in array)
-							remove(bg);
-				}
-			}
 		}
 
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.S)

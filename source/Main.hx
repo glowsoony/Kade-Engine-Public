@@ -122,31 +122,11 @@ class Main extends Sprite
 		Debug.onGameStart();
 	}
 
+	// taken from forever engine, cuz optimization very pog.
+	// thank you shubs :)
 	var game:FlxGame;
 
 	var fpsCounter:KadeEngineFPS;
-
-	// taken from forever engine, cuz optimization very pog.
-	// thank you shubs :)
-	public static function dumpCache()
-	{
-		///* SPECIAL THANKS TO HAYA
-		@:privateAccess
-		for (key in FlxG.bitmap._cache.keys())
-		{
-			var obj = FlxG.bitmap._cache.get(key);
-			if (obj != null)
-			{
-				Assets.cache.removeBitmapData(key);
-				FlxG.bitmap._cache.remove(key);
-				obj.destroy();
-			}
-		}
-		#if PRELOAD_ALL
-		Assets.cache.clear("songs");
-		#end
-		// */
-	}
 
 	public function toggleFPS(fpsEnabled:Bool):Void
 	{
@@ -176,6 +156,6 @@ class Main extends Sprite
 	// https://github.com/nebulazorua/tails-gets-trolled-v3/blob/master/source/Main.hx
 	public static function adjustFPS(num:Float):Float
 	{
-		return num * (60 / Main.getFPSCap());
+		return num * (60 / (cast(Lib.current.getChildAt(0), Main)).getFPS());
 	}
 }

@@ -499,7 +499,6 @@ class ChartingState extends MusicBeatState
 				add(line);
 				add(text);
 			}
-
 		for (i in sectionRenderes)
 		{
 			var pos = getYfromStrum(i.section.startTime) * zoomFactor;
@@ -2684,7 +2683,6 @@ class ChartingState extends MusicBeatState
 
 					toRemove = []; // clear memory
 
-					FlxG.save.data.mirror = PlayState.leMirror;
 					LoadingState.loadAndSwitchState(new PlayState());
 				}
 
@@ -3039,40 +3037,41 @@ class ChartingState extends MusicBeatState
 
 		for (section in _song.notes)
 		{
-			for (i in section.sectionNotes)
-			{
-				var seg = TimingStruct.getTimingAtTimestamp(i[0]);
-				var daNoteInfo = i[1];
-				var daStrumTime = i[0];
-				var daSus = i[2];
-
-				var note:Note = new Note(daStrumTime, daNoteInfo % 4, null, false, true, i[3], i[4]);
-				note.rawNoteData = daNoteInfo;
-				note.sustainLength = daSus;
-				note.setGraphicSize(Math.floor(GRID_SIZE), Math.floor(GRID_SIZE));
-				note.updateHitbox();
-				note.x = Math.floor(daNoteInfo * GRID_SIZE);
-
-				note.y = Math.floor(getYfromStrum(daStrumTime) * zoomFactor);
-
-				if (curSelectedNote != null)
-					if (curSelectedNote[0] == note.strumTime)
-						lastNote = note;
-
-				curRenderedNotes.add(note);
-
-				var stepCrochet = (((60 / seg.bpm) * 1000) / 4);
-
-				if (daSus > 0)
+			if (section != null)
+				for (i in section.sectionNotes)
 				{
-					var sustainVis:FlxSprite = new FlxSprite(note.x + (GRID_SIZE / 2),
-						note.y + GRID_SIZE).makeGraphic(8, Math.floor((getYfromStrum(note.strumTime + note.sustainLength) * zoomFactor) - note.y));
+					var seg = TimingStruct.getTimingAtTimestamp(i[0]);
+					var daNoteInfo = i[1];
+					var daStrumTime = i[0];
+					var daSus = i[2];
 
-					note.noteCharterObject = sustainVis;
+					var note:Note = new Note(daStrumTime, daNoteInfo % 4, null, false, true, i[3], i[4]);
+					note.rawNoteData = daNoteInfo;
+					note.sustainLength = daSus;
+					note.setGraphicSize(Math.floor(GRID_SIZE), Math.floor(GRID_SIZE));
+					note.updateHitbox();
+					note.x = Math.floor(daNoteInfo * GRID_SIZE);
 
-					curRenderedSustains.add(sustainVis);
+					note.y = Math.floor(getYfromStrum(daStrumTime) * zoomFactor);
+
+					if (curSelectedNote != null)
+						if (curSelectedNote[0] == note.strumTime)
+							lastNote = note;
+
+					curRenderedNotes.add(note);
+
+					var stepCrochet = (((60 / seg.bpm) * 1000) / 4);
+
+					if (daSus > 0)
+					{
+						var sustainVis:FlxSprite = new FlxSprite(note.x + (GRID_SIZE / 2),
+							note.y + GRID_SIZE).makeGraphic(8, Math.floor((getYfromStrum(note.strumTime + note.sustainLength) * zoomFactor) - note.y));
+
+						note.noteCharterObject = sustainVis;
+
+						curRenderedSustains.add(sustainVis);
+					}
 				}
-			}
 			currentSection++;
 		}
 	}
@@ -3126,26 +3125,27 @@ class ChartingState extends MusicBeatState
 		for (sec in _song.notes)
 		{
 			swagNum = 0;
-			for (i in sec.sectionNotes)
-			{
-				if (i[0] == note.strumTime && i[1] == note.rawNoteData)
+			if (sec != null)
+				for (i in sec.sectionNotes)
 				{
-					curSelectedNote = sec.sectionNotes[swagNum];
-					if (curSelectedNoteObject != null)
-						curSelectedNoteObject.charterSelected = false;
-
-					curSelectedNoteObject = note;
-					if (!note.charterSelected)
+					if (i[0] == note.strumTime && i[1] == note.rawNoteData)
 					{
-						var box = new ChartingBox(note.x, note.y, note);
-						box.connectedNoteData = i;
-						selectedBoxes.add(box);
-						note.charterSelected = true;
-						curSelectedNoteObject.charterSelected = true;
+						curSelectedNote = sec.sectionNotes[swagNum];
+						if (curSelectedNoteObject != null)
+							curSelectedNoteObject.charterSelected = false;
+
+						curSelectedNoteObject = note;
+						if (!note.charterSelected)
+						{
+							var box = new ChartingBox(note.x, note.y, note);
+							box.connectedNoteData = i;
+							selectedBoxes.add(box);
+							note.charterSelected = true;
+							curSelectedNoteObject.charterSelected = true;
+						}
 					}
+					swagNum += 1;
 				}
-				swagNum += 1;
-			}
 		}
 
 		updateNoteUI();
@@ -3159,12 +3159,15 @@ class ChartingState extends MusicBeatState
 
 		var found = false;
 
-		for (i in section.sectionNotes)
+		if (section != null)
 		{
-			if (i[0] == note.strumTime && i[1] == note.rawNoteData)
+			for (i in section.sectionNotes)
 			{
-				section.sectionNotes.remove(i);
-				found = true;
+				if (i[0] == note.strumTime && i[1] == note.rawNoteData)
+				{
+					section.sectionNotes.remove(i);
+					found = true;
+				}
 			}
 		}
 

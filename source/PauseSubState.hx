@@ -60,9 +60,9 @@ class PauseSubState extends MusicBeatSubstate
 
 	public function new()
 	{
+		Paths.clearUnusedMemory();
 		super();
 
-		Paths.clearUnusedMemory();
 		if (PlayState.instance.useVideo)
 		{
 			menuItems.remove("Resume");
@@ -214,7 +214,7 @@ class PauseSubState extends MusicBeatSubstate
 			{
 				case "Resume":
 					close();
-					PlayState.instance.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier * PlayState.instance.scrollMult : FlxG.save.data.scrollSpeed * PlayState.songMultiplier * PlayState.instance.scrollMult);
+					PlayState.instance.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier : FlxG.save.data.scrollSpeed * PlayState.songMultiplier);
 				case "Restart Song":
 					PlayState.startTime = 0;
 					if (PlayState.instance.useVideo)
@@ -259,13 +259,7 @@ class PauseSubState extends MusicBeatSubstate
 
 					if (PlayState.isStoryMode)
 					{
-						GameplayCustomizeState.freeplayBf = 'bf';
-						GameplayCustomizeState.freeplayDad = 'dad';
-						GameplayCustomizeState.freeplayGf = 'gf';
 						GameplayCustomizeState.freeplayNoteStyle = 'normal';
-						GameplayCustomizeState.freeplayStage = 'stage';
-						GameplayCustomizeState.freeplaySong = 'bopeebo';
-						GameplayCustomizeState.freeplayWeek = 1;
 						MusicBeatState.switchState(new StoryMenuState());
 					}
 					else

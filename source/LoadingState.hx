@@ -5,7 +5,6 @@ import lime.app.Future;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.FlxSprite;
-import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.util.FlxTimer;
 import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets as LimeAssets;
@@ -14,6 +13,7 @@ import lime.utils.AssetManifest;
 import haxe.io.Path;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
+import flixel.addons.transition.FlxTransitionableState;
 
 class LoadingState extends MusicBeatState
 {
@@ -72,6 +72,8 @@ class LoadingState extends MusicBeatState
 		loadBar.screenCenter(X);
 		loadBar.antialiasing = FlxG.save.data.antialiasing;
 		add(loadBar);
+
+		FlxTransitionableState.skipNextTransOut = false;
 
 		initSongsManifest().onComplete(function(lib)
 		{
@@ -201,7 +203,10 @@ class LoadingState extends MusicBeatState
 				&& isLibraryLoaded("shared");
 
 		if (!loaded)
+		{
+			FlxTransitionableState.skipNextTransIn = false;
 			return new LoadingState(target, stopMusic);
+		}
 		#end
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();

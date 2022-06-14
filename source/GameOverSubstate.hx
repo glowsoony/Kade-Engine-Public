@@ -9,10 +9,21 @@ import flixel.util.FlxTimer;
 
 class GameOverSubstate extends MusicBeatSubstate
 {
-	var bf:Boyfriend;
+	public var bf:Boyfriend;
+
 	var camFollow:FlxObject;
 
 	var stageSuffix:String = "";
+
+	public static var instance:GameOverSubstate;
+
+	override function create()
+	{
+		Paths.clearUnusedMemory();
+		instance = this;
+
+		super.create();
+	}
 
 	public function new(x:Float, y:Float)
 	{
@@ -23,6 +34,8 @@ class GameOverSubstate extends MusicBeatSubstate
 			case 'bf-pixel':
 				stageSuffix = '-pixel';
 				daBf = 'bf-pixel-dead';
+			case 'bf-holding-gf':
+				daBf = 'bf-holding-gf-dead';
 			default:
 				daBf = 'bf';
 		}
@@ -44,7 +57,7 @@ class GameOverSubstate extends MusicBeatSubstate
 		// FlxG.camera.focusOn(FlxPoint.get(FlxG.width / 2, FlxG.height / 2));
 		FlxG.camera.scroll.set();
 		FlxG.camera.target = null;
-
+		bf.animation.curAnim.frameRate = 24; // Force default frameRate if bf dies in non 1x Formats.
 		bf.playAnim('firstDeath');
 	}
 
@@ -70,13 +83,7 @@ class GameOverSubstate extends MusicBeatSubstate
 
 			if (PlayState.isStoryMode)
 			{
-				GameplayCustomizeState.freeplayBf = 'bf';
-				GameplayCustomizeState.freeplayDad = 'dad';
-				GameplayCustomizeState.freeplayGf = 'gf';
 				GameplayCustomizeState.freeplayNoteStyle = 'normal';
-				GameplayCustomizeState.freeplayStage = 'stage';
-				GameplayCustomizeState.freeplaySong = 'bopeebo';
-				GameplayCustomizeState.freeplayWeek = 1;
 				MusicBeatState.switchState(new StoryMenuState());
 			}
 			else
@@ -92,7 +99,20 @@ class GameOverSubstate extends MusicBeatSubstate
 
 		if (bf.animation.curAnim.name == 'firstDeath' && bf.animation.curAnim.finished)
 		{
-			FlxG.sound.playMusic(Paths.music('gameOver' + stageSuffix));
+			if (PlayState.SONG.stage == 'tank')
+			{
+				FlxG.sound.playMusic(Paths.music('gameOver' + stageSuffix), 0.2);
+				FlxG.sound.play(Paths.sound('jeffGameover/jeffGameover-' + FlxG.random.int(1, 25), 'week7'), 1, false, null, true, function()
+				{
+					if (!isEnding)
+					{
+						FlxG.sound.music.fadeIn(0.2, 1, 4);
+					}
+				});
+			}
+			else
+				FlxG.sound.playMusic(Paths.music('gameOver' + stageSuffix));
+
 			startVibin = true;
 		}
 

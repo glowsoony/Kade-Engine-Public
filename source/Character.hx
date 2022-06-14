@@ -7,6 +7,8 @@ import flixel.animation.FlxBaseAnimation;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.Assets as OpenFlAssets;
 import haxe.Json;
+import Section.SwagSection;
+import flixel.util.FlxSort;
 
 using StringTools;
 
@@ -31,6 +33,8 @@ class Character extends FlxSprite
 	public var charPos:Array<Int>;
 	public var camPos:Array<Int>;
 	public var camFollow:Array<Int>;
+
+	public static var animationNotes:Array<Note> = [];
 
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false)
 	{
@@ -100,11 +104,11 @@ class Character extends FlxSprite
 
 				if (anim.frameIndices != null)
 				{
-					animation.addByIndices(anim.name, anim.prefix, anim.frameIndices, "", frameRate, looped, flipX, flipY);
+					animation.addByIndices(anim.name, anim.prefix, anim.frameIndices, "", Std.int(frameRate * PlayState.songMultiplier), looped, flipX, flipY);
 				}
 				else
 				{
-					animation.addByPrefix(anim.name, anim.prefix, frameRate, looped, flipX, flipY);
+					animation.addByPrefix(anim.name, anim.prefix, Std.int(frameRate * PlayState.songMultiplier), looped, flipX, flipY);
 				}
 
 				animOffsets[anim.name] = anim.offsets == null ? [0, 0] : anim.offsets;
@@ -144,27 +148,19 @@ class Character extends FlxSprite
 	{
 		if (animation.curAnim != null)
 		{
-			if (!isPlayer && !PlayStateChangeables.opponentMode)
+			if (!isPlayer)
 			{
 				if (animation.curAnim.name.startsWith('sing'))
-					holdTimer += elapsed;
-
-				if (holdTimer >= Conductor.stepCrochet * holdLength * 0.001 * PlayState.songMultiplier)
 				{
-					if (isDancing)
-						playAnim('danceLeft'); // overridden by dance correctly later
-					dance();
+					holdTimer += elapsed;
+				}
+
+				if (holdTimer >= Conductor.stepCrochet * 0.0011 * holdLength * PlayState.songMultiplier)
+				{
+					if (!PlayStateChangeables.opponentMode)
+						dance();
 					holdTimer = 0;
 				}
-			}
-
-			if (PlayStateChangeables.opponentMode && !isPlayer)
-			{
-				if (animation.curAnim.name.startsWith('sing'))
-					holdTimer += elapsed;
-
-				if (holdTimer >= Conductor.stepCrochet * holdLength * 0.001 * PlayState.songMultiplier)
-					holdTimer = 0;
 
 				if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
 					playAnim('idle', true, false, 10);
@@ -181,6 +177,21 @@ class Character extends FlxSprite
 						danced = forceDanced;
 					playAnim(nextAnim);
 				}
+			}
+
+			switch (curCharacter)
+			{
+				case 'pico-speaker':
+					if (animationNotes.length > 0 && Conductor.songPosition >= animationNotes[0].strumTime)
+					{
+						var noteData:Int = 1;
+						if (2 <= animationNotes[0].noteData)
+							noteData = 3;
+
+						noteData += FlxG.random.int(0, 1);
+						playAnim('shoot' + noteData, true);
+						animationNotes.shift();
+					}
 			}
 		}
 
@@ -275,6 +286,39 @@ class Character extends FlxSprite
 				}
 			}
 		}
+	}
+
+	public static function loadMappedAnims():Void
+	{
+		var noteData:Array<SwagSection> = Song.loadFromJson(PlayState.SONG.songId, 'picospeaker').notes;
+		for (section in noteData)
+		{
+			for (songNotes in section.sectionNotes)
+			{
+				var daStrumTime:Float = (songNotes[0] - FlxG.save.data.offset - PlayState.songOffset) / PlayState.songMultiplier;
+				if (daStrumTime < 0)
+					daStrumTime = 0;
+
+				var daNoteData:Int = Std.int(songNotes[1] % 4);
+
+				var oldNote:Note;
+
+				if (PlayState.instance.unspawnNotes.length > 0)
+					oldNote = PlayState.instance.unspawnNotes[Std.int(PlayState.instance.unspawnNotes.length - 1)];
+				else
+					oldNote = null;
+				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote, false, false, false, songNotes[4]);
+
+				animationNotes.push(swagNote);
+			}
+		}
+		TankmenBG.animationNotes = animationNotes;
+		animationNotes.sort(sortAnims);
+	}
+
+	static function sortAnims(Obj1:Note, Obj2:Note):Int
+	{
+		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
 	}
 
 	public function addOffset(name:String, x:Float = 0, y:Float = 0)

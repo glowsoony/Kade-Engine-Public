@@ -1,5 +1,6 @@
 package;
 
+import Modifiers.Modifier;
 import haxe.Exception;
 #if FEATURE_STEPMANIA
 import smTools.SMFile;
@@ -54,6 +55,10 @@ class ResultsScreen extends FlxSubState
 	public var ranking:String;
 	public var accuracy:String;
 
+	public var modifiers:String;
+
+	public var activeMods:FlxText;
+
 	override function create()
 	{
 		background = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
@@ -66,6 +71,19 @@ class ResultsScreen extends FlxSubState
 			music.volume = 0;
 			music.play(false, FlxG.random.int(0, Std.int(music.length / 2)));
 			FlxG.sound.list.add(music);
+		}
+
+		// I was gonna use Arrays to do this but I'm dumb. So, I had to chose the mortal way XP
+		if (!PlayState.isStoryMode)
+		{
+			modifiers = 'Active Modifiers:\n${(PlayStateChangeables.opponentMode ? '- Opponent Mode\n' : '')}${(PlayStateChangeables.mirrorMode ? '- Mirror Mode\n' : '')}${(PlayStateChangeables.practiceMode ? '- Practice Mode\n' : '')}${(PlayStateChangeables.skillIssue ? '- No Misses mode\n' : '')}${(!PlayStateChangeables.holds ? '- Hold Notes OFF\n' : '')}${(!PlayStateChangeables.modchart #if FEATURE_LUAMODCHART && FileSystem.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart')) #else && PlayState.instance.sourceModchart #end ? '- Song modchart OFF\n' : '')}${(PlayStateChangeables.healthDrain ? '- Health Drain ON\n' : '')}${(HelperFunctions.truncateFloat(PlayStateChangeables.healthGain,2) != 1 ? '- HP Gain ${HelperFunctions.truncateFloat(PlayStateChangeables.healthGain, 2)}x\n': '')}${(HelperFunctions.truncateFloat(PlayStateChangeables.healthLoss,2) != 1 ? '- HP Loss ${HelperFunctions.truncateFloat(PlayStateChangeables.healthLoss, 2)}x\n':'')}';
+			if (modifiers == 'Active Modifiers:\n')
+				modifiers = 'Active Modifiers: None';
+			activeMods = new FlxText(FlxG.width - 500, FlxG.height - 450, FlxG.width, modifiers);
+			activeMods.size = 24;
+			activeMods.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 4, 1);
+			activeMods.scrollFactor.set();
+			add(activeMods);
 		}
 
 		background.alpha = 0;
@@ -172,9 +190,19 @@ class ResultsScreen extends FlxSubState
 		#end
 
 		mean = HelperFunctions.truncateFloat(mean / PlayState.rep.replay.songNotes.length, 2);
+		var acceptShit:String = (Ratings.timingWindows[3] == 45
+			&& Ratings.timingWindows[2] == 90
+			&& Ratings.timingWindows[1] == 135
+			&& Ratings.timingWindows[0] == 160
+			&& FlxG.save.data.accuracyMod == 0
+			&& (!PlayStateChangeables.botPlay || !PlayState.usedBot)
+			&& !FlxG.save.data.practice ? '| Accepted' : '| Rejected');
+
+		if (PlayState.isStoryMode)
+			acceptShit = '';
 
 		settingsText = new FlxText(20, FlxG.height + 50, 0,
-			'Mean: ${mean}ms (SICK:${Ratings.timingWindows[3]}ms,GOOD:${Ratings.timingWindows[2]}ms,BAD:${Ratings.timingWindows[1]}ms,SHIT:${Ratings.timingWindows[0]}ms)');
+			'Mean: ${mean}ms (SICK:${Ratings.timingWindows[3]}ms,GOOD:${Ratings.timingWindows[2]}ms,BAD:${Ratings.timingWindows[1]}ms,SHIT:${Ratings.timingWindows[0]}ms) $acceptShit');
 		settingsText.size = 16;
 		settingsText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2, 1);
 		settingsText.color = FlxColor.WHITE;
@@ -183,11 +211,15 @@ class ResultsScreen extends FlxSubState
 
 		FlxTween.tween(background, {alpha: 0.5}, 0.5);
 		if (!PlayState.isStoryMode)
+		{
 			FlxTween.tween(songText, {y: 65}, 0.5, {ease: FlxEase.expoInOut});
+			FlxTween.tween(activeMods, {y: FlxG.height - 400}, 0.5, {ease: FlxEase.expoInOut});
+		}
 		FlxTween.tween(text, {y: 20}, 0.5, {ease: FlxEase.expoInOut});
 		FlxTween.tween(comboText, {y: 145}, 0.5, {ease: FlxEase.expoInOut});
 		FlxTween.tween(contText, {y: FlxG.height - 45}, 0.5, {ease: FlxEase.expoInOut});
 		FlxTween.tween(settingsText, {y: FlxG.height - 35}, 0.5, {ease: FlxEase.expoInOut});
+
 		#if !html5
 		FlxTween.tween(anotherBackground, {alpha: 0.6}, 0.5, {
 			onUpdate: function(tween:FlxTween)

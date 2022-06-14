@@ -52,12 +52,7 @@ class GameplayCustomizeState extends MusicBeatState
 	public static var gf:Character;
 	public static var boyfriend:Boyfriend;
 	public static var Stage:Stage;
-	public static var freeplayBf:String = 'bf';
-	public static var freeplayDad:String = 'dad';
-	public static var freeplayGf:String = 'gf';
 	public static var freeplayNoteStyle:String = 'normal';
-	public static var freeplayStage:String = 'stage';
-	public static var freeplaySong:String = 'bopeebo';
 	public static var freeplayWeek:Int = 1;
 
 	var changedPos:Bool = false;
@@ -87,83 +82,16 @@ class GameplayCustomizeState extends MusicBeatState
 		persistentUpdate = persistentDraw = true;
 
 		// defaults if no stage was found in chart
-		var stageCheck:String = 'stage';
 
 		// If the stage isn't specified in the chart, we use the story week value.
-		if (freeplayStage == null)
-		{
-			switch (freeplayWeek)
-			{
-				case 2:
-					stageCheck = 'halloween';
-				case 3:
-					stageCheck = 'philly';
-				case 4:
-					stageCheck = 'limo';
-				case 5:
-					if (freeplaySong == 'winter-horrorland')
-						stageCheck = 'mallEvil';
-					else
-						stageCheck = 'mall';
-				case 6:
-					if (freeplaySong == 'thorns')
-						stageCheck = 'schoolEvil';
-					else
-						stageCheck = 'school';
-			}
-		}
-		else
-			stageCheck = freeplayStage;
 
-		// defaults if no gf was found in chart
-		var gfCheck:String = 'gf';
+		gf = new Character(400, 130, 'gf');
 
-		if (freeplayGf == null)
-		{
-			switch (freeplayWeek)
-			{
-				case 4:
-					gfCheck = 'gf-car';
-				case 5:
-					gfCheck = 'gf-christmas';
-				case 6:
-					gfCheck = 'gf-pixel';
-			}
-		}
-		else
-			gfCheck = freeplayGf;
+		boyfriend = new Boyfriend(770, 450, 'bf');
 
-		gf = new Character(400, 130, gfCheck);
+		dad = new Character(100, 100, 'dad');
 
-		if (gf.frames == null)
-		{
-			#if debug
-			FlxG.log.warn(["Couldn't load gf: " + freeplayGf + ". Loading default gf"]);
-			#end
-			gf = new Character(400, 130, 'gf');
-		}
-
-		boyfriend = new Boyfriend(770, 450, freeplayBf);
-
-		if (boyfriend.frames == null)
-		{
-			#if debug
-			FlxG.log.warn(["Couldn't load boyfriend: " + freeplayBf + ". Loading default boyfriend"]);
-			#end
-			boyfriend = new Boyfriend(770, 450, 'bf');
-		}
-
-		dad = new Character(100, 100, freeplayDad);
-
-		if (dad.frames == null)
-		{
-			#if debug
-			FlxG.log.warn(["Couldn't load opponent: " + freeplayDad + ". Loading default opponent"]);
-			#end
-			dad = new Character(100, 100, 'dad');
-		}
-
-		Stage = new Stage(stageCheck);
+		Stage = new Stage('stage');
 
 		var positions = Stage.positions[Stage.curStage];
 		if (positions != null)
@@ -204,28 +132,11 @@ class GameplayCustomizeState extends MusicBeatState
 			case 'gf':
 				dad.setPosition(gf.x, gf.y);
 				gf.visible = false;
-			case 'spirit':
-				if (FlxG.save.data.distractions)
-				{
-					var evilTrail = new FlxTrail(dad, null, 4, 24, 0.3, 0.069);
-					add(evilTrail);
-				}
 		}
 
 		camFollow = new FlxObject(0, 0, 1, 1);
 
 		camFollow.setPosition(camPos.x, camPos.y);
-
-		switch (stageCheck)
-		{
-			case 'limo':
-				camFollow.x = boyfriend.getMidpoint().x - 300;
-			case 'mall':
-				camFollow.y = boyfriend.getMidpoint().y - 200;
-			case 'school' | 'schoolEvil':
-				camFollow.x = boyfriend.getMidpoint().x - 200;
-				camFollow.y = boyfriend.getMidpoint().y - 200;
-		}
 
 		add(camFollow);
 
@@ -354,8 +265,9 @@ class GameplayCustomizeState extends MusicBeatState
 			FlxG.save.data.zoom = 1.2;
 
 		var bpmRatio = Conductor.bpm / 100;
+
 		FlxG.camera.zoom = FlxMath.lerp(Stage.camZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio), 0, 1));
-		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio), 0, 1));
+		camHUD.zoom = FlxMath.lerp(FlxG.save.data.zoom, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio), 0, 1));
 
 		if (FlxG.keys.justPressed.LEFT || FlxG.keys.pressed.LEFT)
 		{
@@ -425,19 +337,17 @@ class GameplayCustomizeState extends MusicBeatState
 			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2, pixelShitPart3));
 			comboSpr.screenCenter();
 			comboSpr.x = sick.x - 150;
-			comboSpr.y = sick.y + 135;
-			if (freeplayWeek == 6)
+			comboSpr.y = sick.y + 125;
+			if (freeplayNoteStyle == 'pixel')
 			{
-				comboSpr.x += 75;
-				comboSpr.y += 35;
+				comboSpr.x += 137.5;
+				comboSpr.y += 55;
 			}
 			comboSpr.cameras = [camHUD];
 			comboSpr.acceleration.y = 600;
 			comboSpr.velocity.y -= 150;
 
-			add(comboSpr);
-
-			if (freeplayWeek != 6)
+			if (freeplayNoteStyle != 'pixel')
 			{
 				comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.6));
 				comboSpr.antialiasing = FlxG.save.data.antialiasing;
@@ -446,6 +356,8 @@ class GameplayCustomizeState extends MusicBeatState
 			{
 				comboSpr.setGraphicSize(Std.int(comboSpr.width * CoolUtil.daPixelZoom * 0.7));
 			}
+
+			add(comboSpr);
 
 			// make sure we have 3 digits to display (looks weird otherwise lol)
 			if (comboSplit.length == 1)

@@ -46,7 +46,7 @@ class Note extends FlxSprite
 
 	public var noteScore:Float = 1;
 
-	public var noteYOff:Int = 0;
+	public var noteYOff:Float = 0;
 
 	public var beat:Float = 0;
 
@@ -69,7 +69,7 @@ class Note extends FlxSprite
 	public var isParent:Bool = false;
 	public var parent:Note = null;
 	public var spotInLine:Int = 0;
-	public var sustainActive:Bool = true;
+	public var sustainActive:Bool = false;
 
 	public var children:Array<Note> = [];
 
@@ -127,8 +127,6 @@ class Note extends FlxSprite
 			this.noteData = Std.int(Math.abs(3 - noteData));
 			noteData = Std.int(Math.abs(3 - noteData));
 		}
-
-		var daStage:String = ((PlayState.instance != null && !FlxG.save.data.optimize) ? PlayState.Stage.curStage : 'stage');
 
 		// defaults if no noteStyle was found in chart
 		var noteTypeCheck:String = 'normal';
@@ -246,7 +244,7 @@ class Note extends FlxSprite
 
 		if (isSustainNote && prevNote != null)
 		{
-			noteYOff = Math.round(-stepHeight + swagWidth * 0.5) + FlxG.save.data.offset + PlayState.songOffset;
+			noteYOff = -stepHeight + swagWidth * 0.5;
 
 			noteScore * 0.2;
 			alpha = 0.6;
@@ -293,14 +291,14 @@ class Note extends FlxSprite
 		// This updates hold notes height to current scroll Speed in case of scroll Speed changes.
 
 		var newStepHeight = (((0.45 * PlayState.fakeNoteStepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
-			2));
+			2)) * PlayState.songMultiplier;
 
 		if (stepHeight != newStepHeight)
 		{
 			stepHeight = newStepHeight;
 			if (isSustainNote)
 			{
-				noteYOff = Math.round(-stepHeight + swagWidth * 0.5) + FlxG.save.data.offset + PlayState.songOffset;
+				noteYOff = -stepHeight + swagWidth * 0.5;
 			}
 		}
 
@@ -312,16 +310,19 @@ class Note extends FlxSprite
 
 		if (!modifiedByLua)
 		{
-			if (!sustainActive)
+			if (!sustainActive && tooLate)
 			{
 				alpha = 0.3;
 			}
 		}
+
 		if (mustPress)
 		{
 			if (strumTime > Conductor.songPosition - Conductor.safeZoneOffset
 				&& strumTime < Conductor.songPosition + Conductor.safeZoneOffset)
+			{
 				canBeHit = true;
+			}
 			else
 				canBeHit = false;
 

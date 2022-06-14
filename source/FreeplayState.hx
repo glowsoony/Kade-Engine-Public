@@ -96,9 +96,9 @@ class FreeplayState extends MusicBeatState
 	public static var list:Array<String> = [];
 
 	override function create()
-	{#if !html5 Main.dumpCache(); #end
-		Paths.clearStoredMemory();
+	{Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
+
 		if (!FlxG.sound.music.playing)
 		{
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
@@ -364,12 +364,46 @@ class FreeplayState extends MusicBeatState
 		}
 	}
 
-	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
+	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:String)
 	{
-		songs.push(new FreeplaySongMetadata(songName, weekNum, songCharacter, color));
+		var meta = new FreeplaySongMetadata(songName, weekNum, songCharacter, FlxColor.fromString(color));
+
+		var diffs = [];
+		var diffsThatExist = [];
+
+		#if FEATURE_FILESYSTEM
+		if (Paths.doesTextAssetExist(Paths.json('songs/$songName/$songName-hard')))
+			diffsThatExist.push("Hard");
+		if (Paths.doesTextAssetExist(Paths.json('songs/$songName/$songName')))
+			diffsThatExist.push("Normal");
+		if (Paths.doesTextAssetExist(Paths.json('songs/$songName/$songName-easy')))
+			diffsThatExist.push("Easy");
+		if (diffsThatExist.length == 0)
+		{
+			Debug.displayAlert(meta.songName + " Chart", "No difficulties found for chart, skipping.");
+		}
+		#else
+		diffsThatExist = ["Easy", "Normal", "Hard"];
+		#end
+
+		if (diffsThatExist.contains("Easy"))
+			FreeplayState.loadDiff(0, songName, diffs);
+		if (diffsThatExist.contains("Normal"))
+			FreeplayState.loadDiff(1, songName, diffs);
+		if (diffsThatExist.contains("Hard"))
+			FreeplayState.loadDiff(2, songName, diffs);
+
+		meta.diffs = diffsThatExist;
+
+		if (diffsThatExist.length != 5)
+			trace("I ONLY FOUND " + diffsThatExist);
+
+		songData.set(songName, diffs);
+
+		songs.push(meta);
 	}
 
-	public function addWeek(songs:Array<String>, weekNum:Int, ?songCharacters:Array<String>, ?color:Int)
+	public function addWeek(songs:Array<String>, weekNum:Int, ?songCharacters:Array<String>, ?color:String)
 	{
 		if (songCharacters == null)
 			songCharacters = ['dad'];
@@ -797,13 +831,7 @@ class FreeplayState extends MusicBeatState
 			if (hmm != null)
 			{
 				Conductor.changeBPM(hmm.bpm);
-				GameplayCustomizeState.freeplayBf = hmm.player1;
-				GameplayCustomizeState.freeplayDad = hmm.player2;
-				GameplayCustomizeState.freeplayGf = hmm.gfVersion;
 				GameplayCustomizeState.freeplayNoteStyle = hmm.noteStyle;
-				GameplayCustomizeState.freeplayStage = hmm.stage;
-				GameplayCustomizeState.freeplaySong = hmm.songId;
-				GameplayCustomizeState.freeplayWeek = songs[curSelected].week;
 			}
 		}
 		catch (ex)

@@ -32,7 +32,8 @@ class StoryMenuState extends MusicBeatState
 			['pico', 'philly', "blammed"],
 			['satin-panties', "high", "milf"],
 			['cocoa', 'eggnog', 'winter-horrorland'],
-			['senpai', 'roses', 'thorns']
+			['senpai', 'roses', 'thorns'],
+			['guns', 'stress']
 		];
 	}
 
@@ -47,7 +48,8 @@ class StoryMenuState extends MusicBeatState
 		['pico', 'bf', 'gf'],
 		['mom', 'bf', 'gf'],
 		['parents-christmas', 'bf', 'gf'],
-		['senpai', 'bf', 'gf']
+		['senpai', 'bf', 'gf'],
+		['tankman', 'bf', 'gf']
 	];
 
 	var weekNames:Array<String> = CoolUtil.coolTextFile(Paths.txt('data/weekNames'));
@@ -80,18 +82,15 @@ class StoryMenuState extends MusicBeatState
 		weeks.push(true);
 
 		for (i in 0...FlxG.save.data.weekUnlocked)
-		{
 			weeks.push(true);
-		}
+
 		return weeks;
 	}
 
 	override function create()
 	{
-		#if !html5
-		Main.dumpCache();
-		#end
 		Paths.clearStoredMemory();
+		Paths.clearUnusedMemory();
 		weekUnlocked = unlockWeeks();
 
 		PlayState.currentSong = "bruh";
@@ -249,7 +248,6 @@ class StoryMenuState extends MusicBeatState
 		trace("Line 165");
 
 		super.create();
-		Paths.clearUnusedMemory();
 	}
 
 	override function update(elapsed:Float)

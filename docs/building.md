@@ -1,13 +1,13 @@
 ﻿# Building Friday Night Funkin': Kade Engine
 
-**Please note** that these instructions are for compiling/building the game. If you just want to play Kade Engine, **play in your browser or download a build instead**: **[play in browser](https://v6p9d9t4.ssl.hwcdn.net/html/5778995/index.html) ⋅ [itch.io page](https://bolo24.itch.io/kade-engine-181)⋅ [latest stable release](https://github.com/BoloVEVO/Kade-Engine/releases/latest)** . If you want to build the game yourself, continue reading.
+**Please note** that these instructions are for compiling/building the game. If you just want to play Kade Engine, **play in your browser or download a build instead**: **[play in browser](https://funkin.puyo.xyz) ⋅ [latest stable release](https://github.com/KadeDev/Kade-Engine/releases/latest) ⋅ [latest development build (windows)](https://ci.appveyor.com/project/KadeDev/kade-engine-windows/build/artifacts) ⋅ [latest development build (macOS)](https://ci.appveyor.com/project/daniel11420/kade-engine-macos/build/artifacts) ⋅ [latest development build (linux)](https://ci.appveyor.com/project/daniel11420/kade-engine-linux/build/artifacts)**. If you want to build the game yourself, continue reading.
 
 **Also note**: you should be familiar with the commandline. If not, read this [quick guide by ninjamuffin](https://ninjamuffin99.newgrounds.com/news/post/1090480).
 
 **Also also note**: To build for *Windows*, you need to be on *Windows*. To build for *Linux*, you need to be on *Linux*. Same goes for macOS. You can build for html5/browsers on any platform.
 
 ## Dependencies
- 1. **[Install Haxe](https://haxe.org/download/version/4.2.5/)**. You can use 4.2.3 to 4.2.5 because older versions of haxe have compile issues with this fork of Kade Engine.
+ 1. [Install Haxe 4.1.5](https://haxe.org/download/version/4.1.5/). You should use 4.1.5 instead of the latest version because the latest version has some problems with Friday Night Funkin': Kade Engine.
  2. After installing Haxe, [Install HaxeFlixel](https://haxeflixel.com/documentation/install-haxeflixel/).
  3. Install `git`.
 	 - Windows: install from the [git-scm](https://git-scm.com/downloads) website.
@@ -19,7 +19,6 @@
 	 - `haxelib install flixel-tools`
 	 - `haxelib install flixel-ui`
 	 - `haxelib install hscript`
-	 - `haxelib install hxcpp-debug-server`
 	 - `haxelib install flixel-addons`
 	 - `haxelib install actuate`
 	 - `haxelib run lime setup`
@@ -50,7 +49,7 @@ If you get an error telling you that you need a newer macOS version, you need to
 ## Cloning the repository
 Since you already installed `git` in a previous step, we'll use it to clone the repository.
 1. `cd` to where you want to store the source code (i.e. `C:\Users\username\Desktop` or `~/Desktop`)
-2. `git clone https://github.com/BoloVEVO/Kade-Engine.git`
+2. `git clone https://github.com/KadeDev/Kade-Engine.git`
 3. `cd` into the source code: `cd Kade-Engine`
 4. (optional) If you want to build a specific version of Kade Engine, you can use `git checkout` to switch to it (i.e. `git checkout 1.4-KE`) (remember that versions 1.4 and older cannot build to Linux or HTML5)
 - You should **not** do this if you are planning to contribute, as you should always be developing on the latest version.

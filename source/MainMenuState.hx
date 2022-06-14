@@ -53,9 +53,6 @@ class MainMenuState extends MusicBeatState
 
 	override function create()
 	{
-		#if !html5
-		Main.dumpCache();
-		#end
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 		trace(0 / 2);

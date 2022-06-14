@@ -71,7 +71,7 @@ class Paths
 
 	static public function getHaxeScript(string:String)
 	{
-		return Assets.getText('assets/data/$string/haxeModchart.hx');
+		return Assets.getText('assets/data/$string/HaxeModchart.hx');
 	}
 
 	static public function loadJSON(key:String, ?library:String):Dynamic
@@ -141,6 +141,16 @@ class Paths
 	inline static public function xml(key:String, ?library:String)
 	{
 		return getPath('data/$key.xml', TEXT, library);
+	}
+
+	inline static public function animJson(key:String, ?library:String)
+	{
+		return getPath('images/$key/Animation.json', TEXT, library);
+	}
+
+	inline static public function spriteMapJson(key:String, ?library:String)
+	{
+		return getPath('images/$key/spritemap.json', TEXT, library);
 	}
 
 	inline static public function json(key:String, ?library:String)
@@ -254,9 +264,7 @@ class Paths
 		var returnAsset = getPath('images/$key.png', IMAGE, library);
 		localTrackedAssets.push(returnAsset);
 		var newGraphic:FlxGraphic = FlxG.bitmap.add(returnAsset, false, returnAsset);
-		#if !html5
 		newGraphic.persist = true;
-		#end
 		currentTrackedAssets.set(returnAsset, newGraphic);
 		return currentTrackedAssets.get(returnAsset);
 	}
@@ -282,6 +290,7 @@ class Paths
 	public static function clearUnusedMemory()
 	{
 		// clear non local assets in the tracked assets list
+		var counter:Int = 0;
 		for (key in currentTrackedAssets.keys())
 		{
 			// if it is not currently contained within the used local assets
@@ -296,10 +305,13 @@ class Paths
 					FlxG.bitmap._cache.remove(key);
 					obj.destroy();
 					currentTrackedAssets.remove(key);
+					counter++;
+					Debug.logTrace('Cleared and removed $counter assets.');
 				}
 			}
 		}
 		// run the garbage collector for good measure lmfao
+
 		System.gc();
 	}
 
@@ -308,6 +320,8 @@ class Paths
 	public static function clearStoredMemory(?cleanUnused:Bool = false)
 	{
 		// clear anything not in the tracked assets list
+		var counterAssets:Int = 0;
+		var counterSound:Int = 0;
 		@:privateAccess
 		for (key in FlxG.bitmap._cache.keys())
 		{
@@ -317,11 +331,13 @@ class Paths
 				openfl.Assets.cache.removeBitmapData(key);
 				FlxG.bitmap._cache.remove(key);
 				obj.destroy();
+				counterAssets++;
+				Debug.logTrace('Cleared and removed $counterAssets cached assets.');
 			}
 		}
 
 		// clear all sounds that are cached
-		#if PRELOAD_ALL
+
 		for (key in currentTrackedSounds.keys())
 		{
 			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key) && key != null)
@@ -329,11 +345,13 @@ class Paths
 				// trace('test: ' + dumpExclusions, key);
 				Assets.cache.clear(key);
 				currentTrackedSounds.remove(key);
+				counterSound++;
+				Debug.logTrace('Cleared and removed $counterSound cached sounds.');
 			}
 		}
 		// flags everything to be cleared out next unused memory clear
 		localTrackedAssets = [];
-
+		#if PRELOAD_ALL
 		openfl.Assets.cache.clear("songs");
 		#end
 	}

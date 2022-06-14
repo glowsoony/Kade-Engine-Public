@@ -86,11 +86,11 @@ class Ratings
 				break;
 			}
 		}
-		if (accuracy == 0 && !FlxG.save.data.practice)
+		if (accuracy == 0 && !PlayStateChangeables.practiceMode)
 			letterRanking = "You suck lmao";
 		else if (PlayStateChangeables.botPlay && !PlayState.loadRep)
 			letterRanking = "BotPlay";
-		else if (FlxG.save.data.practice)
+		else if (PlayStateChangeables.practiceMode)
 			letterRanking = "PRACTICE";
 		return letterRanking;
 	}
@@ -146,6 +146,6 @@ class Ratings
 						" | "
 						+ GenerateComboRank(accuracy)
 						+ " "
-						+ (!FlxG.save.data.pratice ? GenerateLetterRank(accuracy) : 'PRACTICE') : "") : ""); // 	Letter Rank
+						+ (!PlayStateChangeables.practiceMode ? GenerateLetterRank(accuracy) : 'PRACTICE') : "") : ""); // 	Letter Rank
 	}
 }

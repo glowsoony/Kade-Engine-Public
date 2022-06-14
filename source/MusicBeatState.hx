@@ -76,8 +76,6 @@ class MusicBeatState extends FlxUIState
 				FlxG.save.data.laneTransparency = 1;
 		}
 
-		FlxTransitionableState.skipNextTransOut = false;
-
 		Application.current.window.onFocusIn.add(onWindowFocusIn);
 		Application.current.window.onFocusOut.add(onWindowFocusOut);
 		TimingStruct.clearTimings();
@@ -89,14 +87,15 @@ class MusicBeatState extends FlxUIState
 
 		var skip:Bool = FlxTransitionableState.skipNextTransOut;
 
-		// Custom made Trans out
+		super.create();
+
 		if (!skip)
 		{
 			openSubState(new PsychTransition(0.85, true));
 		}
 		FlxTransitionableState.skipNextTransOut = false;
 
-		super.create();
+		Paths.clearUnusedMemory();
 	}
 
 	override function update(elapsed:Float)

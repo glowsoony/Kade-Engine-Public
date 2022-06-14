@@ -8,7 +8,7 @@ using StringTools;
 
 class DiscordClient
 {
-	public static var modesArray:Array<String> = ['Disabled', 'Per Beat', 'Per Frame', 'Real Time'];
+	public static var modesArray:Array<String> = ['Simplified', 'Detailed'];
 
 	public function new()
 	{
