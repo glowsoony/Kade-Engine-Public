@@ -43,8 +43,12 @@
 
 	<classpath name="source" />
 
-	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
-	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
+	<assets path="assets/preload/videos/cutscenes" rename="assets/videos/cutscenes"  exclude="*.webm|*.ogg|*.txt" if="windows"/>
+    <assets path="assets/preload/videos/cutscenes" rename="assets/videos/cutscenes" exclude="*.mp4" unless="windows"/>
+
+	<assets path="assets/preload" rename="assets" exclude="*.ogg|cutscenes" if="web"/>
+	<assets path="assets/preload" rename="assets" exclude="*.mp3|cutscenes" unless="web"/>
+
 	
 	<!-- <define name="PRELOAD_ALL" /> -->
 	<define name="PRELOAD_ALL" unless="web"/>
@@ -114,9 +118,8 @@
 		NOT USING A DIRECT THING TO THE ASSET!!!
 	-->
 	<assets path="assets/fonts" embed='true'/>
-	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="hxcpp-debug-server" />
+	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
 	<haxedev set='webgl' />
@@ -135,7 +138,7 @@
 	<haxelib name="discord_rpc" if="desktop"/>
 	<haxelib name="linc_luajit" if="desktop"/>
 	<haxelib name="hxvm-luajit" if="desktop"/>
-	<!-- <haxelib name="hxcpp-debug-server" if="desktop"/> -->
+	<haxelib name="hxcpp-debug-server" if="desktop"/>
 
 	<!-- <haxelib name="markdown" /> -->
 	<!-- <haxelib name="HtmlParser" /> -->
@@ -193,7 +196,6 @@
 	<icon path="art/iconOG.png" />
 
 	<haxeflag name="--no-traces" unless="debug" />
-	<haxeflag name="--dce full" if="release" />
 
   <!-- Use defines to ensure compile-time definitions have readable context. -->
   <!-- Allowed inputs are mobile,desktop,web,ios,android,windows,mac,linux,switch,html5,cpp,neko,flash,js -->
@@ -202,16 +204,23 @@
   <haxedef name="FEATURE_DISCORD" if="desktop" />
   <!-- Defines whether the file system can be read/written directly. Does not work in browser. -->
   <haxedef name="FEATURE_FILESYSTEM"  if="desktop"/>
-  <!-- Defines whether Lua Modcharts should be enabled. Only works on Windows. -->
+  <!-- Defines whether Lua Modcharts should be enabled -->
   <haxedef name="FEATURE_LUAMODCHART" if="desktop" />
-  <!-- Defines whether WebM videos should be enabled. Currently only enabled on Windows. -->
-  <haxedef name="FEATURE_WEBM" if="windows" />
+  <!-- Defines whether Sprite WebM videos should be enabled -->
+  <haxedef name="FEATURE_WEBM" if="desktop" />
   <!-- Defines whether StepMania files can be loaded. -->
   <haxedef name="FEATURE_STEPMANIA" if="desktop" />
   <!-- Defines whether the Thread class can be used. -->
   <haxedef name="FEATURE_MULTITHREADING" if="cpp" />
-
+  <!-- Defines whether the mp4 videos should be enabled. -->
+  <define name="FEATURE_MP4VIDEOS" if="windows" unless="32bits"/>
   <!-- Defines whether the Mods menu will display before launching. -->
   <haxedef name="FEATURE_MODCORE" if="desktop" />
+  
+  <!-- hxCodec shit -->
+  <haxelib name="hxCodec" if="FEATURE_MP4VIDEOS"/>
+
+ <!-- Show debug traces for hxCodec -->
+  <haxedef name="HXC_DEBUG_TRACE" if="debug" />
 
 </project>

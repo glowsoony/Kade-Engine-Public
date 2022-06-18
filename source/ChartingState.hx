@@ -1971,7 +1971,9 @@ class ChartingState extends MusicBeatState
 						#if (lime >= "8.0.0" && lime_howlerjs)
 						FlxG.sound.music._channel.__source.__backend.setPitch(speed);
 						#else
+						#if lime_howlerjs
 						FlxG.sound.music._channel.__source.__backend.parent.buffer.__srcHowl.rate(speed);
+						#end
 						#end
 
 						try

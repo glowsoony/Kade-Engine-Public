@@ -90,12 +90,16 @@ class LoadingState extends MusicBeatState
 			}
 
 			checkLibrary("shared");
-			if (PlayState.storyWeek > 0)
-				checkLibrary("week" + PlayState.storyWeek);
-			else if (GameplayCustomizeState.freeplayNoteStyle == 'pixel')
+			if (!FlxG.save.data.optimize && FlxG.save.data.background)
+			{
+				if (PlayState.storyWeek > 0)
+					checkLibrary("week" + PlayState.storyWeek);
+				else
+					checkLibrary("tutorial");
+			}
+
+			if (GameplayCustomizeState.freeplayNoteStyle == 'pixel')
 				checkLibrary("week6");
-			else
-				checkLibrary("tutorial");
 
 			var fadeTime = 0.5;
 			FlxG.camera.fade(FlxG.camera.bgColor, fadeTime, true);

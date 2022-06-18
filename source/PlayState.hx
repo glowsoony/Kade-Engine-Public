@@ -6,6 +6,9 @@ import flixel.system.replay.MouseRecord;
 import haxe.display.Display.EnumFieldOriginKind;
 import polymod.backends.PolymodAssetLibrary;
 import flixel.util.FlxSpriteUtil;
+#if FEATURE_MP4VIDEOS
+import vlc.MP4Handler;
+#end
 #if FEATURE_LUAMODCHART
 import LuaClass;
 #end
@@ -28,6 +31,7 @@ import openfl.ui.Keyboard;
 import openfl.events.KeyboardEvent;
 import Replay.Ana;
 import Replay.Analysis;
+import openfl.utils.Assets as OpenFlAssets;
 #if FEATURE_WEBM
 import webm.WebmPlayer;
 #end
@@ -446,69 +450,6 @@ class PlayState extends MusicBeatState
 			PlayStateChangeables.healthLoss = 1;
 			PlayStateChangeables.practiceMode = false;
 			PlayStateChangeables.skillIssue = false;
-		}
-
-		switch (SONG.songId)
-		{
-			case 'tutorial':
-				songFixedName = "Tutorial";
-				sourceModchart = true;
-			case 'bopeebo':
-				songFixedName = "Bopeebo";
-
-			case 'fresh':
-				songFixedName = "Fresh!";
-
-			case 'dadbattle':
-				songFixedName = "Dad Battle";
-
-			case "spookeez":
-				songFixedName = "Spookeez!";
-
-			case "south":
-				songFixedName = "South";
-
-			case "monster":
-				songFixedName = "Monster...";
-
-			case "pico":
-				songFixedName = "Pico";
-
-			case "philly":
-				songFixedName = "Philly Noice";
-
-			case "blammed":
-				songFixedName = "Blammed";
-
-			case "high":
-				songFixedName = "High!";
-
-			case "cocoa":
-				songFixedName = "Cocoa";
-
-			case "eggnog":
-				songFixedName = "EGGnog";
-
-			case "winter horroland":
-				songFixedName = "Winter Horroland...";
-
-			case "senpai":
-				songFixedName = "Senpai!"; // Cringe lol
-
-			case "roses":
-				songFixedName = "Roses...";
-
-			case "thorns":
-				songFixedName = "Thorns!";
-
-			case "ugh":
-				songFixedName = "Ugh!";
-
-			case "guns":
-				songFixedName = "Guns!";
-
-			case "stress":
-				songFixedName = "Stress";
 		}
 
 		// FlxG.save.data.optimize = FlxG.save.data.optimize;
@@ -1287,7 +1228,18 @@ class PlayState extends MusicBeatState
 					schoolIntro(doof);
 
 				case 'ugh', 'guns', 'stress':
-					tankIntro();
+					if (!FlxG.save.data.optimize && FlxG.save.data.background)
+						tankIntro();
+					else
+					{
+						removeStaticArrows();
+						#if FEATURE_MP4VIDEOS
+						startVideo('cutscenes/${SONG.songId}_cutscene');
+						#else
+						startCountdown();
+						#end
+					}
+
 				default:
 					new FlxTimer().start(0.5, function(timer)
 					{
@@ -1400,6 +1352,69 @@ class PlayState extends MusicBeatState
 				case 'music':
 					Paths.music(key);
 			}
+		}
+
+		switch (SONG.songId)
+		{
+			case 'tutorial':
+				songFixedName = "Tutorial";
+				sourceModchart = true;
+			case 'bopeebo':
+				songFixedName = "Bopeebo";
+
+			case 'fresh':
+				songFixedName = "Fresh!";
+
+			case 'dadbattle':
+				songFixedName = "Dad Battle";
+
+			case "spookeez":
+				songFixedName = "Spookeez!";
+
+			case "south":
+				songFixedName = "South";
+
+			case "monster":
+				songFixedName = "Monster...";
+
+			case "pico":
+				songFixedName = "Pico";
+
+			case "philly":
+				songFixedName = "Philly Noice";
+
+			case "blammed":
+				songFixedName = "Blammed";
+
+			case "high":
+				songFixedName = "High!";
+
+			case "cocoa":
+				songFixedName = "Cocoa";
+
+			case "eggnog":
+				songFixedName = "EGGnog";
+
+			case "winter horroland":
+				songFixedName = "Winter Horroland...";
+
+			case "senpai":
+				songFixedName = "Senpai!"; // Cringe lol
+
+			case "roses":
+				songFixedName = "Roses...";
+
+			case "thorns":
+				songFixedName = "Thorns!";
+
+			case "ugh":
+				songFixedName = "Ugh!";
+
+			case "guns":
+				songFixedName = "Guns!";
+
+			case "stress":
+				songFixedName = "Stress";
 		}
 
 		Paths.clearUnusedMemory();
@@ -1902,6 +1917,9 @@ class PlayState extends MusicBeatState
 
 	function startSong():Void
 	{
+		if (useVideo)
+			BackgroundVideo.get().resume();
+
 		startingSong = false;
 		songStarted = true;
 		previousFrameTime = FlxG.game.ticks;
@@ -1934,7 +1952,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (useVideo)
-			GlobalVideo.get().resume();
+			BackgroundVideo.get().resume();
 
 		#if FEATURE_LUAMODCHART
 		if (executeModchart)
@@ -2019,13 +2037,17 @@ class PlayState extends MusicBeatState
 	public function generateSong(dataPath:String):Void
 	{
 		// FlxG.log.add(ChartParser.parse());
-		if (!FlxG.save.data.optimize && FlxG.save.data.distractions)
+		if (!FlxG.save.data.optimize && FlxG.save.data.distractions && FlxG.save.data.background)
+		{
 			if (SONG.songId == 'stress')
+			{
 				switch (gf.curCharacter)
 				{
 					case 'pico-speaker':
 						Character.loadMappedAnims();
 				}
+			}
+		}
 
 		var songData = SONG;
 
@@ -2088,8 +2110,9 @@ class PlayState extends MusicBeatState
 			fakeCrochet = ((60 / (timingSeg.bpm) * 1000)) / songMultiplier;
 
 			// Loading pico shoot anims SONG json fucks the sustains crochet, to fix it only we need to power songMultiplier to 2.
-			if (SONG.songId == 'stress' && gf.curCharacter == 'pico-speaker')
-				fakeCrochet = ((60 / (timingSeg.bpm) * 1000)) / Math.pow(songMultiplier, 2);
+			if (!FlxG.save.data.optimize && FlxG.save.data.distractions)
+				if (SONG.songId == 'stress' && gf.curCharacter == 'pico-speaker')
+					fakeCrochet = ((60 / (timingSeg.bpm) * 1000)) / Math.pow(songMultiplier, 2);
 
 			fakeNoteStepCrochet = fakeCrochet / 4;
 		}
@@ -2375,6 +2398,9 @@ class PlayState extends MusicBeatState
 	{
 		if (paused)
 		{
+			if (useVideo)
+				BackgroundVideo.get().pause();
+
 			if (FlxG.sound.music.playing)
 				FlxG.sound.music.pause();
 
@@ -2425,6 +2451,9 @@ class PlayState extends MusicBeatState
 		}
 		else if (paused)
 		{
+			if (useVideo)
+				BackgroundVideo.get().resume();
+
 			if (FlxG.sound.music != null && !startingSong)
 			{
 				resyncVocals();
@@ -2747,9 +2776,9 @@ class PlayState extends MusicBeatState
 		if (PlayStateChangeables.botPlay && FlxG.keys.justPressed.ONE)
 			camHUD.visible = !camHUD.visible;
 
-		if (useVideo && GlobalVideo.get() != null && !stopUpdate)
+		if (useVideo && BackgroundVideo.get() != null && !stopUpdate)
 		{
-			if (GlobalVideo.get().ended && !removedVideo)
+			if (BackgroundVideo.get().ended && !removedVideo)
 			{
 				remove(videoSprite);
 				removedVideo = true;
@@ -2876,7 +2905,7 @@ class PlayState extends MusicBeatState
 		{
 			if (useVideo)
 			{
-				GlobalVideo.get().stop();
+				BackgroundVideo.get().stop();
 				remove(videoSprite);
 				removedVideo = true;
 			}
@@ -2903,7 +2932,7 @@ class PlayState extends MusicBeatState
 			executeModchart = false;
 			if (useVideo)
 			{
-				GlobalVideo.get().stop();
+				BackgroundVideo.get().stop();
 				remove(videoSprite);
 				removedVideo = true;
 			}
@@ -2976,7 +3005,7 @@ class PlayState extends MusicBeatState
 		{
 			if (useVideo)
 			{
-				GlobalVideo.get().stop();
+				BackgroundVideo.get().stop();
 				remove(videoSprite);
 				removedVideo = true;
 			}
@@ -3001,7 +3030,7 @@ class PlayState extends MusicBeatState
 				paused = true;
 				if (useVideo)
 				{
-					GlobalVideo.get().stop();
+					BackgroundVideo.get().stop();
 					remove(videoSprite);
 					removedVideo = true;
 				}
@@ -4089,7 +4118,7 @@ class PlayState extends MusicBeatState
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
 		if (useVideo)
 		{
-			GlobalVideo.get().stop();
+			BackgroundVideo.get().stop();
 			PlayState.instance.remove(PlayState.instance.videoSprite);
 		}
 
@@ -4262,7 +4291,25 @@ class PlayState extends MusicBeatState
 						PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0], diff);
 						FlxG.sound.music.stop();
 
+						#if !FEATURE_MP4VIDEOS
+						if (storyWeek == 7)
+						{
+							if (FlxG.save.data.optimize || !FlxG.save.data.background)
+							{
+								switch (SONG.songId)
+								{
+									case 'guns':
+										LoadingState.loadAndSwitchState(new VideoState('cutscenes/guns_cutscene', new PlayState()), true);
+									case 'stress':
+										LoadingState.loadAndSwitchState(new VideoState('cutscenes/stress_cutscene', new PlayState()), true);
+								}
+							}
+						}
+						else
+							LoadingState.loadAndSwitchState(new PlayState());
+						#else
 						LoadingState.loadAndSwitchState(new PlayState());
+						#end
 						clean();
 					}
 				}
@@ -5057,37 +5104,35 @@ class PlayState extends MusicBeatState
 		useVideo = true;
 
 		var ourSource:String = "assets/videos/daWeirdVid/dontDelete.webm";
-		// WebmPlayer.SKIP_STEP_LIMIT = 90;
+		WebmPlayer.SKIP_STEP_LIMIT = 90;
 		var str1:String = "WEBM SHIT";
 		webmHandler = new WebmHandler();
 		webmHandler.source(ourSource);
 		webmHandler.makePlayer();
 		webmHandler.webm.name = str1;
 
-		GlobalVideo.setWebm(webmHandler);
+		BackgroundVideo.setWebm(webmHandler);
 
-		GlobalVideo.get().source(source);
-		GlobalVideo.get().clearPause();
-		if (GlobalVideo.isWebm)
+		BackgroundVideo.get().source(source);
+		BackgroundVideo.get().clearPause();
+		if (BackgroundVideo.isWebm)
 		{
-			GlobalVideo.get().updatePlayer();
+			BackgroundVideo.get().updatePlayer();
 		}
-		GlobalVideo.get().show();
+		BackgroundVideo.get().show();
 
-		if (GlobalVideo.isWebm)
+		if (BackgroundVideo.isWebm)
 		{
-			GlobalVideo.get().restart();
+			BackgroundVideo.get().restart();
 		}
 		else
 		{
-			GlobalVideo.get().play();
+			BackgroundVideo.get().play();
 		}
 
 		var data = webmHandler.webm.bitmapData;
 
 		videoSprite = new FlxSprite(-470, -30).loadGraphic(data);
-
-		videoSprite.setGraphicSize(Std.int(videoSprite.width * 1.2));
 
 		remove(gf);
 		remove(boyfriend);
@@ -5097,6 +5142,7 @@ class PlayState extends MusicBeatState
 		add(boyfriend);
 		add(dad);
 
+		Debug.logInfo(videoSprite == null ? 'Webm background video is null NOOOOOOOOO' : 'Webm background video looks like ass.');
 		trace('poggers');
 
 		if (!songStarted)
@@ -5910,6 +5956,7 @@ class PlayState extends MusicBeatState
 						});
 					});
 				});
+
 			case 'guns':
 				precacheList.set('tankSong2', 'sound');
 				FlxG.sound.playMusic(Paths.music('DISTORTO', 'week7'), 0, false);
@@ -6259,5 +6306,56 @@ class PlayState extends MusicBeatState
 		Paths.sound('intro2' + altSuffix);
 		Paths.sound('intro1' + altSuffix);
 		Paths.sound('introGo' + altSuffix);
+	}
+
+	public function startVideo(name:String):Void
+	{
+		#if FEATURE_MP4VIDEOS
+		Debug.logTrace('Playing video cutscene. Poggers');
+
+		var foundFile:Bool = false;
+		var fileName = Paths.video(name);
+		#if FEATURE_FILESYSTEM
+		if (FileSystem.exists(fileName))
+		{
+			foundFile = true;
+		}
+		#else
+		if (OpenFlAssets.exists(fileName))
+		{
+			foundFile = true;
+		}
+		#end
+		if (foundFile)
+		{
+			inCinematic = true;
+			var bg = new FlxSprite(-FlxG.width, -FlxG.height).makeGraphic(FlxG.width * 3, FlxG.height * 3, FlxColor.BLACK);
+			bg.scrollFactor.set();
+			bg.cameras = [camHUD];
+			add(bg);
+
+			var daVid:MP4Handler = new MP4Handler();
+			daVid.playVideo(fileName);
+			(daVid).finishCallback = function()
+			{
+				remove(bg);
+				startAndEnd();
+			};
+			return;
+		}
+		else
+		{
+			FlxG.log.warn("Video not found: " + fileName);
+			startAndEnd();
+		}
+		#end
+	}
+
+	function startAndEnd()
+	{
+		if (endingSong)
+			endSong();
+		else
+			startCountdown();
 	}
 } // u looked :O -ides

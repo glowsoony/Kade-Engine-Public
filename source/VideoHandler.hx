@@ -1,6 +1,7 @@
 // This was made by GWebDev lol btw this uses actuate
 package;
 
+import Options.AccuracyDOption;
 import motion.Actuate;
 import openfl.display.Sprite;
 import openfl.events.AsyncErrorEvent;
@@ -29,9 +30,9 @@ class VideoHandler
 
 	public function source(?vPath:String):Void
 	{
-		if (vPath != null && vPath.length > 0)
+		if (Paths.video(vPath) != null && vPath.length > 0)
 		{
-			vidPath = vPath;
+			vidPath = Paths.video(vPath);
 		}
 	}
 

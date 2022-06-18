@@ -574,19 +574,19 @@ class ModchartState
 
 		Lua_helper.add_callback(lua, "pauseVideo", function()
 		{
-			if (!GlobalVideo.get().paused)
-				GlobalVideo.get().pause();
+			if (!BackgroundVideo.get().paused)
+				BackgroundVideo.get().pause();
 		});
 
 		Lua_helper.add_callback(lua, "resumeVideo", function()
 		{
-			if (GlobalVideo.get().paused)
-				GlobalVideo.get().pause();
+			if (BackgroundVideo.get().paused)
+				BackgroundVideo.get().pause();
 		});
 
 		Lua_helper.add_callback(lua, "restartVideo", function()
 		{
-			GlobalVideo.get().restart();
+			BackgroundVideo.get().restart();
 		});
 
 		Lua_helper.add_callback(lua, "getVideoSpriteX", function()

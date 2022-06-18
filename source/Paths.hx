@@ -16,6 +16,8 @@ class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 
+	inline public static var VIDEO_EXT = #if FEATURE_MP4VIDEOS "mp4" #elseif (!FEATURE_MP4VIDEOS || FEATURE_WEBM) "webm" #end;
+
 	static var currentLevel:String;
 
 	static public function setCurrentLevel(name:String)
@@ -259,14 +261,17 @@ class Paths
 		return OpenFlAssets.exists(path, AssetType.TEXT);
 	}
 
+	static public function video(key:String)
+	{
+		return 'assets/videos/$key.$VIDEO_EXT';
+	}
+
 	inline static public function image(key:String, ?library:String):FlxGraphic
 	{
 		var returnAsset = getPath('images/$key.png', IMAGE, library);
 		localTrackedAssets.push(returnAsset);
 		var newGraphic:FlxGraphic = FlxG.bitmap.add(returnAsset, false, returnAsset);
-		#if PRELOAD_ALL
 		newGraphic.persist = true;
-		#end
 		currentTrackedAssets.set(returnAsset, newGraphic);
 		return currentTrackedAssets.get(returnAsset);
 	}

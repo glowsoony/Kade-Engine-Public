@@ -118,6 +118,19 @@ class Main extends Sprite
 		toggleFPS(FlxG.save.data.fps);
 		#end
 
+		var ourSource:String = "assets/videos/daWeirdVid/dontDelete.webm";
+
+		#if web
+		var str1:String = "HTML CRAP";
+		var vHandler = new VideoHandler();
+		vHandler.init1();
+		vHandler.video.name = str1;
+		addChild(vHandler.video);
+		vHandler.init2();
+		GlobalVideo.setVid(vHandler);
+		vHandler.source(ourSource);
+		#end
+
 		// Finish up loading debug tools.
 		Debug.onGameStart();
 	}

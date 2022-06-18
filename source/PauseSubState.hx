@@ -65,14 +65,9 @@ class PauseSubState extends MusicBeatSubstate
 
 		if (PlayState.instance.useVideo)
 		{
-			menuItems.remove("Resume");
-			if (GlobalVideo.get().playing)
-				GlobalVideo.get().pause();
+			if (BackgroundVideo.get().playing)
+				BackgroundVideo.get().pause();
 		}
-
-		/*#if html5
-			menuItems.remove("Options");
-			#end */
 
 		if (FlxG.sound.music.playing)
 			FlxG.sound.music.pause();
@@ -162,9 +157,6 @@ class PauseSubState extends MusicBeatSubstate
 
 		super.update(elapsed);
 
-		if (PlayState.instance.useVideo)
-			menuItems.remove('Resume');
-
 		for (i in FlxG.sound.list)
 		{
 			if (i.playing && i.ID != 9000)
@@ -219,7 +211,7 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.startTime = 0;
 					if (PlayState.instance.useVideo)
 					{
-						GlobalVideo.get().stop();
+						BackgroundVideo.get().stop();
 						PlayState.instance.remove(PlayState.instance.videoSprite);
 						PlayState.instance.removedVideo = true;
 					}
@@ -233,7 +225,7 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.startTime = 0;
 					if (PlayState.instance.useVideo)
 					{
-						GlobalVideo.get().stop();
+						BackgroundVideo.get().stop();
 						PlayState.instance.remove(PlayState.instance.videoSprite);
 						PlayState.instance.removedVideo = true;
 					}

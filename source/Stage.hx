@@ -693,7 +693,7 @@ class Stage extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
-		if (!FlxG.save.data.optimize)
+		if (!FlxG.save.data.optimize && FlxG.save.data.background)
 		{
 			switch (curStage)
 			{

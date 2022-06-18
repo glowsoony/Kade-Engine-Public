@@ -83,10 +83,10 @@ class WebmHandler
 
 	public function update(elapsed:Float)
 	{
-		webm.x = GlobalVideo.calc(0);
-		webm.y = GlobalVideo.calc(1);
-		webm.width = GlobalVideo.calc(2);
-		webm.height = GlobalVideo.calc(3);
+		webm.x = BackgroundVideo.calc(0);
+		webm.y = BackgroundVideo.calc(1);
+		webm.width = BackgroundVideo.calc(2);
+		webm.height = BackgroundVideo.calc(3);
 	}
 
 	public var stopped:Bool = false;
@@ -148,12 +148,12 @@ class WebmHandler
 
 	public function alpha():Void
 	{
-		webm.alpha = GlobalVideo.daAlpha1;
+		webm.alpha = BackgroundVideo.daAlpha1;
 	}
 
 	public function unalpha():Void
 	{
-		webm.alpha = GlobalVideo.daAlpha2;
+		webm.alpha = BackgroundVideo.daAlpha2;
 	}
 
 	public function hide():Void
