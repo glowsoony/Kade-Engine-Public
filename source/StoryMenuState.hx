@@ -400,6 +400,10 @@ class StoryMenuState extends MusicBeatState
 							LoadingState.loadAndSwitchState(new PlayState(), true);
 					}
 				}
+				else
+				{
+					LoadingState.loadAndSwitchState(new PlayState(), true);
+				}
 				#else
 				LoadingState.loadAndSwitchState(new PlayState(), true);
 				#end

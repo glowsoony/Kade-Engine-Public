@@ -8,7 +8,6 @@
 # Friday Night Funkin': Kade Engine
 ### Kade Engine contribution is useless because it's not maintained anymore.
 ### You can contribute to this repository instead!
-### If you want to contribute to this custom Fork of Kade Engine, read [this](https://github.com/KadeDev/Kade-Engine/blob/stable/CONTRIBUTING.md) first.
 ### If you want to build Kade Engine, read [this](https://github.com/BoloVEVO/Kade-Engine/blob/stable/docs/building.md).
 
 ## Friday Night Funkin'

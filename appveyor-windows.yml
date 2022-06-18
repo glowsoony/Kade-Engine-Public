@@ -11,7 +11,7 @@ install:
   # Install the neko chocolatey package (https://chocolatey.org/packages/neko)
   - cinst neko --version 2.3.0 -y
   # Install the haxe chocolatey package (https://chocolatey.org/packages/haxe)
-  - cinst haxe --version 4.2.5 -y
+  - cinst haxe --version 4.2.4 -y
   - RefreshEnv
   # Setup haxelib
   - mkdir "%HAXELIB_ROOT%"
@@ -28,6 +28,8 @@ install:
   - haxelib install flixel-addons
   - haxelib install flixel-ui
   - haxelib install hscript
+  - haxelib git hxCodec https://github.com/polybiusproxy/hxCodec
+  - haxelib install hxCodec
   - haxelib install flixel-addons
   - haxelib git faxe https://github.com/uhrobots/faxe
   - haxelib git polymod https://github.com/larsiusprime/polymod.git

@@ -82,6 +82,7 @@ class VideoState extends MusicBeatState
 			GlobalVideo.get().updatePlayer();
 		}
 		GlobalVideo.get().show();
+
 		if (GlobalVideo.isWebm)
 		{
 			GlobalVideo.get().restart();
@@ -97,6 +98,7 @@ class VideoState extends MusicBeatState
 
 		/*new FlxTimer().start(0.1, function(tmr:FlxTimer)
 			{ */
+
 		if (vidSound != null)
 			vidSound.time = vidSound.length * soundMultiplier;
 		/*new FlxTimer().start(1.2, function(tmr:FlxTimer)
@@ -163,7 +165,7 @@ class VideoState extends MusicBeatState
 		}
 		GlobalVideo.get().update(elapsed);
 
-		if (controls.RESET)
+		if (FlxG.keys.justPressed.R)
 		{
 			GlobalVideo.get().restart();
 		}
@@ -197,7 +199,7 @@ class VideoState extends MusicBeatState
 			FlxG.sound.music.volume = fuckingVolume;
 			txt.text = pauseText;
 			FlxG.autoPause = true;
-			FlxG.switchState(transClass);
+			MusicBeatState.switchState(transClass);
 		}
 
 		if (GlobalVideo.get().played || GlobalVideo.get().restarted)
