@@ -89,9 +89,8 @@ class LoadingState extends MusicBeatState
 					checkLoadSong(getVocalPath());
 			}
 
-			// Essential libraries (characters,notes,gameplay elements, video cutscenes)
+			// Essential libraries (characters,notes,gameplay elements)
 			checkLibrary("shared");
-			checkLibrary("videos");
 			if (!FlxG.save.data.optimize && FlxG.save.data.background)
 			{
 				if (PlayState.storyWeek > 0)

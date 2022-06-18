@@ -156,6 +156,9 @@ class TitleState extends MusicBeatState
 			ngSpr.antialiasing = FlxG.save.data.antialiasing;
 		}
 
+		FlxG.sound.volume = FlxG.save.data.volume;
+		FlxG.sound.muted = FlxG.save.data.mute;
+
 		super.create();
 
 		#if FREEPLAY

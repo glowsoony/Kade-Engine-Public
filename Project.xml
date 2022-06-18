@@ -80,7 +80,7 @@
 		<library name="week6"    preload="false" />
 		<library name="week7"    preload="false" />
 		<library name="sm"    preload="false" />
-		<library name="videos"    preload="false" />
+		<library name="videos"    preload="true" />
 	</section>
 	
 	<assets path="assets/videos" library="videos"  exclude="*.webm|*.ogg|*.txt" if="windows"/>
