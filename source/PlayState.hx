@@ -4292,17 +4292,14 @@ class PlayState extends MusicBeatState
 						FlxG.sound.music.stop();
 
 						#if !FEATURE_MP4VIDEOS
-						if (storyWeek == 7)
+						if (storyWeek == 7 && (FlxG.save.data.optimize || !FlxG.save.data.background))
 						{
-							if (FlxG.save.data.optimize || !FlxG.save.data.background)
+							switch (SONG.songId)
 							{
-								switch (SONG.songId)
-								{
-									case 'guns':
-										LoadingState.loadAndSwitchState(new VideoState('cutscenes/guns_cutscene', new PlayState()), true);
-									case 'stress':
-										LoadingState.loadAndSwitchState(new VideoState('cutscenes/stress_cutscene', new PlayState()), true);
-								}
+								case 'guns':
+									LoadingState.loadAndSwitchState(new VideoState('cutscenes/guns_cutscene', new PlayState()), true);
+								case 'stress':
+									LoadingState.loadAndSwitchState(new VideoState('cutscenes/stress_cutscene', new PlayState()), true);
 							}
 						}
 						else
