@@ -198,12 +198,17 @@ class ResultsScreen extends FlxSubState
 			&& (!PlayStateChangeables.botPlay || !PlayState.usedBot)
 			&& !FlxG.save.data.practice
 			&& PlayStateChangeables.holds
+			&& !PlayState.wentToChartEditor
 			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthGain, 2) <= 1
 			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthLoss, 2) >= 1 ? '| Accepted' : '| Rejected');
 
 		if (!PlayStateChangeables.modchart #if FEATURE_LUAMODCHART
 			&& FileSystem.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart')) #else && PlayState.instance.sourceModchart #end)
 			acceptShit = '| Rejected';
+
+		#if debug
+		acceptShit = '| Debug';
+		#end
 
 		if (PlayState.isStoryMode)
 			acceptShit = '';

@@ -611,11 +611,13 @@ class FreeplayState extends MusicBeatState
 
 			if (accepted)
 				loadSong();
+			#if debug
+			// Going to charting state via Freeplay is only enable in debug builds.
 			else if (charting)
 				loadSong(true);
 
 			// AnimationDebug and StageDebug are only enabled in debug builds.
-			#if debug
+
 			if (dadDebug)
 			{
 				loadAnimDebug(true);
@@ -671,7 +673,9 @@ class FreeplayState extends MusicBeatState
 		{
 			if (songData.get(songName) == null)
 				return;
+
 			currentSongData = songData.get(songName)[difficulty];
+
 			if (songData.get(songName)[difficulty] == null)
 				return;
 		}
@@ -680,10 +684,21 @@ class FreeplayState extends MusicBeatState
 			return;
 		}
 
-		PlayState.SONG = currentSongData;
+		// 3% chance for loading Kade Engine's remix of test song.
+		if (FlxG.random.bool(3))
+		{
+			PlayState.SONG = Song.loadFromJson('test', '');
+			PlayState.storyDifficulty = 1;
+			PlayState.storyWeek = 0;
+		}
+		else
+		{
+			PlayState.SONG = currentSongData;
+			PlayState.storyDifficulty = difficulty;
+			PlayState.storyWeek = songs[curSelected].week;
+		}
 		PlayState.isStoryMode = false;
-		PlayState.storyDifficulty = difficulty;
-		PlayState.storyWeek = songs[curSelected].week;
+
 		Debug.logInfo('Loading song ${PlayState.SONG.songName} from week ${PlayState.storyWeek} into Free Play...');
 		#if FEATURE_STEPMANIA
 		if (songs[curSelected].songCharacter == "sm")

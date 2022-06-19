@@ -358,6 +358,8 @@ class PlayState extends MusicBeatState
 	// Cheatin
 	public static var usedBot:Bool = false;
 
+	public static var wentToChartEditor:Bool = false;
+
 	// Fake crochet for Sustain Notes
 	public var fakeCrochet:Float = 0;
 
@@ -653,6 +655,12 @@ class PlayState extends MusicBeatState
 		if (isStoryMode)
 			songMultiplier = 1;
 
+		if (!isStoryMode)
+		{
+			if (SONG.songId == 'test')
+				storyDifficulty = 1;
+		}
+
 		// defaults if no gf was found in chart
 		var gfCheck:String = 'gf';
 
@@ -943,6 +951,9 @@ class PlayState extends MusicBeatState
 			trace('song looks gucci');
 
 		generateSong(SONG.songId);
+
+		if (SONG.songId == 'test')
+			storyDifficulty = 1;
 
 		#if FEATURE_LUAMODCHART
 		if (executeModchart)
@@ -2927,6 +2938,7 @@ class PlayState extends MusicBeatState
 
 		if (FlxG.keys.justPressed.SEVEN && !isStoryMode)
 		{
+			wentToChartEditor = true;
 			if (PlayStateChangeables.mirrorMode)
 				PlayStateChangeables.mirrorMode = !PlayStateChangeables.mirrorMode;
 			executeModchart = false;

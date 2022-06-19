@@ -121,8 +121,8 @@ class KadeEngineFPS extends TextField
 			text = (FlxG.save.data.fps ? "FPS: "
 				+ currentFPS
 				+ memoryUsage
-				+ (Main.watermarks ? "\nKade Engine " + "v" + MainMenuState.kadeEngineVer : "") : memoryUsage
-				+ (Main.watermarks ? "\nKade Engine " + "v" + MainMenuState.kadeEngineVer : ""));
+				+ (Main.watermarks?"\nKade Engine " + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : "") : memoryUsage
+				+ (Main.watermarks?"\nKade Engine " + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : ""));
 
 			#if (gl_stats && !disable_cffi && (!html5 || !canvas))
 			text += "\ntotalDC: " + Context3DStats.totalDrawCalls();
