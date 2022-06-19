@@ -1070,12 +1070,15 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		switch (SONG.noteStyle)
+		if (FlxG.save.data.noteSplashes)
 		{
-			case 'pixel':
-				precacheList.set('weeb/pixelUI/noteSplashes-pixels', 'frame');
-			default:
-				precacheList.set('noteSplashes', 'frame');
+			switch (SONG.noteStyle)
+			{
+				case 'pixel':
+					precacheList.set('weeb/pixelUI/noteSplashes-pixels', 'frame');
+				default:
+					precacheList.set('noteSplashes', 'frame');
+			}
 		}
 
 		// Update lane underlay positions AFTER static arrows :)
@@ -2148,7 +2151,7 @@ class PlayState extends MusicBeatState
 			fakeCrochet = ((60 / (timingSeg.bpm) * 1000)) / songMultiplier;
 
 			// Loading pico shoot anims SONG json fucks the sustains crochet, to fix it only we need to power songMultiplier to 2.
-			if (!FlxG.save.data.optimize && FlxG.save.data.distractions)
+			if (!FlxG.save.data.optimize && FlxG.save.data.background && FlxG.save.data.distractions)
 				if (SONG.songId == 'stress' && gf.curCharacter == 'pico-speaker')
 					fakeCrochet = ((60 / (timingSeg.bpm) * 1000)) / Math.pow(songMultiplier, 2);
 
@@ -4192,14 +4195,23 @@ class PlayState extends MusicBeatState
 		vocals.volume = 0;
 		FlxG.sound.music.stop();
 		vocals.stop();
-		if (SONG.validScore && (!PlayStateChangeables.botPlay || !usedBot) && !FlxG.save.data.practice)
+
+		var superMegaConditionShit:Bool = Ratings.timingWindows[3] == 45
+			&& Ratings.timingWindows[2] == 90
+			&& Ratings.timingWindows[1] == 135
+			&& Ratings.timingWindows[0] == 160
+			&& (!PlayStateChangeables.botPlay || !PlayState.usedBot)
+			&& !FlxG.save.data.practice
+			&& PlayStateChangeables.holds
+			&& !PlayState.wentToChartEditor
+			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthGain, 2) <= 1
+			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthLoss, 2) >= 1;
+		if (SONG.validScore && superMegaConditionShit)
 		{
-			#if !switch
 			Highscore.saveScore(PlayState.SONG.songId, Math.round(songScore), storyDifficulty);
 			Highscore.saveCombo(PlayState.SONG.songId, Ratings.GenerateComboRank(accuracy), storyDifficulty);
 			Highscore.saveAcc(PlayState.SONG.songId, HelperFunctions.truncateFloat(accuracy, 2), storyDifficulty);
 			Highscore.saveLetter(PlayState.SONG.songId, Ratings.GenerateLetterRank(accuracy), storyDifficulty);
-			#end
 		}
 
 		if (offsetTesting)

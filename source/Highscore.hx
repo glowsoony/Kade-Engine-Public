@@ -22,56 +22,43 @@ class Highscore
 	{
 		var daSong:String = formatSong(song, diff);
 
-		if (!FlxG.save.data.botplay)
+		if (songScores.exists(daSong))
 		{
-			if (songScores.exists(daSong))
-			{
-				if (songScores.get(daSong) < score)
-					setScore(daSong, score);
-			}
-			else
+			if (songScores.get(daSong) < score)
 				setScore(daSong, score);
 		}
 		else
-			trace('BotPlay detected. Score saving is disabled.');
+			setScore(daSong, score);
 	}
 
 	public static function saveAcc(song:String, accuracy:Float, ?diff:Int = 0):Void
 	{
 		var daSong:String = formatSong(song, diff);
 
-		if (!FlxG.save.data.botplay)
+		if (songAcc.exists(daSong))
 		{
-			if (songAcc.exists(daSong))
-			{
-				if (songAcc.get(daSong) < accuracy)
-					setAcc(daSong, accuracy);
-			}
-			else
-			{
+			if (songAcc.get(daSong) < accuracy)
 				setAcc(daSong, accuracy);
-			}
 		}
-		trace('BotPlay detected. Accuracy saving is disabled.');
+		else
+		{
+			setAcc(daSong, accuracy);
+		}
 	}
 
 	public static function saveLetter(song:String, letter:String, ?diff:Int = 0):Void
 	{
 		var daSong:String = formatSong(song, diff);
-		if (!FlxG.save.data.botplay)
-		{
-			if (songLetter.exists(daSong))
-			{
-				if (getLetterInt(songLetter.get(daSong)) < getLetterInt(letter))
-					setLetter(daSong, letter);
-			}
-			else
-			{
-				setLetter(daSong, letter);
-			}
-		}
 
-		trace('BotPlay detected. Letter saving is disabled.');
+		if (songLetter.exists(daSong))
+		{
+			if (getLetterInt(songLetter.get(daSong)) < getLetterInt(letter))
+				setLetter(daSong, letter);
+		}
+		else
+		{
+			setLetter(daSong, letter);
+		}
 	}
 
 	public static function saveCombo(song:String, combo:String, ?diff:Int = 0):Void
@@ -79,34 +66,26 @@ class Highscore
 		var daSong:String = formatSong(song, diff);
 		var finalCombo:String = combo.split(')')[0].replace('(', '');
 
-		if (!FlxG.save.data.botplay)
+		if (songCombos.exists(daSong))
 		{
-			if (songCombos.exists(daSong))
-			{
-				if (getComboInt(songCombos.get(daSong)) < getComboInt(finalCombo))
-					setCombo(daSong, finalCombo);
-			}
-			else
+			if (getComboInt(songCombos.get(daSong)) < getComboInt(finalCombo))
 				setCombo(daSong, finalCombo);
 		}
+		else
+			setCombo(daSong, finalCombo);
 	}
 
 	public static function saveWeekScore(week:Int = 1, score:Int = 0, ?diff:Int = 0):Void
 	{
-		if (!FlxG.save.data.botplay)
-		{
-			var daWeek:String = formatSong('week' + week, diff);
+		var daWeek:String = formatSong('week' + week, diff);
 
-			if (songScores.exists(daWeek))
-			{
-				if (songScores.get(daWeek) < score)
-					setScore(daWeek, score);
-			}
-			else
+		if (songScores.exists(daWeek))
+		{
+			if (songScores.get(daWeek) < score)
 				setScore(daWeek, score);
 		}
 		else
-			trace('BotPlay detected. Score saving is disabled.');
+			setScore(daWeek, score);
 	}
 
 	/**

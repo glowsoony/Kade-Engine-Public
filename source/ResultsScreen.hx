@@ -59,6 +59,8 @@ class ResultsScreen extends FlxSubState
 
 	public var activeMods:FlxText;
 
+	public var superMegaConditionShit:Bool;
+
 	override function create()
 	{
 		background = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
@@ -189,18 +191,27 @@ class ResultsScreen extends FlxSubState
 		graph.update();
 		#end
 
-		mean = HelperFunctions.truncateFloat(mean / PlayState.rep.replay.songNotes.length, 2);
-		var acceptShit:String = (Ratings.timingWindows[3] == 45
+		superMegaConditionShit = Ratings.timingWindows[3] == 45
 			&& Ratings.timingWindows[2] == 90
 			&& Ratings.timingWindows[1] == 135
 			&& Ratings.timingWindows[0] == 160
-			&& FlxG.save.data.accuracyMod == 0
 			&& (!PlayStateChangeables.botPlay || !PlayState.usedBot)
 			&& !FlxG.save.data.practice
 			&& PlayStateChangeables.holds
 			&& !PlayState.wentToChartEditor
 			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthGain, 2) <= 1
-			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthLoss, 2) >= 1 ? '| Accepted' : '| Rejected');
+			&& HelperFunctions.truncateFloat(PlayStateChangeables.healthLoss, 2) >= 1;
+
+		if (PlayState.SONG.validScore && superMegaConditionShit)
+		{
+			Highscore.saveScore(PlayState.SONG.songId, Math.round(PlayState.instance.songScore), PlayState.storyDifficulty);
+			Highscore.saveCombo(PlayState.SONG.songId, Ratings.GenerateLetterRank(PlayState.instance.accuracy), PlayState.storyDifficulty);
+			Highscore.saveAcc(PlayState.SONG.songId, HelperFunctions.truncateFloat(PlayState.instance.accuracy, 2), PlayState.storyDifficulty);
+			Highscore.saveLetter(PlayState.SONG.songId, Ratings.GenerateLetterRank(PlayState.instance.accuracy), PlayState.storyDifficulty);
+		}
+
+		mean = HelperFunctions.truncateFloat(mean / PlayState.rep.replay.songNotes.length, 2);
+		var acceptShit:String = (superMegaConditionShit && FlxG.save.data.accuracyMod == 0 ? '| Accepted' : '| Rejected');
 
 		if (!PlayStateChangeables.modchart #if FEATURE_LUAMODCHART
 			&& FileSystem.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart')) #else && PlayState.instance.sourceModchart #end)
@@ -266,16 +277,6 @@ class ResultsScreen extends FlxSubState
 			PlayState.stageTesting = false;
 			PlayState.rep = null;
 
-			#if !switch
-			if (PlayState.SONG.validScore && (!PlayStateChangeables.botPlay || !PlayState.usedBot) && !FlxG.save.data.practice)
-			{
-				Highscore.saveScore(PlayState.SONG.songId, Math.round(PlayState.instance.songScore), PlayState.storyDifficulty);
-				Highscore.saveCombo(PlayState.SONG.songId, Ratings.GenerateLetterRank(PlayState.instance.accuracy), PlayState.storyDifficulty);
-				Highscore.saveAcc(PlayState.SONG.songId, HelperFunctions.truncateFloat(PlayState.instance.accuracy, 2), PlayState.storyDifficulty);
-				Highscore.saveLetter(PlayState.SONG.songId, Ratings.GenerateLetterRank(PlayState.instance.accuracy), PlayState.storyDifficulty);
-			}
-			#end
-
 			if (PlayState.isStoryMode)
 			{
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
@@ -293,16 +294,6 @@ class ResultsScreen extends FlxSubState
 
 			PlayState.loadRep = false;
 			PlayState.stageTesting = false;
-
-			#if !switch
-			if (PlayState.SONG.validScore && (!PlayStateChangeables.botPlay || !PlayState.usedBot) && !FlxG.save.data.practice)
-			{
-				Highscore.saveScore(PlayState.SONG.songId, Math.round(PlayState.instance.songScore), PlayState.storyDifficulty);
-				Highscore.saveCombo(PlayState.SONG.songId, Ratings.GenerateComboRank(PlayState.instance.accuracy), PlayState.storyDifficulty);
-				Highscore.saveAcc(PlayState.SONG.songId, HelperFunctions.truncateFloat(PlayState.instance.accuracy, 2), PlayState.storyDifficulty);
-				Highscore.saveLetter(PlayState.SONG.songId, Ratings.GenerateLetterRank(PlayState.instance.accuracy), PlayState.storyDifficulty);
-			}
-			#end
 
 			if (music != null)
 				music.fadeOut(0.3);

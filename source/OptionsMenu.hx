@@ -371,8 +371,13 @@ class OptionsMenu extends FlxSubState
 		{
 			selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
 		}
-		if (!FlxG.save.data.healthBar && selectedCatIndex == 1)
-			selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
+		if (selectedCatIndex == 1)
+		{
+			if (!FlxG.save.data.healthBar)
+				selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
+
+			selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
+		}
 		if (isInPause)
 		{
 			switch (selectedCatIndex)
@@ -385,6 +390,8 @@ class OptionsMenu extends FlxSubState
 					selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
 					if (PlayState.isStoryMode)
 						selectedCat.optionObjects.members[5].color = FlxColor.YELLOW;
+				case 1:
+					selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
 				case 3:
 					for (i in 0...3)
 						selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
@@ -740,8 +747,13 @@ class OptionsMenu extends FlxSubState
 						{
 							selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
 						}
-						if (!FlxG.save.data.healthBar && selectedCatIndex == 1)
-							selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
+						if (selectedCatIndex == 1)
+						{
+							if (!FlxG.save.data.healthBar)
+								selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
+							selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
+						}
+
 						if (isInPause) // DUPLICATED CUZ MEMORY LEAK OR SMTH IDK
 						{
 							switch (selectedCatIndex)
@@ -751,6 +763,8 @@ class OptionsMenu extends FlxSubState
 									selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
 									if (PlayState.isStoryMode)
 										selectedCat.optionObjects.members[5].color = FlxColor.YELLOW;
+								case 1:
+									selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
 								case 3:
 									for (i in 0...3)
 										selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
