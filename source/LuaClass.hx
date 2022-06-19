@@ -995,6 +995,16 @@ class LuaCamera extends LuaClass
 				setter: SetNumProperty
 			},
 
+			"zoom" => {
+				defaultValue: connectedCamera.zoom,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, connectedCamera.zoom);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
 			"x" => {
 				defaultValue: connectedCamera.x,
 				getter: function(l:State, data:Any):Int

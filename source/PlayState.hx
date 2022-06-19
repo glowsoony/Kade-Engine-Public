@@ -356,7 +356,7 @@ class PlayState extends MusicBeatState
 	public var zoomAllowed:Bool = FlxG.save.data.camzoom;
 	public var LuaColours:Bool = FlxG.save.data.colour;
 	public var LuaStepMania:Bool = FlxG.save.data.stepMania;
-	public var LuaOpponent:Bool = PlayStateChangeables.opponentMode;
+	public var LuaOpponent:Bool = FlxG.save.data.opponent;
 
 	// Cheatin
 	public static var usedBot:Bool = false;
@@ -410,10 +410,10 @@ class PlayState extends MusicBeatState
 		Paths.clearStoredMemory();
 		FlxG.mouse.visible = false;
 		instance = this;
-		
+
 		tweenManager = new FlxTweenManager();
 		timerManager = new FlxTimerManager();
-		
+
 		// grab variables here too or else its gonna break stuff later on
 		GameplayCustomizeState.freeplayNoteStyle = SONG.noteStyle;
 		previousRate = songMultiplier - 0.05;
@@ -587,6 +587,69 @@ class PlayState extends MusicBeatState
 
 		if (SONG == null)
 			SONG = Song.loadFromJson('tutorial', '');
+
+		switch (SONG.songId)
+		{
+			case 'tutorial':
+				songFixedName = "Tutorial";
+				sourceModchart = true;
+			case 'bopeebo':
+				songFixedName = "Bopeebo";
+
+			case 'fresh':
+				songFixedName = "Fresh!";
+
+			case 'dadbattle':
+				songFixedName = "Dad Battle";
+
+			case "spookeez":
+				songFixedName = "Spookeez!";
+
+			case "south":
+				songFixedName = "South";
+
+			case "monster":
+				songFixedName = "Monster...";
+
+			case "pico":
+				songFixedName = "Pico";
+
+			case "philly":
+				songFixedName = "Philly Noice";
+
+			case "blammed":
+				songFixedName = "Blammed";
+
+			case "high":
+				songFixedName = "High!";
+
+			case "cocoa":
+				songFixedName = "Cocoa";
+
+			case "eggnog":
+				songFixedName = "EGGnog";
+
+			case "winter horroland":
+				songFixedName = "Winter Horroland...";
+
+			case "senpai":
+				songFixedName = "Senpai!"; // Cringe lol
+
+			case "roses":
+				songFixedName = "Roses...";
+
+			case "thorns":
+				songFixedName = "Thorns!";
+
+			case "ugh":
+				songFixedName = "Ugh!";
+
+			case "guns":
+				songFixedName = "Guns!";
+
+			case "stress":
+				songFixedName = "Stress";
+		}
 
 		Conductor.mapBPMChanges(SONG);
 		Conductor.changeBPM(SONG.bpm);
@@ -1390,69 +1453,6 @@ class PlayState extends MusicBeatState
 				case 'music':
 					Paths.music(key);
 			}
-		}
-
-		switch (SONG.songId)
-		{
-			case 'tutorial':
-				songFixedName = "Tutorial";
-				sourceModchart = true;
-			case 'bopeebo':
-				songFixedName = "Bopeebo";
-
-			case 'fresh':
-				songFixedName = "Fresh!";
-
-			case 'dadbattle':
-				songFixedName = "Dad Battle";
-
-			case "spookeez":
-				songFixedName = "Spookeez!";
-
-			case "south":
-				songFixedName = "South";
-
-			case "monster":
-				songFixedName = "Monster...";
-
-			case "pico":
-				songFixedName = "Pico";
-
-			case "philly":
-				songFixedName = "Philly Noice";
-
-			case "blammed":
-				songFixedName = "Blammed";
-
-			case "high":
-				songFixedName = "High!";
-
-			case "cocoa":
-				songFixedName = "Cocoa";
-
-			case "eggnog":
-				songFixedName = "EGGnog";
-
-			case "winter horroland":
-				songFixedName = "Winter Horroland...";
-
-			case "senpai":
-				songFixedName = "Senpai!"; // Cringe lol
-
-			case "roses":
-				songFixedName = "Roses...";
-
-			case "thorns":
-				songFixedName = "Thorns!";
-
-			case "ugh":
-				songFixedName = "Ugh!";
-
-			case "guns":
-				songFixedName = "Guns!";
-
-			case "stress":
-				songFixedName = "Stress";
 		}
 
 		Paths.clearUnusedMemory();
@@ -4418,7 +4418,7 @@ class PlayState extends MusicBeatState
 	public function NoteSplashesSpawn(daNote:Note):Void
 	{
 		var sploosh:FlxSprite = new FlxSprite(playerStrums.members[daNote.noteData].x + 10.5, playerStrums.members[daNote.noteData].y - 20);
-
+		sploosh.antialiasing = FlxG.save.data.antialiasing;
 		if (FlxG.save.data.noteSplashes)
 		{
 			switch (SONG.noteStyle)
@@ -4447,6 +4447,7 @@ class PlayState extends MusicBeatState
 				default:
 					var tex:flixel.graphics.frames.FlxAtlasFrames = Paths.getSparrowAtlas('noteSplashes', 'shared');
 					sploosh.frames = tex;
+
 					sploosh.animation.addByPrefix('splash 0 0', 'note splash 1 purple', 24, false);
 					sploosh.animation.addByPrefix('splash 0 1', 'note splash 1  blue', 24, false);
 					sploosh.animation.addByPrefix('splash 0 2', 'note splash 1 green', 24, false);
@@ -6248,12 +6249,9 @@ class PlayState extends MusicBeatState
 			ease: FlxEase.elasticOut
 		});
 
-		if (!isTweeningThisShit)
-		{
-			FlxG.camera.zoom += 0.06;
+		FlxG.camera.zoom += 0.06;
 
-			createTweenNum(FlxG.camera.zoom, FlxG.camera.zoom - 0.06, 0.5 / songMultiplier, {ease: FlxEase.elasticOut}, updateCamZoom.bind(FlxG.camera));
-		}
+		createTweenNum(FlxG.camera.zoom, FlxG.camera.zoom - 0.06, 0.5 / songMultiplier, {ease: FlxEase.elasticOut}, updateCamZoom.bind(FlxG.camera));
 	}
 
 	function receptorTween()
@@ -6281,22 +6279,13 @@ class PlayState extends MusicBeatState
 
 	function tweenCamZoom(isDad:Bool)
 	{
-		isTweeningThisShit = true;
 		if (isDad)
 			createTweenNum(FlxG.camera.zoom, FlxG.camera.zoom + 0.3, (Conductor.stepCrochet * 4 / 1000) / songMultiplier, {
 				ease: FlxEase.smootherStepInOut,
-				onComplete: function(twn)
-				{
-					isTweeningThisShit = false;
-				}
 			}, updateCamZoom.bind(FlxG.camera));
 		else
 			createTweenNum(FlxG.camera.zoom, FlxG.camera.zoom - 0.3, (Conductor.stepCrochet * 4 / 1000) / songMultiplier, {
 				ease: FlxEase.smootherStepInOut,
-				onComplete: function(twn)
-				{
-					isTweeningThisShit = false;
-				}
 			}, updateCamZoom.bind(FlxG.camera));
 	}
 	#end
