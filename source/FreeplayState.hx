@@ -102,6 +102,8 @@ class FreeplayState extends MusicBeatState
 		Paths.clearUnusedMemory();
 
 		instance = this;
+
+		PlayState.wentToChartEditor = false;
 		if (!FlxG.sound.music.playing)
 		{
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
