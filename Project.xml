@@ -217,7 +217,7 @@
   <!-- Defines whether the Thread class can be used. -->
   <haxedef name="FEATURE_MULTITHREADING" if="cpp" />
   <!-- Defines whether the mp4 videos should be enabled. -->
-  <define name="FEATURE_MP4VIDEOS" if="windows" unless="32bits"/>
+  <define name="FEATURE_MP4VIDEOS" if="windows | linux" unless="32bits"/>
   <!-- Defines whether the Mods menu will display before launching. -->
   <haxedef name="FEATURE_MODCORE" if="desktop" />
   

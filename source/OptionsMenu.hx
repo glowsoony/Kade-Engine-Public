@@ -352,54 +352,7 @@ class OptionsMenu extends FlxSubState
 
 		Debug.logTrace("Changed cat: " + selectedCatIndex);
 
-		for (i in 0...selectedCat.optionObjects.length)
-		{
-			selectedCat.optionObjects.members[i].color = FlxColor.WHITE;
-		}
-		#if html5
-		if (selectedCatIndex == 0)
-			selectedCat.optionObjects.members[6].color = FlxColor.YELLOW;
-		#end
-		if (FlxG.save.data.optimize && selectedCatIndex == 0)
-			selectedCat.optionObjects.members[9].color = FlxColor.YELLOW;
-		if (FlxG.save.data.optimize && selectedCatIndex == 3)
-		{
-			selectedCat.optionObjects.members[1].color = FlxColor.YELLOW;
-			selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-		}
-		if (!FlxG.save.data.background && selectedCatIndex == 3)
-		{
-			selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-		}
-		if (selectedCatIndex == 1)
-		{
-			if (!FlxG.save.data.healthBar)
-				selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
-
-			selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
-		}
-		if (isInPause)
-		{
-			switch (selectedCatIndex)
-			{
-				case 0:
-					selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-					#if html5
-					selectedCat.optionObjects.members[6].color = FlxColor.YELLOW;
-					#end
-					selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
-					if (PlayState.isStoryMode)
-						selectedCat.optionObjects.members[5].color = FlxColor.YELLOW;
-				case 1:
-					selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
-				case 3:
-					for (i in 0...3)
-						selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
-				case 4:
-					for (i in 0...4)
-						selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
-			}
-		}
+		updateOptColors();
 	}
 
 	public function selectOption(option:Option)
@@ -415,46 +368,7 @@ class OptionsMenu extends FlxSubState
 			descText.text = option.getDescription();
 			descText.color = FlxColor.WHITE;
 
-			// FOR SOME REASON DESCRIPTION TEXT DOESN'T UPDATE INSIDE THE STATE AND I'M LAZY TO REWORK THIS FUCKING CODE IN OPTIONS SO I'M PUTTING MY CONDITIONS HERE INSTEAD OF OPTIONS.HX
-
-			if (selectedOptionIndex == 12 && !FlxG.save.data.healthBar && selectedCatIndex == 1)
-			{
-				descText.text = "HEALTH BAR IS DISABLED! Colored health bar are disabled.";
-				descText.color = FlxColor.YELLOW;
-			}
-			if (selectedOptionIndex == 1 && FlxG.save.data.optimize && selectedCatIndex == 3)
-			{
-				descText.text = "OPTIMIZATION IS ENABLED! Distracions are disabled.";
-				descText.color = FlxColor.YELLOW;
-			}
-			if (selectedOptionIndex == 2 && FlxG.save.data.optimize && selectedCatIndex == 3)
-			{
-				descText.text = "OPTIMIZATION IS ENABLED! Backgrounds are disabled.";
-				descText.color = FlxColor.YELLOW;
-			}
-			if (selectedOptionIndex == 2 && !FlxG.save.data.background && selectedCatIndex == 3)
-			{
-				descText.text = "BACKGROUNDS ARE DISABLED! Distracions are disabled.";
-				descText.color = FlxColor.YELLOW;
-			}
-			if (selectedOptionIndex == 9 && FlxG.save.data.optimize && selectedCatIndex == 0)
-			{
-				descText.text = "OPTIMIZATION IS ENABLED! Cam Zooming is disabled.";
-				descText.color = FlxColor.YELLOW;
-			}
-			#if html5
-			if (selectedOptionIndex == 6 && selectedCatIndex == 0)
-			{
-				descText.text = "FPS cap setting is disabled in browser build.";
-				descText.color = FlxColor.YELLOW;
-			}
-			#end
-			if (descText.text == "BOTPLAY is disabled on Story Mode.")
-			{
-				descText.color = FlxColor.YELLOW;
-			}
-			if (descText.text == "This option cannot be toggled in the pause menu.")
-				descText.color = FlxColor.YELLOW;
+			updateOptColors();
 		}
 		Debug.logTrace("Changed opt: " + selectedOptionIndex);
 
@@ -725,55 +639,8 @@ class OptionsMenu extends FlxSubState
 						Debug.logTrace("New text: " + object.text);
 					}
 					if (changedOption)
-					{
-						for (i in 0...selectedCat.optionObjects.length)
-						{
-							selectedCat.optionObjects.members[i].color = FlxColor.WHITE;
-						}
-						if (selectedCatIndex == 0)
-						{
-							#if html5
-							selectedCat.optionObjects.members[6].color = FlxColor.YELLOW;
-							#end
-							if (FlxG.save.data.optimize)
-								selectedCat.optionObjects.members[9].color = FlxColor.YELLOW;
-						}
-						if (FlxG.save.data.optimize && selectedCatIndex == 3)
-						{
-							selectedCat.optionObjects.members[1].color = FlxColor.YELLOW;
-							selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-						}
-						if (!FlxG.save.data.background && selectedCatIndex == 3)
-						{
-							selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-						}
-						if (selectedCatIndex == 1)
-						{
-							if (!FlxG.save.data.healthBar)
-								selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
-							selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
-						}
+						updateOptColors();
 
-						if (isInPause) // DUPLICATED CUZ MEMORY LEAK OR SMTH IDK
-						{
-							switch (selectedCatIndex)
-							{
-								case 0:
-									selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-									selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
-									if (PlayState.isStoryMode)
-										selectedCat.optionObjects.members[5].color = FlxColor.YELLOW;
-								case 1:
-									selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
-								case 3:
-									for (i in 0...3)
-										selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
-								case 4:
-									for (i in 0...4)
-										selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
-							}
-						}
-					}
 					if (escape)
 					{
 						FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -834,6 +701,98 @@ class OptionsMenu extends FlxSubState
 				selectedCat.optionObjects.members[selectedOptionIndex].text = selectedOption.getValue();
 				isInCat = true;
 			}
+		}
+	}
+
+	function updateOptColors():Void
+	{
+		for (i in 0...selectedCat.optionObjects.length)
+		{
+			selectedCat.optionObjects.members[i].color = FlxColor.WHITE;
+		}
+		if (selectedCatIndex == 0)
+		{
+			#if html5
+			selectedCat.optionObjects.members[6].color = FlxColor.YELLOW;
+			#end
+			if (FlxG.save.data.optimize)
+				selectedCat.optionObjects.members[9].color = FlxColor.YELLOW;
+		}
+		if (FlxG.save.data.optimize && selectedCatIndex == 3)
+		{
+			selectedCat.optionObjects.members[1].color = FlxColor.YELLOW;
+			selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
+		}
+		if (!FlxG.save.data.background && selectedCatIndex == 3)
+		{
+			selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
+		}
+		if (selectedCatIndex == 1)
+		{
+			if (!FlxG.save.data.healthBar)
+				selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
+		}
+
+		if (isInPause) // DUPLICATED CUZ MEMORY LEAK OR SMTH IDK
+		{
+			switch (selectedCatIndex)
+			{
+				case 0:
+					selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
+					selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
+					if (PlayState.isStoryMode)
+						selectedCat.optionObjects.members[5].color = FlxColor.YELLOW;
+				case 1:
+					selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
+				case 3:
+					for (i in 0...3)
+						selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
+				case 4:
+					for (i in 0...4)
+						selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
+			}
+		}
+
+		if (!isInCat)
+		{
+			if (selectedOptionIndex == 12 && !FlxG.save.data.healthBar && selectedCatIndex == 1)
+			{
+				descText.text = "HEALTH BAR IS DISABLED! Colored health bar are disabled.";
+				descText.color = FlxColor.YELLOW;
+			}
+			if (selectedOptionIndex == 1 && FlxG.save.data.optimize && selectedCatIndex == 3)
+			{
+				descText.text = "OPTIMIZATION IS ENABLED! Distracions are disabled.";
+				descText.color = FlxColor.YELLOW;
+			}
+			if (selectedOptionIndex == 2 && FlxG.save.data.optimize && selectedCatIndex == 3)
+			{
+				descText.text = "OPTIMIZATION IS ENABLED! Backgrounds are disabled.";
+				descText.color = FlxColor.YELLOW;
+			}
+			if (selectedOptionIndex == 2 && !FlxG.save.data.background && selectedCatIndex == 3)
+			{
+				descText.text = "BACKGROUNDS ARE DISABLED! Distracions are disabled.";
+				descText.color = FlxColor.YELLOW;
+			}
+			if (selectedOptionIndex == 9 && FlxG.save.data.optimize && selectedCatIndex == 0)
+			{
+				descText.text = "OPTIMIZATION IS ENABLED! Cam Zooming is disabled.";
+				descText.color = FlxColor.YELLOW;
+			}
+			#if html5
+			if (selectedOptionIndex == 6 && selectedCatIndex == 0)
+			{
+				descText.text = "FPS cap setting is disabled in browser build.";
+				descText.color = FlxColor.YELLOW;
+			}
+			#end
+			if (descText.text == "BOTPLAY is disabled on Story Mode.")
+			{
+				descText.color = FlxColor.YELLOW;
+			}
+			if (descText.text == "This option cannot be toggled in the pause menu.")
+				descText.color = FlxColor.YELLOW;
 		}
 	}
 }
