@@ -26,6 +26,7 @@ import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import openfl.Lib;
+import Shaders;
 
 using StringTools;
 
@@ -499,12 +500,12 @@ class ModchartState
 
 		Lua_helper.add_callback(lua, "setNoteWiggle", function(wiggleId)
 		{
-			PlayState.instance.camNotes.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
+			PlayState.instance.camHUD.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
 		});
 
 		Lua_helper.add_callback(lua, "setSustainWiggle", function(wiggleId)
 		{
-			PlayState.instance.camSustains.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
+			PlayState.instance.camHUD.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
 		});
 
 		Lua_helper.add_callback(lua, "createWiggle", function(freq:Float, amplitude:Float, speed:Float)
@@ -632,6 +633,38 @@ class ModchartState
 		Lua_helper.add_callback(lua, "setOpponentLaneUnderLayOpponentAlpha", function(value:Int)
 		{
 			PlayState.instance.laneunderlayOpponent.alpha = value;
+		});
+				
+		//SHADER SHIT (Thanks old psych engine)
+
+		Lua_helper.add_callback(lua, "addChromaticAbberationEffect", function(camera:String, chromeOffset:Float = 0.005)
+		{
+			PlayState.instance.addShaderToCamera(camera, new ChromaticAberrationEffect(chromeOffset));
+		});
+
+		Lua_helper.add_callback(lua, "addVignetteEffect", function(camera:String, radius:Float = 0.5, smoothness:Float = 0.5)
+		{
+			PlayState.instance.addShaderToCamera(camera, new VignetteEffect(radius, smoothness));
+		});
+
+		Lua_helper.add_callback(lua, "addGameboyEffect", function(camera:String, brightness:Float = 1.0)
+		{
+			PlayState.instance.addShaderToCamera(camera, new GameboyEffect(brightness));
+		});
+
+		Lua_helper.add_callback(lua, "addCRTEffect", function(camera:String, curved:Bool = true)
+		{
+			PlayState.instance.addShaderToCamera(camera, new CRTEffect(curved));
+		});
+
+		Lua_helper.add_callback(lua, "addGlitchEffect", function(camera:String, waveSpeed:Float = 0, waveFrq:Float = 0, waveAmp:Float = 0)
+		{
+			PlayState.instance.addShaderToCamera(camera, new GlitchEffect(waveSpeed, waveFrq, waveAmp));
+		});
+
+		Lua_helper.add_callback(lua, "clearEffects", function(camera:String)
+		{
+			PlayState.instance.clearShaderFromCamera(camera);
 		});
 
 		for (i in 0...PlayState.strumLineNotes.length)
