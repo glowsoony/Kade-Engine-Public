@@ -485,6 +485,11 @@ class ModchartState
 
 		setVar("strumLineY", PlayState.instance.strumLine.y);
 
+		Lua_helper.add_callback(lua, "precache", function(asset:String, type:String)
+		{
+			PlayState.instance.precacheList.set(asset, type);
+		});
+
 		// callbacks
 
 		Lua_helper.add_callback(lua, "getProperty", getPropertyByName);

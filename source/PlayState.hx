@@ -1059,13 +1059,13 @@ class PlayState extends MusicBeatState
 			{
 				if (PlayStateChangeables.opponentMode)
 				{
-					for (i in 4...strumLineNotes.members.length)
-						strumLineNotes.members[i].x += 900;
+					for (i in 0...cpuStrums.members.length)
+						cpuStrums.members[i].x += 900;
 				}
 				else
 				{
-					for (i in 0...strumLineNotes.members.length - 4)
-						strumLineNotes.members[i].x -= 900;
+					for (i in 0...cpuStrums.members.length)
+						cpuStrums.members[i].x -= 900;
 				}
 			}
 		}
