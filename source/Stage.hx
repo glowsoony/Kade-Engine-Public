@@ -674,7 +674,7 @@ class Stage extends MusicBeatState
 						swagBacks['stageFront'] = stageFront;
 						toAdd.push(stageFront);
 
-						if (FlxG.save.data.distraction)
+						if (FlxG.save.data.distractions)
 						{
 							var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image('stagecurtains', 'shared'));
 							stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
