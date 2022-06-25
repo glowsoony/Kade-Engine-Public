@@ -305,6 +305,20 @@ class StoryMenuState extends MusicBeatState
 					}
 				}
 
+				#if !mobile
+				if (FlxG.mouse.wheel != 0)
+				{
+					#if desktop
+					changeWeek(-FlxG.mouse.wheel);
+					#else
+					if (FlxG.mouse.wheel < 0) // HTML5 BRAIN'T
+						changeWeek(1);
+					else if (FlxG.mouse.wheel > 0)
+						changeWeek(-1);
+					#end
+				}
+				#end
+
 				if (FlxG.keys.justPressed.UP)
 				{
 					changeWeek(-1);
@@ -315,23 +329,27 @@ class StoryMenuState extends MusicBeatState
 					changeWeek(1);
 				}
 
-				if (controls.RIGHT)
+				var mouseRight = (FlxG.mouse.overlaps(rightArrow, FlxG.camera) && FlxG.mouse.justPressed);
+				var mouseLeft = (FlxG.mouse.overlaps(leftArrow, FlxG.camera) && FlxG.mouse.justPressed);
+
+				if (controls.RIGHT || mouseRight)
 					rightArrow.animation.play('press')
 				else
 					rightArrow.animation.play('idle');
 
-				if (controls.LEFT)
+				if (controls.LEFT || mouseLeft)
 					leftArrow.animation.play('press');
 				else
 					leftArrow.animation.play('idle');
 
-				if (controls.RIGHT_P)
+				if (controls.RIGHT_P || mouseRight)
 					changeDifficulty(1);
-				if (controls.LEFT_P)
+				if (controls.LEFT_P || mouseLeft)
 					changeDifficulty(-1);
 			}
 
-			if (controls.ACCEPT && !FlxG.keys.pressed.ALT)
+			var weekClicked = (FlxG.mouse.overlaps(grpWeekText.members[curWeek]) && FlxG.mouse.pressed && !stopspamming);
+			if ((controls.ACCEPT && !FlxG.keys.pressed.ALT) || weekClicked)
 			{
 				selectWeek();
 			}

@@ -205,6 +205,16 @@ class ModMenu extends FlxSubState
 		any = FlxG.keys.justPressed.ANY || (gamepad != null ? gamepad.justPressed.ANY : false);
 		escape = FlxG.keys.justPressed.ESCAPE || (gamepad != null ? gamepad.justPressed.B : false);
 
+		#if !mobile
+		if (FlxG.mouse.wheel != 0)
+		{
+			if (FlxG.mouse.wheel < 0)
+				down = true;
+			else if (FlxG.mouse.wheel > 0)
+				up = true;
+		}
+		#end
+
 		if (selectedModifier != null)
 			if (selectedModifier.acceptType)
 			{
@@ -225,6 +235,7 @@ class ModMenu extends FlxSubState
 					Debug.logTrace("New text: " + object.text);
 				}
 			}
+
 		if (selectedModifier.acceptType || !selectedModifier.acceptType)
 		{
 			if (accept)
@@ -346,6 +357,8 @@ class ModMenu extends FlxSubState
 
 				FreeplayState.openMod = false;
 
+				FreeplayState.instance.changeSelection();
+
 				for (i in 0...modifiers.length)
 				{
 					var opt = modObjects.members[i];
@@ -368,6 +381,7 @@ class ModMenu extends FlxSubState
 						}
 					}
 			}
+
 			if (changedMod)
 				FreeplayState.instance.updateDiffCalc();
 		}

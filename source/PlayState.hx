@@ -195,6 +195,18 @@ class PlayState extends MusicBeatState
 	public var mainCam:FlxCamera;
 	public var mainCamShaders:Array<ShaderEffect> = [];
 
+	public var camNotes:FlxCamera;
+
+	public var camNotesShaders:Array<ShaderEffect> = [];
+
+	public var camSustains:FlxCamera;
+
+	public var camSustainsShaders:Array<ShaderEffect> = [];
+
+	public var camStrums:FlxCamera;
+
+	public var camStrumsShaders:Array<ShaderEffect> = [];
+
 	public var shaderUpdates:Array<Float->Void> = [];
 
 	public var cannotDie = false;
@@ -529,12 +541,39 @@ class PlayState extends MusicBeatState
 		camHUD.bgColor.alpha = 0;
 		mainCam = new FlxCamera();
 		mainCam.bgColor.alpha = 0;
+		camSustains = new FlxCamera();
+		camSustains.height = 1300;
+		camSustains.bgColor.alpha = 0;
+		camStrums = new FlxCamera();
+		camStrums.height = 1300;
+		camStrums.bgColor.alpha = 0;
+		camNotes = new FlxCamera();
+		camNotes.height = 1300;
+		camNotes.bgColor.alpha = 0;
 
+		// Game Camera (where stage and characters are)
 		FlxG.cameras.reset(camGame);
+
+		// HUD Camera (Health Bar, scoreTxt, etc)
 		FlxG.cameras.add(camHUD);
+
+		// StrumLine Camera
+		FlxG.cameras.add(camStrums);
+
+		// Long Notes camera
+		FlxG.cameras.add(camSustains);
+
+		// Single Notes camera
+		FlxG.cameras.add(camNotes);
+
+		// Main Camera
 		FlxG.cameras.add(mainCam);
 
 		camHUD.zoom = PlayStateChangeables.zoom;
+
+		camNotes.zoom = camHUD.zoom;
+		camSustains.zoom = camHUD.zoom;
+		camStrums.zoom = camHUD.zoom;
 
 		FlxCamera.defaultCameras = [camGame];
 
@@ -1060,6 +1099,8 @@ class PlayState extends MusicBeatState
 			new LuaCamera(FlxG.camera, "camGame").Register(ModchartState.lua);
 			new LuaCamera(camHUD, "camHUD").Register(ModchartState.lua);
 			new LuaCamera(mainCam, "mainCam").Register(ModchartState.lua);
+			new LuaCamera(camNotes, "camNotes").Register(ModchartState.lua);
+			new LuaCamera(camSustains, "camSustains").Register(ModchartState.lua);
 			new LuaCharacter(dad, "dad").Register(ModchartState.lua);
 			new LuaCharacter(gf, "gf").Register(ModchartState.lua);
 			new LuaCharacter(boyfriend, "boyfriend").Register(ModchartState.lua);
@@ -1133,7 +1174,7 @@ class PlayState extends MusicBeatState
 		// Add Kade Engine watermark
 		kadeEngineWatermark = new FlxText(4, FlxG.height * 0.9
 			+ 45, 0,
-			SONG.songName
+			songFixedName
 			+ (FlxMath.roundDecimal(songMultiplier, 2) != 1.00 ? " (" + FlxMath.roundDecimal(songMultiplier, 2) + "x)" : "")
 			+ " - "
 			+ CoolUtil.difficultyFromInt(storyDifficulty),
@@ -1218,8 +1259,8 @@ class PlayState extends MusicBeatState
 				healthBar.createFilledBar(0xFFFF0000, 0xFF66FF33);
 		}
 
-		strumLineNotes.cameras = [camHUD];
-		notes.cameras = [camHUD];
+		strumLineNotes.cameras = [camStrums];
+		notes.cameras = [camNotes];
 		healthBar.cameras = [camHUD];
 		healthBarBG.cameras = [camHUD];
 		iconP1.cameras = [camHUD];
@@ -1397,6 +1438,9 @@ class PlayState extends MusicBeatState
 
 		precacheList.set('alphabet', 'frame');
 
+		if (FlxG.save.data.hitSound != 0)
+			precacheList.set(HitSounds.getSoundByID(FlxG.save.data.hitSound).toLowerCase(), 'sound');
+
 		cachePopUpScore();
 
 		for (key => type in precacheList)
@@ -1529,32 +1573,50 @@ class PlayState extends MusicBeatState
 
 	public function addShaderToCamera(camera:String, effect:ShaderEffect)
 	{
-		switch(camera.toLowerCase()) 
+		switch (camera.toLowerCase())
 		{
 			case 'camhud' | 'hud':
 				camHUDShaders.push(effect);
-				var newCamEffects:Array<BitmapFilter>=[];
-				for(i in camHUDShaders)
+				var newCamEffects:Array<BitmapFilter> = [];
+				for (i in camHUDShaders)
 					newCamEffects.push(new ShaderFilter(i.shader));
 				camHUD.setFilters(newCamEffects);
 			case 'camgame' | 'game':
 				camGameShaders.push(effect);
-				var newCamEffects:Array<BitmapFilter>=[];
-				for(i in camGameShaders)
+				var newCamEffects:Array<BitmapFilter> = [];
+				for (i in camGameShaders)
 					newCamEffects.push(new ShaderFilter(i.shader));
 				camGame.setFilters(newCamEffects);
 			case 'cammain' | 'main':
 				mainCamShaders.push(effect);
-				var newCamEffects:Array<BitmapFilter>=[];
-				for(i in mainCamShaders)
+				var newCamEffects:Array<BitmapFilter> = [];
+				for (i in mainCamShaders)
 					newCamEffects.push(new ShaderFilter(i.shader));
 				mainCam.setFilters(newCamEffects);
+			case 'camnotes' | 'notes':
+				camNotesShaders.push(effect);
+				var newCamEffects:Array<BitmapFilter> = [];
+				for (i in camNotesShaders)
+					newCamEffects.push(new ShaderFilter(i.shader));
+				camNotes.setFilters(newCamEffects);
+			case 'camsustains' | 'sustains':
+				camSustainsShaders.push(effect);
+				var newCamEffects:Array<BitmapFilter> = [];
+				for (i in camSustainsShaders)
+					newCamEffects.push(new ShaderFilter(i.shader));
+				camSustains.setFilters(newCamEffects);
+			case 'camstrums' | 'strums':
+				camStrumsShaders.push(effect);
+				var newCamEffects:Array<BitmapFilter> = [];
+				for (i in camStrumsShaders)
+					newCamEffects.push(new ShaderFilter(i.shader));
+				camStrums.setFilters(newCamEffects);
 		}
 	}
 
 	public function clearShaderFromCamera(camera:String)
 	{
-		switch(camera.toLowerCase())
+		switch (camera.toLowerCase())
 		{
 			case 'camhud' | 'hud':
 				camHUDShaders = [];
@@ -1934,9 +1996,8 @@ class PlayState extends MusicBeatState
 			goodNoteHit(coolNote);
 
 			var noteDiff:Float = (coolNote.strumTime - Conductor.songPosition);
-			var noteDiffAbs = Math.abs(noteDiff);
 			ana.hit = true;
-			ana.hitJudge = Ratings.judgeNote(noteDiffAbs);
+			ana.hitJudge = Ratings.judgeNote(noteDiff);
 			ana.nearestNote = [coolNote.strumTime, coolNote.noteData, coolNote.sustainLength];
 		}
 		else if (!FlxG.save.data.ghost && songStarted)
@@ -2439,6 +2500,9 @@ class PlayState extends MusicBeatState
 
 	override function openSubState(SubState:FlxSubState)
 	{
+		#if !mobile
+		FlxG.mouse.visible = true;
+		#end
 		if (paused)
 		{
 			if (useVideo)
@@ -2479,6 +2543,7 @@ class PlayState extends MusicBeatState
 
 	override function closeSubState()
 	{
+		FlxG.mouse.visible = false;
 		if (PauseSubState.goToOptions)
 		{
 			Debug.logTrace("pause thingyt");
@@ -2679,7 +2744,9 @@ class PlayState extends MusicBeatState
 				}
 				#end
 
-				dunceNote.cameras = [camHUD];
+				dunceNote.cameras = [camNotes];
+				if (dunceNote.isSustainNote)
+					dunceNote.cameras = [camSustains];
 
 				unspawnNotes.remove(dunceNote);
 				currentLuaIndex++;
@@ -3504,6 +3571,10 @@ class PlayState extends MusicBeatState
 
 			FlxG.camera.zoom = FlxMath.lerp(Stage.camZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio * songMultiplier), 0, 1));
 			camHUD.zoom = FlxMath.lerp(FlxG.save.data.zoom, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio * songMultiplier), 0, 1));
+
+			camNotes.zoom = camHUD.zoom;
+			camSustains.zoom = camHUD.zoom;
+			camStrums.zoom = camHUD.zoom;
 		}
 
 		FlxG.watch.addQuick("curBPM", Conductor.bpm);
@@ -3631,16 +3702,10 @@ class PlayState extends MusicBeatState
 				// instead of doing stupid y > FlxG.height
 				// we be men and actually calculate the time :)
 				var strumY = playerStrums.members[daNote.noteData].y;
-				if (FlxG.save.data.middleScroll)
-				{
-					if (!daNote.mustPress)
-						strumY = strumLineNotes.members[daNote.noteData].y;
-				}
-				else
-				{
-					if (!daNote.mustPress)
-						strumY = cpuStrums.members[daNote.noteData].y;
-				}
+
+				if (!daNote.mustPress)
+					strumY = strumLineNotes.members[daNote.noteData].y;
+
 				var origin = strumY + Note.swagWidth / 2;
 				if (!daNote.modifiedByLua)
 				{
@@ -3897,7 +3962,7 @@ class PlayState extends MusicBeatState
 					&& !FlxG.save.data.middleScroll
 					|| (PlayStateChangeables.opponentMode && !daNote.mustPress && FlxG.save.data.middleScroll && executeModchart))
 				{
-					daNote.x = cpuStrums.members[Math.floor(Math.abs(daNote.noteData))].x;
+					daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].x;
 				}
 
 				if (!daNote.mustPress
@@ -3920,7 +3985,7 @@ class PlayState extends MusicBeatState
 					else
 					{
 						if (!FlxG.save.data.middleScroll || executeModchart || sourceModchart)
-							daNote.x = cpuStrums.members[Math.floor(Math.abs(daNote.noteData))].x + 36.5;
+							daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].x + 36.5;
 					}
 					if (SONG.noteStyle == 'pixel')
 					{
@@ -4380,8 +4445,8 @@ class PlayState extends MusicBeatState
 				else
 				{
 					PsychTransition.nextCamera = mainCam;
-					MusicBeatState.switchState(new FreeplayState());
 					Conductor.changeBPM(102);
+					MusicBeatState.switchState(new FreeplayState());
 					clean();
 				}
 			}
@@ -4438,7 +4503,7 @@ class PlayState extends MusicBeatState
 					sploosh.animation.addByPrefix('splash 1 3', 'note splash 2 red', 24, false);
 
 					add(sploosh);
-					sploosh.cameras = [camHUD];
+					sploosh.cameras = [camStrums];
 					sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.noteData);
 					sploosh.alpha = 0.6;
 					sploosh.offset.x += 90;
@@ -4460,7 +4525,7 @@ class PlayState extends MusicBeatState
 					sploosh.animation.addByPrefix('splash 1 3', 'note splash 2 red', 24, false);
 
 					add(sploosh);
-					sploosh.cameras = [camHUD];
+					sploosh.cameras = [camStrums];
 					sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.noteData);
 					sploosh.alpha = 0.6;
 					sploosh.offset.x += 90;
@@ -4869,6 +4934,14 @@ class PlayState extends MusicBeatState
 		}
 
 		var anas:Array<Ana> = [null, null, null, null];
+
+		var daHitSound:FlxSound = new FlxSound().loadEmbedded(Paths.sound('hitsounds/${HitSounds.getSoundByID(FlxG.save.data.hitSound).toLowerCase()}',
+			'shared'));
+		daHitSound.volume = FlxG.save.data.hitVolume;
+		if (FlxG.save.data.hitSound != 0 && pressArray.contains(true))
+		{
+			daHitSound.play();
+		}
 
 		for (i in 0...pressArray.length)
 			if (pressArray[i])
@@ -5443,7 +5516,7 @@ class PlayState extends MusicBeatState
 			}
 
 			/*
-				———————————No Sus HP gain?———————————
+				———————————No HP regen?———————————
 				⠀⣞⢽⢪⢣⢣⢣⢫⡺⡵⣝⡮⣗⢷⢽⢽⢽⣮⡷⡽⣜⣜⢮⢺⣜⢷⢽⢝⡽⣝
 				⠸⡸⠜⠕⠕⠁⢁⢇⢏⢽⢺⣪⡳⡝⣎⣏⢯⢞⡿⣟⣷⣳⢯⡷⣽⢽⢯⣳⣫⠇
 				⠀⠀⢀⢀⢄⢬⢪⡪⡎⣆⡈⠚⠜⠕⠇⠗⠝⢕⢯⢫⣞⣯⣿⣻⡽⣏⢗⣗⠏⠀
@@ -5471,11 +5544,10 @@ class PlayState extends MusicBeatState
 			#end
 
 			var noteDiff:Float = (note.strumTime - Conductor.songPosition);
-			var noteDiffAbs = Math.abs(noteDiff);
 
 			if (!loadRep && note.mustPress)
 			{
-				var array = [note.strumTime, note.sustainLength, note.noteData, noteDiffAbs];
+				var array = [note.strumTime, note.sustainLength, note.noteData, noteDiff];
 				if (note.isSustainNote)
 					array[1] = -1;
 				saveNotes.push(array);
@@ -5928,6 +6000,7 @@ class PlayState extends MusicBeatState
 			var timeForStuff:Float = Conductor.crochet / 1000 * 5;
 			createTween(FlxG.camera, {zoom: Stage.camZoom}, timeForStuff, {ease: FlxEase.quadInOut});
 			startCountdown();
+			camStrums.visible = true;
 			camHUD.visible = true;
 			dad.visible = true;
 
@@ -6020,12 +6093,15 @@ class PlayState extends MusicBeatState
 
 				createTimer(0.5, function(tmr:FlxTimer)
 				{
+					createTween(camStrums, {alpha: 0}, 1.5, {ease: FlxEase.quadInOut});
 					createTween(camHUD, {alpha: 0}, 1.5, {
 						ease: FlxEase.quadInOut,
 						onComplete: function(twn:FlxTween)
 						{
 							camHUD.visible = false;
 							camHUD.alpha = 1;
+							camStrums.visible = false;
+							camStrums.alpha = 1;
 							removeStaticArrows();
 							laneunderlayOpponent.alpha = 0;
 							laneunderlay.alpha = 0;
@@ -6089,12 +6165,15 @@ class PlayState extends MusicBeatState
 
 				createTimer(0.5, function(tmr:FlxTimer)
 				{
+					createTween(camStrums, {alpha: 0}, 1.5, {ease: FlxEase.quadInOut});
 					createTween(camHUD, {alpha: 0}, 1.5, {
 						ease: FlxEase.quadInOut,
 						onComplete: function(twn:FlxTween)
 						{
 							camHUD.visible = false;
 							camHUD.alpha = 1;
+							camStrums.visible = false;
+							camStrums.alpha = 1;
 							removeStaticArrows();
 							laneunderlayOpponent.alpha = 0;
 							laneunderlay.alpha = 0;
@@ -6237,11 +6316,14 @@ class PlayState extends MusicBeatState
 	#if !cpp
 	function elasticCamZoom()
 	{
-		camHUD.zoom += 0.06;
-
-		createTween(camHUD, {zoom: camHUD.zoom - 0.06}, 0.5 / songMultiplier, {
-			ease: FlxEase.elasticOut
-		});
+		var camGroup:Array<FlxCamera> = [camHUD, camNotes, camSustains, camStrums];
+		for (camShit in camGroup)
+		{
+			camShit.zoom += 0.06;
+			createTween(camShit, {zoom: camShit.zoom - 0.06}, 0.5 / songMultiplier, {
+				ease: FlxEase.elasticOut
+			});
+		}
 
 		FlxG.camera.zoom += 0.06;
 

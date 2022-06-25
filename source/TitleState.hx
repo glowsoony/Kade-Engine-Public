@@ -84,7 +84,7 @@ class TitleState extends MusicBeatState
 		FlxG.sound.volumeDownKeys = [FlxKey.fromString(Std.string(FlxG.save.data.volDownBind))];
 		FlxG.sound.volumeUpKeys = [FlxKey.fromString(Std.string(FlxG.save.data.volUpBind))];
 
-		FlxG.mouse.visible = false;
+		FlxG.mouse.visible = true;
 
 		FlxG.worldBounds.set(0, 0);
 
@@ -195,7 +195,7 @@ class TitleState extends MusicBeatState
 		add(logoBl);
 		add(titleText);
 
-		FlxG.mouse.visible = false;
+		FlxG.mouse.visible = true;
 		// FlxTween.tween(logoBl, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG});
 		// FlxTween.tween(logo, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG, startDelay: 0.1});
 
@@ -270,7 +270,7 @@ class TitleState extends MusicBeatState
 			FlxG.fullscreen = !FlxG.fullscreen;
 		}
 
-		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT;
+		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT || FlxG.mouse.justPressed;
 
 		#if mobile
 		for (touch in FlxG.touches.list)

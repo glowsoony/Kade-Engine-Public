@@ -500,12 +500,12 @@ class ModchartState
 
 		Lua_helper.add_callback(lua, "setNoteWiggle", function(wiggleId)
 		{
-			PlayState.instance.camHUD.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
+			PlayState.instance.camNotes.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
 		});
 
 		Lua_helper.add_callback(lua, "setSustainWiggle", function(wiggleId)
 		{
-			PlayState.instance.camHUD.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
+			PlayState.instance.camSustains.setFilters([new ShaderFilter(luaWiggles.get(wiggleId).shader)]);
 		});
 
 		Lua_helper.add_callback(lua, "createWiggle", function(freq:Float, amplitude:Float, speed:Float)
@@ -634,8 +634,8 @@ class ModchartState
 		{
 			PlayState.instance.laneunderlayOpponent.alpha = value;
 		});
-				
-		//SHADER SHIT (Thanks old psych engine)
+
+		// SHADER SHIT (Thanks old psych engine)
 
 		Lua_helper.add_callback(lua, "addChromaticAbberationEffect", function(camera:String, chromeOffset:Float = 0.005)
 		{

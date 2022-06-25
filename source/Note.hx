@@ -276,7 +276,7 @@ class Note extends FlxSprite
 					switch (FlxG.save.data.noteskin)
 					{
 						case 0:
-							prevNote.scale.y *= 1.0037 + (1.0 / prevNote.frameHeight);
+							prevNote.scale.y *= 1.0064 + (1.0 / prevNote.frameHeight);
 						default:
 							prevNote.scale.y *= 0.995 + (1.0 / prevNote.frameHeight);
 					}

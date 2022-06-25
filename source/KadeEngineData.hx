@@ -15,6 +15,12 @@ class KadeEngineData
 		if (FlxG.save.data.downscroll == null)
 			FlxG.save.data.downscroll = false;
 
+		if (FlxG.save.data.hitSound == null)
+			FlxG.save.data.hitSound = 0;
+
+		if (FlxG.save.data.hitVolume == null)
+			FlxG.save.data.hitVolume = 0.5;
+
 		if (FlxG.save.data.antialiasing == null)
 			FlxG.save.data.antialiasing = true;
 
@@ -204,7 +210,7 @@ class KadeEngineData
 
 		if (FlxG.save.data.mirror == null)
 			FlxG.save.data.mirror = false;
-		
+
 		if (FlxG.save.data.noteSplashes == null)
 			FlxG.save.data.noteSplashes = false;
 

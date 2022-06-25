@@ -25,7 +25,8 @@ class PauseSubState extends MusicBeatSubstate
 	public static var goToOptions:Bool = false;
 	public static var goBack:Bool = false;
 
-	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Options', 'Exit to menu'];
+	public static var menuItems:Array<String> = ['Resume', 'Restart Song', 'Options', 'Exit to menu'];
+
 	var curSelected:Int = 0;
 
 	public static var playingPause:Bool = false;
@@ -48,14 +49,17 @@ class PauseSubState extends MusicBeatSubstate
 		"Dead engine?",
 		"Amber best Pyro bow user fuck you!",
 		"*Insert Amoraltra cancel meme*",
-		"I love watching Yosuga No Sora with my sister.",
+		"I love watching Yosuga No Sora with my sister.", // Wtf 💀
 		"Lag issues? Don't worry we are currently mining cryptocurrencies with ur pc :D",
 		"Also try Mic d'up Engine lol",
 		"Are you really reading this thing?",
 		"Acypto, Little Hazard's simp lolololol",
 		"WHEN FNF X RED SEQUEL???",
 		"I fced Sex mod with only one hand!",
-		"EPIC EMBED FAIL"
+		"EPIC EMBED FAIL",
+		"Don't take these dialogues seriously lol",
+		"Fireable actually used my fork. Pog",
+		"I'm not gay, I'm default :trollface:"
 	];
 
 	public function new()
@@ -150,12 +154,28 @@ class PauseSubState extends MusicBeatSubstate
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 	}
 
+	#if !mobile
+	var oldPos = FlxG.mouse.getScreenPosition();
+	#end
+
 	override function update(elapsed:Float)
 	{
 		if (pauseMusic.volume < 0.5)
 			pauseMusic.volume += 0.01 * elapsed;
 
 		super.update(elapsed);
+
+		#if !mobile
+		if (FlxG.mouse.wheel != 0)
+			#if desktop
+			changeSelection(-FlxG.mouse.wheel);
+			#else
+			if (FlxG.mouse.wheel < 0)
+				changeSelection(1);
+			if (FlxG.mouse.wheel > 0)
+				changeSelection(-1);
+			#end
+		#end
 
 		for (i in FlxG.sound.list)
 		{
@@ -198,7 +218,7 @@ class PauseSubState extends MusicBeatSubstate
 			changeSelection(1);
 		}
 
-		if (controls.ACCEPT && !FlxG.keys.pressed.ALT)
+		if ((controls.ACCEPT && !FlxG.keys.pressed.ALT) || FlxG.mouse.pressed)
 		{
 			var daSelected:String = menuItems[curSelected];
 

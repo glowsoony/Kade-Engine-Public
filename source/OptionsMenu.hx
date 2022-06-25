@@ -21,6 +21,8 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.ui.FlxBar;
 
+using StringTools;
+
 class OptionCata extends FlxSprite
 {
 	public var title:String;
@@ -132,6 +134,8 @@ class OptionsMenu extends FlxSubState
 				new ScrollSpeedOption("Change your scroll speed. (1 = Chart dependent)"),
 				new OffsetThing("Change the note visual offset (how many milliseconds a note looks like it is offset in a chart)"),
 				new AccuracyDOption("Change how accuracy is calculated. (Accurate = Simple, Complex = Milisecond Based)"),
+				new HitSoundOption("Toogle hitsound every time you hit a Strum Note."),
+				new HitSoundVolume("Set hitsound volume."),
 				new GhostTapOption("Toggle counting pressing a directional input when no arrow is there as a miss."),
 				new DownscrollOption("Toggle making the notes scroll down rather than up."),
 				new BotPlay("A bot plays for you!"),
@@ -163,7 +167,7 @@ class OptionsMenu extends FlxSubState
 				new RainbowFPSOption("Make the FPS Counter flicker through rainbow colors."),
 				new BorderFps("Draw a border around the FPS Text (Consumes a lot of CPU Resources)"),
 				new CpuStrums("Toggle the CPU's strumline lighting up when it hits a note."),
-				new NoteCocks("Toggle The NoteSplashes! (notecocks)")
+				new NoteCocks("Toggle The Note Splashes every time you get a SICK!")
 			]),
 			new OptionCata(640, 40, "Misc", [
 
@@ -251,7 +255,7 @@ class OptionsMenu extends FlxSubState
 
 		for (i in 0...options.length - 1)
 		{
-			if (i >= 5)
+			if (i > 4)
 				continue;
 			var cat = options[i];
 			add(cat);
@@ -388,6 +392,8 @@ class OptionsMenu extends FlxSubState
 		var down = false;
 		var any = false;
 		var escape = false;
+		var clickedCat = false;
+		var clickedOpt = false;
 
 		changedOption = false;
 
@@ -430,6 +436,7 @@ class OptionsMenu extends FlxSubState
 			{
 				descText.text = "Please select a category";
 				descText.color = FlxColor.WHITE;
+
 				if (right)
 				{
 					FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -539,6 +546,16 @@ class OptionsMenu extends FlxSubState
 						}
 					}
 
+					#if !mobile
+					if (FlxG.mouse.wheel != 0)
+					{
+						if (FlxG.mouse.wheel < 0)
+							down = true;
+						else if (FlxG.mouse.wheel > 0)
+							up = true;
+					}
+					#end
+
 					if (down)
 					{
 						if (selectedOption.acceptType)
@@ -638,6 +655,7 @@ class OptionsMenu extends FlxSubState
 						object.text = "> " + selectedOption.getValue();
 						Debug.logTrace("New text: " + object.text);
 					}
+
 					if (changedOption)
 						updateOptColors();
 
@@ -684,6 +702,21 @@ class OptionsMenu extends FlxSubState
 					}
 				}
 			}
+
+			#if !mobile
+			for (i in 0...options.length - 1)
+			{
+				clickedCat = ((FlxG.mouse.overlaps(options[i].titleObject) || FlxG.mouse.overlaps(options[i])) && FlxG.mouse.justPressed);
+				if (clickedCat)
+				{
+					FlxG.sound.play(Paths.sound('scrollMenu'));
+					selectedCatIndex = i;
+					switchCat(options[i]);
+					isInCat = false;
+					selectOption(selectedCat.options[0]);
+				}
+			}
+			#end
 		}
 		catch (e)
 		{
@@ -713,10 +746,10 @@ class OptionsMenu extends FlxSubState
 		if (selectedCatIndex == 0)
 		{
 			#if html5
-			selectedCat.optionObjects.members[6].color = FlxColor.YELLOW;
+			selectedCat.optionObjects.members[8].color = FlxColor.YELLOW;
 			#end
 			if (FlxG.save.data.optimize)
-				selectedCat.optionObjects.members[9].color = FlxColor.YELLOW;
+				selectedCat.optionObjects.members[11].color = FlxColor.YELLOW;
 		}
 		if (FlxG.save.data.optimize && selectedCatIndex == 3)
 		{
@@ -739,9 +772,9 @@ class OptionsMenu extends FlxSubState
 			{
 				case 0:
 					selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-					selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
+					selectedCat.optionObjects.members[14].color = FlxColor.YELLOW;
 					if (PlayState.isStoryMode)
-						selectedCat.optionObjects.members[5].color = FlxColor.YELLOW;
+						selectedCat.optionObjects.members[7].color = FlxColor.YELLOW;
 				case 1:
 					selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
 				case 3:

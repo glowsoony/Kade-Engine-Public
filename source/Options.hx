@@ -572,11 +572,11 @@ class NoteCocks extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-            description = "This option cannot be toggled in the pause menu.";
+			description = "This option cannot be toggled in the pause menu.";
 		else
-		    description = desc;
+			description = desc;
 	}
-	
+
 	public override function left():Bool
 	{
 		if (OptionsMenu.isInPause)
@@ -585,7 +585,7 @@ class NoteCocks extends Option
 		display = updateDisplay();
 		return true;
 	}
-	
+
 	public override function right():Bool
 	{
 		if (OptionsMenu.isInPause)
@@ -593,7 +593,7 @@ class NoteCocks extends Option
 		left();
 		return true;
 	}
-	
+
 	private override function updateDisplay():String
 	{
 		return "Note Splashes: < " + (!FlxG.save.data.noteSplashes ? "off" : "on") + " >";
@@ -1666,6 +1666,89 @@ class MiddleScrollOption extends Option
 	}
 }
 
+class HitSoundOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+	}
+
+	public override function left():Bool
+	{
+		FlxG.save.data.hitSound--;
+		if (FlxG.save.data.hitSound < 0)
+			FlxG.save.data.hitSound = HitSounds.getSound().length - 1;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		FlxG.save.data.hitSound++;
+		if (FlxG.save.data.hitSound > HitSounds.getSound().length - 1)
+			FlxG.save.data.hitSound = 0;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function getValue():String
+	{
+		return "Hitsound Style: < " + HitSounds.getSoundByID(FlxG.save.data.hitSound) + " >";
+	}
+}
+
+class HitSoundVolume extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+
+		acceptValues = true;
+	}
+
+	public override function press():Bool
+	{
+		return false;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Hitsound Volume: < " + HelperFunctions.truncateFloat(FlxG.save.data.hitVolume, 1) + " >";
+	}
+
+	override function right():Bool
+	{
+		FlxG.save.data.hitVolume += 0.1;
+
+		if (FlxG.save.data.hitVolume < 0)
+			FlxG.save.data.hitVolume = 0;
+
+		if (FlxG.save.data.hitVolume > 1)
+			FlxG.save.data.hitVolume = 1;
+		return true;
+	}
+
+	override function getValue():String
+	{
+		return "Hitsound Volume: < " + HelperFunctions.truncateFloat(FlxG.save.data.hitVolume, 1) + " >";
+	}
+
+	override function left():Bool
+	{
+		FlxG.save.data.hitVolume -= 0.1;
+
+		if (FlxG.save.data.hitVolume < 0)
+			FlxG.save.data.hitVolume = 0;
+
+		if (FlxG.save.data.hitVolume > 1)
+			FlxG.save.data.hitVolume = 1;
+
+		return true;
+	}
+}
+
 class Background extends Option
 {
 	public function new(desc:String)
@@ -1816,8 +1899,6 @@ class NoteskinOption extends Option
 
 	public override function right():Bool
 	{
-		if (OptionsMenu.isInPause)
-			return false;
 		FlxG.save.data.noteskin++;
 		if (FlxG.save.data.noteskin > NoteskinHelpers.getNoteskins().length - 1)
 			FlxG.save.data.noteskin = 0;
@@ -2130,6 +2211,8 @@ class ResetSettings extends Option
 		FlxG.save.data.memoryDisplay = null;
 		FlxG.save.data.noteskin = null;
 		FlxG.save.data.lerpScore = null;
+		FlxG.save.data.hitSound = null;
+		FlxG.save.data.hitVolume = null;
 
 		KadeEngineData.initSave();
 		confirm = false;

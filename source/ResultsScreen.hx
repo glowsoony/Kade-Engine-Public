@@ -129,8 +129,11 @@ class ResultsScreen extends FlxSubState
 		comboText.scrollFactor.set();
 		add(comboText);
 
-		contText = new FlxText(FlxG.width - 475, FlxG.height + 50, 0, 'Press ${KeyBinds.gamepad ? 'A' : 'ENTER'} to continue.');
-		contText.size = 28;
+		contText = new FlxText(FlxG.width - 525, FlxG.height + 50, 0, 'Click or Press ${KeyBinds.gamepad ? 'A' : 'ENTER'} to continue.');
+		#if mobile
+		contText.text = "Touch to continue";
+		#end
+		contText.size = 24;
 		contText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 4, 1);
 		contText.color = FlxColor.WHITE;
 		contText.scrollFactor.set();
@@ -268,7 +271,7 @@ class ResultsScreen extends FlxSubState
 
 		// keybinds
 
-		if (PlayerSettings.player1.controls.ACCEPT && !FlxG.keys.pressed.ALT)
+		if ((PlayerSettings.player1.controls.ACCEPT && !FlxG.keys.pressed.ALT) || FlxG.mouse.pressed)
 		{
 			if (music != null)
 				music.fadeOut(0.3);
@@ -284,7 +287,10 @@ class ResultsScreen extends FlxSubState
 				MusicBeatState.switchState(new MainMenuState());
 			}
 			else
+			{
+				Conductor.changeBPM(102);
 				MusicBeatState.switchState(new FreeplayState());
+			}
 			PlayState.instance.clean();
 		}
 

@@ -101,6 +101,7 @@ class FreeplayState extends MusicBeatState
 	{Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 
+		FlxG.mouse.visible = true;
 		instance = this;
 
 		PlayState.wentToChartEditor = false;
@@ -210,21 +211,18 @@ class FreeplayState extends MusicBeatState
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
 		// scoreText.alignment = RIGHT;
 
-		var kadebigdick:String = "";
-		if (FlxG.random.bool(0.1))
-			kadebigdick = " / WTF AN OPTIMIZED KADE ENGINE????!!!!!";
-
 		var bottomBG:FlxSprite = new FlxSprite(0, FlxG.height - 26).makeGraphic(Std.int(FlxG.width), 26, 0xFF000000);
 		bottomBG.alpha = 0.6;
 		add(bottomBG);
 
-		var bottomText:String = #if PRELOAD_ALL "  Press SPACE to listen to the Song Instrumental  / " + #end
+		var bottomText:String = #if !mobile #if PRELOAD_ALL "  Press SPACE to listen to the Song Instrumental  / Click and scroll through the songs with your MOUSE /"
+			+ #else " Click and scroll through the songs with your MOUSE /"
+			+ #end #end
 		" Your offset is "
 		+ FlxG.save.data.offset
-		+ "ms /"
-		+ " Optimization is"
-		+ (FlxG.save.data.optimize ? " Enabled" : " Disabled")
-		+ kadebigdick;
+		+ "ms "
+		+ (FlxG.save.data.optimize ? "/ Optimized" : "");
+
 		var downText:FlxText = new FlxText(bottomBG.x, bottomBG.y + 4, FlxG.width, bottomText, 16);
 		downText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
 		downText.scrollFactor.set();
@@ -470,6 +468,18 @@ class FreeplayState extends MusicBeatState
 
 		if (!openMod && !MusicBeatState.switchingState)
 		{
+			if (FlxG.mouse.wheel != 0)
+			{
+				#if desktop
+				changeSelection(-FlxG.mouse.wheel);
+				#else
+				if (FlxG.mouse.wheel < 0) // HTML5 BRAIN'T
+					changeSelection(1);
+				else if (FlxG.mouse.wheel > 0)
+					changeSelection(-1);
+				#end
+			}
+
 			if (gamepad != null)
 			{
 				if (gamepad.justPressed.DPAD_UP)
@@ -502,11 +512,10 @@ class FreeplayState extends MusicBeatState
 				changeSelection(1);
 			}
 		}
-
 		/*if (FlxG.keys.justPressed.X && !openedPreview)
-			openSubState(new DiffOverview()); */
+			openSubState(new DiffOverview()); */ previewtext.text = "Rate: "
 
-		previewtext.text = "Rate: " + FlxMath.roundDecimal(rate, 2) + "x";
+			+ FlxMath.roundDecimal(rate, 2) + "x";
 		previewtext.alpha = 1;
 
 		if (FlxG.keys.justPressed.CONTROL && !openMod && !MusicBeatState.switchingState)
@@ -611,8 +620,14 @@ class FreeplayState extends MusicBeatState
 				}
 			}
 
-			if (accepted)
-				loadSong();
+			for (item in grpSongs.members)
+				if (accepted
+					|| (((FlxG.mouse.overlaps(item) && item.targetY == 0) || (FlxG.mouse.overlaps(iconArray[curSelected])))
+						&& FlxG.mouse.pressed))
+				{
+					loadSong();
+					break;
+				}
 			#if debug
 			// Going to charting state via Freeplay is only enable in debug builds.
 			else if (charting)
@@ -629,6 +644,15 @@ class FreeplayState extends MusicBeatState
 				loadAnimDebug(false);
 			}
 			#end
+		}
+
+		if (openMod)
+		{
+			for (i in 0...iconArray.length)
+				iconArray[i].alpha = 0;
+
+			for (item in grpSongs.members)
+				item.alpha = 0;
 		}
 	}
 
@@ -758,7 +782,7 @@ class FreeplayState extends MusicBeatState
 		diffText.text = 'DIFFICULTY: < ' + CoolUtil.difficultyFromInt(curDifficulty).toUpperCase() + ' >';
 	}
 
-	function changeSelection(change:Int = 0)
+	public function changeSelection(change:Int = 0)
 	{
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
@@ -877,15 +901,6 @@ class FreeplayState extends MusicBeatState
 
 			iconArray[curSelected].alpha = 1;
 		}
-		else
-		{
-			for (i in 0...iconArray.length)
-			{
-				iconArray[i].alpha = 0;
-			}
-
-			iconArray[curSelected].alpha = 0;
-		}
 
 		for (item in grpSongs.members)
 		{
@@ -902,10 +917,6 @@ class FreeplayState extends MusicBeatState
 					item.alpha = 1;
 					// item.setGraphicSize(Std.int(item.width));
 				}
-			}
-			else
-			{
-				item.alpha = 0;
 			}
 		}
 	}
@@ -929,7 +940,7 @@ class FreeplaySongMetadata
 	public var diffs = [];
 
 	#if FEATURE_STEPMANIA
-	public function new(song:String, week:Int, songCharacter:String, ?color:Int, ?sm:SMFile = null, ?path:String = "")
+	public function new(song:String, week:Int, songCharacter:String, ?color:FlxColor, ?sm:SMFile = null, ?path:String = "")
 	{
 		this.songName = song;
 		this.week = week;
@@ -939,7 +950,7 @@ class FreeplaySongMetadata
 		this.path = path;
 	}
 	#else
-	public function new(song:String, week:Int, songCharacter:String, ?color:Int)
+	public function new(song:String, week:Int, songCharacter:String, ?color:FlxColor)
 	{
 		this.songName = song;
 		this.week = week;

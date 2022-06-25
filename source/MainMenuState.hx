@@ -1,5 +1,6 @@
 package;
 
+import flixel.input.mouse.FlxMouseEventManager;
 import flixel.input.gamepad.FlxGamepad;
 import Controls.KeyboardScheme;
 import flixel.FlxG;
@@ -149,12 +150,37 @@ class MainMenuState extends MusicBeatState
 
 	var selectedSomethin:Bool = false;
 
+	#if !mobile
+	var oldPos = FlxG.mouse.getScreenPosition();
+	#end
+
 	override function update(elapsed:Float)
 	{
 		if (FlxG.sound.music.volume < 0.8)
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
 		}
+
+		#if !mobile
+		if ((FlxG.mouse.getScreenPosition().x != oldPos.x || FlxG.mouse.getScreenPosition().y != oldPos.y) && !selectedSomethin)
+		{
+			oldPos = FlxG.mouse.getScreenPosition();
+			for (i in 0...menuItems.length)
+			{
+				if (FlxG.mouse.overlaps(menuItems.members[i]))
+				{
+					var pos = FlxG.mouse.getPositionInCameraView(FlxG.camera);
+					if (pos.y > i / menuItems.length * FlxG.height && pos.y < (i + 1) / menuItems.length * FlxG.height && curSelected != i)
+					{
+						curSelected = i;
+						FlxG.sound.play(Paths.sound('scrollMenu'));
+						changeItem();
+						break;
+					}
+				}
+			}
+		}
+		#end
 
 		if (!selectedSomethin)
 		{
@@ -177,6 +203,7 @@ class MainMenuState extends MusicBeatState
 			if (FlxG.keys.justPressed.UP)
 			{
 				FlxG.sound.play(Paths.sound('scrollMenu'));
+
 				changeItem(-1);
 			}
 
@@ -191,7 +218,7 @@ class MainMenuState extends MusicBeatState
 				MusicBeatState.switchState(new TitleState());
 			}
 
-			if (controls.ACCEPT)
+			if (controls.ACCEPT || (FlxG.mouse.overlaps(menuItems, FlxG.camera) && FlxG.mouse.pressed))
 			{
 				if (optionShit[curSelected] == 'donate')
 				{
@@ -277,6 +304,26 @@ class MainMenuState extends MusicBeatState
 			if (curSelected < 0)
 				curSelected = menuItems.length - 1;
 		}
+		menuItems.forEach(function(spr:FlxSprite)
+		{
+			spr.animation.play('idle');
+
+			if (spr.ID == curSelected && finishedFunnyMove)
+			{
+				spr.animation.play('selected');
+				camFollow.setPosition(spr.getGraphicMidpoint().x, spr.getGraphicMidpoint().y);
+			}
+
+			spr.animation.curAnim.frameRate = 15;
+
+			spr.updateHitbox();
+		});
+	}
+
+	function selectItem(selected:Int = 0)
+	{
+		if (finishedFunnyMove)
+			curSelected = selected;
 		menuItems.forEach(function(spr:FlxSprite)
 		{
 			spr.animation.play('idle');

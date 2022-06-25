@@ -4,6 +4,7 @@
 function start(song) -- do nothing
     bfsinging= true;
     spinLength = 0
+
     if getProperty('LuaMidscroll') then
         if getProperty('LuaOpponent') then
             for i=0,3 do
@@ -24,6 +25,15 @@ end
 
 local function camZoom() --Simulate a camZoom 
     if zoomAllowed then
+        camNotes:tweenZoom(camNotes.zoom + 0.12,0.01/rate, 'linear')
+        camNotes:tweenZoom(camNotes.zoom,0.5/rate,'elasticout')
+
+        camStrums:tweenZoom(camStrums.zoom+0.12,0.01/rate,'linear')
+        camStrums:tweenZoom(camStrums.zoom,0.5/rate,'elasticout')
+
+        camSustains:tweenZoom(camSustains.zoom+0.12,0.01/rate,'linear')
+        camSustains:tweenZoom(camSustains.zoom,0.5/rate,'elasticout')
+
         camHUD:tweenZoom(camHUD.zoom + 0.12,0.01/rate, 'linear')
         camHUD:tweenZoom(camHUD.zoom, 0.5/rate, 'elasticout')
 
