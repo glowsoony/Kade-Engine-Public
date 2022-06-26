@@ -529,7 +529,6 @@ class Stage extends MusicBeatState
 					tankGround.frames = Paths.getSparrowAtlas('tankRolling', 'week7');
 					tankGround.animation.addByPrefix('idle', 'BG tank w lighting instance ', Std.int(24 * PlayState.songMultiplier), true);
 					tankGround.animation.play('idle');
-					tankGround.angle = 180;
 					swagBacks['tankGround'] = tankGround;
 					toAdd.push(tankGround);
 
@@ -544,7 +543,6 @@ class Stage extends MusicBeatState
 					swagBacks['tankField'] = tankField;
 					toAdd.push(tankField);
 
-					moveTank();
 					if (PlayState.isStoryMode)
 					{
 						if (PlayState.SONG.songId == 'stress')
@@ -575,7 +573,7 @@ class Stage extends MusicBeatState
 
 							toAdd.push(picoCutscene);
 
-							var bfCutscene:FlxSprite = new FlxSprite(810, 500);
+							var bfCutscene:FlxSprite = new FlxSprite(815, 500);
 							bfCutscene.antialiasing = FlxG.save.data.antialiasing;
 							bfCutscene.frames = Paths.getSparrowAtlas('characters/BOYFRIEND');
 							bfCutscene.animation.addByPrefix('idle', 'BF idle dance', 24, false);
@@ -584,7 +582,7 @@ class Stage extends MusicBeatState
 							layInFront[2].push(bfCutscene);
 						}
 
-						var tankman:FlxSprite = new FlxSprite(-12, -PlayState.dad.y + 425);
+						var tankman:FlxSprite = new FlxSprite(18, 333);
 						tankman.frames = Paths.getSparrowAtlas('cutscenes/' + PlayState.SONG.songId);
 						tankman.antialiasing = FlxG.save.data.antialiasing;
 						swagBacks['tankman'] = tankman;
@@ -960,7 +958,8 @@ class Stage extends MusicBeatState
 	function moveTank():Void
 	{
 		tankAngle += FlxG.elapsed * tankSpeed * PlayState.songMultiplier;
-		swagBacks['tankGround'].angle = tankAngle - 90 + 15;
+		// Worst fix I've ever done in my life. I hope this doesn't make lag stutters.
+		PlayState.instance.createTween(swagBacks['tankGround'], {angle: tankAngle - 90 + 15}, 0.01, {type: FlxTweenType.ONESHOT});
 		swagBacks['tankGround'].x = tankX + 1500 * FlxMath.fastCos(FlxAngle.asRadians(tankAngle + 180));
 		swagBacks['tankGround'].y = 1300 + 1100 * FlxMath.fastSin(FlxAngle.asRadians(tankAngle + 180));
 	}

@@ -3139,7 +3139,7 @@ class PlayState extends MusicBeatState
 					remove(videoSprite);
 					removedVideo = true;
 				}
-				createTimer(0.3, function(tmr:FlxTimer)
+				new FlxTimer().start(0.3, function(tmr:FlxTimer)
 				{
 					for (bg in Stage.toAdd)
 					{
@@ -4280,7 +4280,7 @@ class PlayState extends MusicBeatState
 		}
 		else if (stageTesting)
 		{
-			createTimer(0.3, function(tmr:FlxTimer)
+			new FlxTimer().start(0.3, function(tmr:FlxTimer)
 			{
 				for (bg in Stage.toAdd)
 				{
@@ -4935,11 +4935,11 @@ class PlayState extends MusicBeatState
 
 		var anas:Array<Ana> = [null, null, null, null];
 
-		var daHitSound:FlxSound = new FlxSound().loadEmbedded(Paths.sound('hitsounds/${HitSounds.getSoundByID(FlxG.save.data.hitSound).toLowerCase()}',
-			'shared'));
-		daHitSound.volume = FlxG.save.data.hitVolume;
 		if (FlxG.save.data.hitSound != 0 && pressArray.contains(true))
 		{
+			var daHitSound:FlxSound = new FlxSound().loadEmbedded(Paths.sound('hitsounds/${HitSounds.getSoundByID(FlxG.save.data.hitSound).toLowerCase()}',
+				'shared'));
+			daHitSound.volume = FlxG.save.data.hitVolume;
 			daHitSound.play();
 		}
 
