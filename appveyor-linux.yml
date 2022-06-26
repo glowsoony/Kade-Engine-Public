@@ -38,7 +38,7 @@ install:
   - cd /home/appveyor/projects/kade-engine-linux
 
 build_script:
-  - haxelib run lime build linux
+  - haxelib run lime build linux 
 
 after_build:
   - tar -cvf KadeEngine-Linux.tar -C /home/appveyor/projects/kade-engine-linux/export/release/linux/bin .

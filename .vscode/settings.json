@@ -33,6 +33,20 @@
       ]
     },
     {
+      "label": "Build MacOS (Debug)",
+      "target": "macos",
+      "args": [
+        "-debug"
+      ]
+    },
+    {
+      "label": "Build MacOS (Release)",
+      "target": "macos",
+      "args": [
+        "-release"
+      ]
+    },
+    {
       "label": "Build HTML5 (Debug)",
       "target": "html5",
       "args": [

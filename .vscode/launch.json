@@ -30,6 +30,20 @@
       "command": "npx live-server \"${workspaceFolder}/export/release/html5/bin/\""
     },
     {
+      "name": "MacOS (Debug)",
+      "type": "hxcpp",
+      "preLaunchTask": "Build MacOS (Debug)",
+      "request": "launch",
+      "program": "${workspaceFolder}/export/debug/macos/bin/Kade Engine"
+    },
+    {
+      "name": "MacOS (Release)",
+      "type": "hxcpp",
+      "preLaunchTask": "Build MacOS (Release)",
+      "request": "launch",
+      "program": "${workspaceFolder}/export/debug/macos/bin/Kade Engine"
+    },
+    {
       "name": "Linux (Debug)",
       "type": "hxcpp",
       "preLaunchTask": "Build Linux (Debug)",
@@ -42,6 +56,6 @@
       "preLaunchTask": "Build Linux (Release)",
       "request": "launch",
       "program": "${workspaceFolder}/export/debug/linux/bin/Kade Engine"
-    },
+    }
   ],
 }

@@ -42,6 +42,26 @@
       }
     },
     {
+      "label": "Build MacOS (Debug)",
+      "type": "lime",
+      "targetConfiguration": "Build MacOS (Debug)",
+      "command": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Build MacOS (Release)",
+      "type": "lime",
+      "targetConfiguration": "Build MacOS (Release)",
+      "command": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
       "label": "Build Linux (Debug)",
       "type": "lime",
       "targetConfiguration": "Build Linux (Debug)",
