@@ -959,7 +959,8 @@ class Stage extends MusicBeatState
 	{
 		tankAngle += FlxG.elapsed * tankSpeed * PlayState.songMultiplier;
 		// Worst fix I've ever done in my life. I hope this doesn't make lag stutters.
-		PlayState.instance.createTween(swagBacks['tankGround'], {angle: tankAngle - 90 + 15}, 0.01, {type: FlxTweenType.ONESHOT});
+		if (!PlayState.instance.endingSong)
+			PlayState.instance.createTween(swagBacks['tankGround'], {angle: tankAngle - 90 + 15}, 0.01, {type: FlxTweenType.ONESHOT});
 		swagBacks['tankGround'].x = tankX + 1500 * FlxMath.fastCos(FlxAngle.asRadians(tankAngle + 180));
 		swagBacks['tankGround'].y = 1300 + 1100 * FlxMath.fastSin(FlxAngle.asRadians(tankAngle + 180));
 	}
