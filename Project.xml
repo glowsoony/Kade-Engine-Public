@@ -83,8 +83,8 @@
 		<library name="videos"    preload="true" />
 	</section>
 	
-	<assets path="assets/videos" library="videos"  exclude="*.webm|*.ogg|*.txt" if="windows"/>
-    <assets path="assets/videos" library="videos" exclude="*.mp4"  unless="windows"/>
+	<assets path="assets/videos" library="videos"  exclude="*.webm|*.ogg|*.txt" if="windows | linux"/>
+    <assets path="assets/videos" library="videos" exclude="*.mp4"  unless="windows | linux"/>
 	<assets path="assets/videos" library="videos" exclude="cutscenes"/>
 	<assets path="assets/songs"    library="songs"    exclude="*.ogg" if="web"/>
 	<assets path="assets/songs"    library="songs"    exclude="*.mp3" unless="web"/>
