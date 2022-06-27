@@ -1099,6 +1099,7 @@ class PlayState extends MusicBeatState
 			new LuaCamera(FlxG.camera, "camGame").Register(ModchartState.lua);
 			new LuaCamera(camHUD, "camHUD").Register(ModchartState.lua);
 			new LuaCamera(mainCam, "mainCam").Register(ModchartState.lua);
+			new LuaCamera(mainCam, "camStrums").Register(ModchartState.lua);
 			new LuaCamera(camNotes, "camNotes").Register(ModchartState.lua);
 			new LuaCamera(camSustains, "camSustains").Register(ModchartState.lua);
 			new LuaCharacter(dad, "dad").Register(ModchartState.lua);
