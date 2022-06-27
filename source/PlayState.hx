@@ -1099,7 +1099,7 @@ class PlayState extends MusicBeatState
 			new LuaCamera(FlxG.camera, "camGame").Register(ModchartState.lua);
 			new LuaCamera(camHUD, "camHUD").Register(ModchartState.lua);
 			new LuaCamera(mainCam, "mainCam").Register(ModchartState.lua);
-			new LuaCamera(mainCam, "camStrums").Register(ModchartState.lua);
+			new LuaCamera(camStrums, "camStrums").Register(ModchartState.lua);
 			new LuaCamera(camNotes, "camNotes").Register(ModchartState.lua);
 			new LuaCamera(camSustains, "camSustains").Register(ModchartState.lua);
 			new LuaCharacter(dad, "dad").Register(ModchartState.lua);
@@ -3963,7 +3963,7 @@ class PlayState extends MusicBeatState
 					&& !FlxG.save.data.middleScroll
 					|| (PlayStateChangeables.opponentMode && !daNote.mustPress && FlxG.save.data.middleScroll && executeModchart))
 				{
-					daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].x;
+					daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData)) + 4].x;
 				}
 
 				if (!daNote.mustPress
@@ -3986,7 +3986,10 @@ class PlayState extends MusicBeatState
 					else
 					{
 						if (!FlxG.save.data.middleScroll || executeModchart || sourceModchart)
-							daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].x + 36.5;
+							if (!PlayStateChangeables.opponentMode)
+								daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData))].x + 36.5;
+							else
+								daNote.x = strumLineNotes.members[Math.floor(Math.abs(daNote.noteData)) + 4].x + 36.5;
 					}
 					if (SONG.noteStyle == 'pixel')
 					{
