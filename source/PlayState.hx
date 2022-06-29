@@ -67,6 +67,8 @@ class PlayState extends MusicBeatState
 {
 	public static var instance:PlayState = null;
 
+	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>();// psych again -saw
+
 	public static var tweenManager:FlxTweenManager;
 	public static var timerManager:FlxTimerManager;
 
@@ -399,9 +401,6 @@ class PlayState extends MusicBeatState
 
 		if (previousRate < 1.00)
 			previousRate = 1;
-
-		if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
 
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -2921,13 +2920,6 @@ class PlayState extends MusicBeatState
 
 			PlayStateChangeables.useDownscroll = luaModchart.getVar("downscroll", "bool");
 
-			/*for (i in 0...strumLineNotes.length) {
-				var member = strumLineNotes.members[i];
-				member.x = luaModchart.getVar("strum" + i + "X", "float");
-				member.y = luaModchart.getVar("strum" + i + "Y", "float");
-				member.angle = luaModchart.getVar("strum" + i + "Angle", "float");
-			}*/
-
 			FlxG.camera.angle = luaModchart.getVar('cameraAngle', 'float');
 			camHUD.angle = luaModchart.getVar('camHudAngle', 'float');
 
@@ -3030,6 +3022,8 @@ class PlayState extends MusicBeatState
 				luaModchart.die();
 				luaModchart = null;
 			}
+			if (ModchartState.haxeInterp != null)
+				ModchartState.haxeInterp = null;
 			#end
 		}
 
@@ -3058,6 +3052,8 @@ class PlayState extends MusicBeatState
 				luaModchart.die();
 				luaModchart = null;
 			}
+			if (ModchartState.haxeInterp != null)
+				ModchartState.haxeInterp = null;
 			#end
 		}
 
@@ -3130,6 +3126,8 @@ class PlayState extends MusicBeatState
 				luaModchart.die();
 				luaModchart = null;
 			}
+			if (ModchartState.haxeInterp != null)
+				ModchartState.haxeInterp = null;
 			#end
 		}
 
@@ -3173,6 +3171,8 @@ class PlayState extends MusicBeatState
 					luaModchart.die();
 					luaModchart = null;
 				}
+				if (ModchartState.haxeInterp != null)
+					ModchartState.haxeInterp = null;
 				#end
 			}
 
@@ -3190,6 +3190,8 @@ class PlayState extends MusicBeatState
 				luaModchart.die();
 				luaModchart = null;
 			}
+			if (ModchartState.haxeInterp != null)
+				ModchartState.haxeInterp = null;
 			#end
 		}
 
@@ -3207,6 +3209,8 @@ class PlayState extends MusicBeatState
 				luaModchart.die();
 				luaModchart = null;
 			}
+			if (ModchartState.haxeInterp != null)
+				ModchartState.haxeInterp = null;
 			#end
 		}
 
@@ -4256,15 +4260,14 @@ class PlayState extends MusicBeatState
 			PlayStateChangeables.useDownscroll = false;
 		}
 
-		if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
-
 		#if FEATURE_LUAMODCHART
 		if (luaModchart != null)
 		{
 			luaModchart.die();
 			luaModchart = null;
 		}
+		if (ModchartState.haxeInterp != null)
+			ModchartState.haxeInterp = null;
 		#end
 
 		canPause = false;
@@ -4376,6 +4379,8 @@ class PlayState extends MusicBeatState
 						luaModchart.die();
 						luaModchart = null;
 					}
+					if (ModchartState.haxeInterp != null)
+						ModchartState.haxeInterp = null;
 					#end
 
 					if (SONG.validScore)
