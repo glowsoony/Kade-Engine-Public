@@ -235,7 +235,6 @@ class PauseSubState extends MusicBeatSubstate
 						PlayState.instance.remove(PlayState.instance.videoSprite);
 						PlayState.instance.removedVideo = true;
 					}
-					PlayState.instance.clean();
 					MusicBeatState.resetState();
 					PlayState.stageTesting = false;
 				case "Options":

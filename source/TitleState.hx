@@ -26,6 +26,10 @@ import flixel.util.FlxTimer;
 import lime.app.Application;
 import openfl.Assets;
 import flixel.input.keyboard.FlxKey;
+#if FEATURE_MULTITHREADING
+import sys.thread.Mutex;
+#end
+import openfl.utils.Assets as OpenFlAssets;
 
 using StringTools;
 
@@ -47,8 +51,9 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
-		Paths.clearStoredMemory();
-
+		#if FEATURE_MULTITHREADING
+		MasterObjectLoader.mutex = new Mutex();
+		#end
 		Paths.clearUnusedMemory();
 		// TODO: Refactor this to use OpenFlAssets.
 		#if FEATURE_FILESYSTEM
@@ -66,6 +71,8 @@ class TitleState extends MusicBeatState
 		FlxG.save.bind('funkin', 'ninjamuffin99');
 
 		PlayerSettings.init();
+
+		OpenFlAssets.cache.enabled = true;
 
 		KadeEngineData.initSave();
 

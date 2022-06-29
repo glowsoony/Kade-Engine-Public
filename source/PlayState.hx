@@ -393,6 +393,7 @@ class PlayState extends MusicBeatState
 		timerManager = new FlxTimerManager();
 
 		// grab variables here too or else its gonna break stuff later on
+
 		GameplayCustomizeState.freeplayNoteStyle = SONG.noteStyle;
 		previousRate = songMultiplier - 0.05;
 
@@ -1438,6 +1439,8 @@ class PlayState extends MusicBeatState
 			tankIntroEnd = true;
 
 		precacheList.set('alphabet', 'frame');
+
+		precacheList.set('breakfast', 'sound');
 
 		if (FlxG.save.data.hitSound != 0)
 			precacheList.set(HitSounds.getSoundByID(FlxG.save.data.hitSound).toLowerCase(), 'sound');

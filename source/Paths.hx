@@ -1,14 +1,14 @@
 package;
 
-import flixel.graphics.FlxGraphic;
+import flash.media.Sound;
 import flixel.FlxG;
+import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
+import haxe.Json;
+import lime.utils.Assets;
+import openfl.system.System;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-import openfl.system.System;
-import haxe.Json;
-import flash.media.Sound;
-import lime.utils.Assets;
 
 using StringTools;
 
@@ -308,7 +308,8 @@ class Paths
 				@:privateAccess
 				if (obj != null)
 				{
-					openfl.Assets.cache.removeBitmapData(key);
+					OpenFlAssets.cache.removeBitmapData(key);
+					OpenFlAssets.cache.clear(key);
 					FlxG.bitmap._cache.remove(key);
 					obj.destroy();
 					currentTrackedAssets.remove(key);
@@ -326,6 +327,11 @@ class Paths
 
 	public static function clearStoredMemory(?cleanUnused:Bool = false)
 	{
+		#if FEATURE_MULTITHREADING
+		// clear remaining objects
+		MasterObjectLoader.resetAssets();
+		#end
+
 		// clear anything not in the tracked assets list
 		var counterAssets:Int = 0;
 		var counterSound:Int = 0;
@@ -335,7 +341,8 @@ class Paths
 			var obj = FlxG.bitmap._cache.get(key);
 			if (obj != null && !currentTrackedAssets.exists(key))
 			{
-				openfl.Assets.cache.removeBitmapData(key);
+				OpenFlAssets.cache.removeBitmapData(key);
+				OpenFlAssets.cache.clear(key);
 				FlxG.bitmap._cache.remove(key);
 				obj.destroy();
 				counterAssets++;

@@ -1,23 +1,25 @@
 package;
 
-import flixel.math.FlxMath;
-import flixel.FlxCamera;
-import flixel.text.FlxText;
-import lime.app.Application;
+import Conductor.BPMChangeEvent;
 import flixel.FlxBasic;
+import flixel.FlxCamera;
+import flixel.FlxG;
+import flixel.FlxState;
+import flixel.addons.transition.FlxTransitionableState;
+import GlobalUIState;
+import flixel.math.FlxMath;
+import flixel.text.FlxText;
+import flixel.util.FlxColor;
+import lime.app.Application;
+import openfl.Lib;
+import flixel.addons.ui.FlxUI;
+import flixel.FlxSprite;
+import openfl.system.System;
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
-import flixel.util.FlxColor;
-import openfl.Lib;
-import Conductor.BPMChangeEvent;
-import flixel.FlxG;
-import flixel.addons.ui.FlxUIState;
-import openfl.system.System;
-import flixel.FlxState;
-import flixel.addons.transition.FlxTransitionableState;
 
-class MusicBeatState extends FlxUIState
+class MusicBeatState extends GlobalUIState
 {
 	private var lastBeat:Float = 0;
 	private var lastStep:Float = 0;
@@ -45,11 +47,32 @@ class MusicBeatState extends FlxUIState
 		super.destroy();
 	}
 
-	override function add(Object:flixel.FlxBasic):flixel.FlxBasic
+	override function add(Object:FlxBasic):FlxBasic
 	{
+		if (Std.isOfType(Object, FlxUI))
+			return null;
+
+		if (Std.isOfType(Object, FlxSprite))
+			var spr:FlxSprite = cast(Object, FlxSprite);
+
+		// Debug.logTrace(Object);
+		#if FEATURE_MULTITHREADING
+		if (!FlxG.save.data.optimize)
+			MasterObjectLoader.addObject(Object);
+		#else
 		if (!FlxG.save.data.optimize)
 			assets.push(Object);
+		#end
 		var result = super.add(Object);
+		return result;
+	}
+
+	override function remove(Object:FlxBasic, Splice:Bool = false):FlxBasic
+	{
+		#if FEATURE_MULTITHREADING
+		MasterObjectLoader.removeObject(Object);
+		#end
+		var result = super.remove(Object, Splice);
 		return result;
 	}
 
@@ -57,11 +80,17 @@ class MusicBeatState extends FlxUIState
 	{
 		if (FlxG.save.data.optimize)
 		{
+			#if FEATURE_MULTITHREADING
+			for (i in MasterObjectLoader.Objects)
+			{
+				remove(i);
+			}
+			#else
 			for (i in assets)
 			{
 				remove(i);
-				i.kill();
 			}
+			#end
 		}
 	}
 

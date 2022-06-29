@@ -74,7 +74,6 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	public static var icon:HealthIcon;
-	public static var openedPreview = false;
 
 	public static var songData:Map<String, Array<SongData>> = [];
 
@@ -498,9 +497,6 @@ class FreeplayState extends MusicBeatState
 				{
 					changeDiff(1);
 				}
-
-				/*if (gamepad.justPressed.X && !openedPreview)
-					openSubState(new DiffOverview()); */
 			}
 
 			if (upP)
@@ -512,10 +508,8 @@ class FreeplayState extends MusicBeatState
 				changeSelection(1);
 			}
 		}
-		/*if (FlxG.keys.justPressed.X && !openedPreview)
-			openSubState(new DiffOverview()); */ previewtext.text = "Rate: "
+		previewtext.text = "Rate: " + FlxMath.roundDecimal(rate, 2) + "x";
 
-			+ FlxMath.roundDecimal(rate, 2) + "x";
 		previewtext.alpha = 1;
 
 		if (FlxG.keys.justPressed.CONTROL && !openMod && !MusicBeatState.switchingState)
@@ -882,12 +876,6 @@ class FreeplayState extends MusicBeatState
 		}
 		catch (ex)
 		{
-		}
-
-		if (openedPreview)
-		{
-			closeSubState();
-			openSubState(new DiffOverview());
 		}
 
 		var bullShit:Int = 0;
