@@ -819,6 +819,18 @@ class PlayState extends MusicBeatState
 			add(i);
 		}
 
+		if (!FlxG.save.data.optimize && FlxG.save.data.distractions && FlxG.save.data.background)
+		{
+			if (SONG.songId == 'stress')
+			{
+				switch (gf.curCharacter)
+				{
+					case 'pico-speaker':
+						Character.loadMappedAnims();
+				}
+			}
+		}
+
 		if (!FlxG.save.data.optimize)
 			for (index => array in Stage.layInFront)
 			{
@@ -1405,8 +1417,6 @@ class PlayState extends MusicBeatState
 
 		super.create();
 
-		Paths.clearUnusedMemory();
-
 		if (FlxG.save.data.distractions && FlxG.save.data.background && !FlxG.save.data.optimize)
 		{
 			if (gfCheck == 'pico-speaker' && Stage.curStage == 'tank')
@@ -1451,6 +1461,7 @@ class PlayState extends MusicBeatState
 		{
 			switch (type)
 			{
+				#if !debug
 				case 'image':
 					Paths.image(key);
 				case 'frame':
@@ -1461,6 +1472,7 @@ class PlayState extends MusicBeatState
 					Paths.sound(key);
 				case 'music':
 					Paths.music(key);
+				#end
 			}
 		}
 
@@ -2145,18 +2157,6 @@ class PlayState extends MusicBeatState
 	public function generateSong(dataPath:String):Void
 	{
 		// FlxG.log.add(ChartParser.parse());
-		if (!FlxG.save.data.optimize && FlxG.save.data.distractions && FlxG.save.data.background)
-		{
-			if (SONG.songId == 'stress')
-			{
-				switch (gf.curCharacter)
-				{
-					case 'pico-speaker':
-						Character.loadMappedAnims();
-				}
-			}
-		}
-
 		var songData = SONG;
 
 		Conductor.changeBPM(songData.bpm);
@@ -3227,6 +3227,7 @@ class PlayState extends MusicBeatState
 
 						daNote.kill();
 						notes.remove(daNote, true);
+						daNote.alive = false;
 						daNote.destroy();
 					}
 				});
@@ -3705,6 +3706,16 @@ class PlayState extends MusicBeatState
 			{
 				// instead of doing stupid y > FlxG.height
 				// we be men and actually calculate the time :)
+
+				if (daNote.noteData == -1)
+				{
+					Debug.logWarn('Weird Note detected! Note Data = "${daNote.rawNoteData}" is not valid, deleting...');
+					daNote.kill();
+					daNote.alive = false;
+					notes.remove(daNote, true);
+					daNote.destroy();
+				}
+
 				var strumY = playerStrums.members[daNote.noteData].y;
 
 				if (!daNote.mustPress)
@@ -4012,6 +4023,7 @@ class PlayState extends MusicBeatState
 					{
 						daNote.kill();
 						notes.remove(daNote, true);
+						daNote.alive = false;
 						daNote.destroy();
 					}
 					if ((daNote.mustPress && daNote.tooLate && !daNote.canBeHit && !PlayStateChangeables.useDownscroll || daNote.mustPress
@@ -4021,7 +4033,9 @@ class PlayState extends MusicBeatState
 						if (daNote.isSustainNote && daNote.wasGoodHit)
 						{
 							daNote.kill();
+							daNote.alive = false;
 							notes.remove(daNote, true);
+							daNote.destroy();
 						}
 						else
 						{
@@ -4147,6 +4161,7 @@ class PlayState extends MusicBeatState
 						daNote.visible = false;
 						daNote.kill();
 						notes.remove(daNote, true);
+						daNote.alive = false;
 						daNote.destroy();
 					}
 				}
