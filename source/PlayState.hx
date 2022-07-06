@@ -67,7 +67,7 @@ class PlayState extends MusicBeatState
 {
 	public static var instance:PlayState = null;
 
-	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>();// psych again -saw
+	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>(); // psych again -saw
 
 	public static var tweenManager:FlxTweenManager;
 	public static var timerManager:FlxTimerManager;
@@ -1449,10 +1449,10 @@ class PlayState extends MusicBeatState
 
 		precacheList.set('alphabet', 'frame');
 
-		precacheList.set('breakfast', 'sound');
+		precacheList.set('breakfast', 'music');
 
 		if (FlxG.save.data.hitSound != 0)
-			precacheList.set(HitSounds.getSoundByID(FlxG.save.data.hitSound).toLowerCase(), 'sound');
+			precacheList.set("hitsounds/" + HitSounds.getSoundByID(FlxG.save.data.hitSound).toLowerCase(), 'sound');
 
 		cachePopUpScore();
 
