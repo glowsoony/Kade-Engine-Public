@@ -1,8 +1,5 @@
-1.8;
-- New options menu
-- New animation debug screen
-- Middle scroll
-- Lane transparency
-- Added noteskin support + new circle skin
-- Fixed input on rates
-- Fixed rates on longer maps so they are more stable
+1.4.2;
+- GPU Sprite Rendering
+- Memory leak fixes
+- Dynamic HUD zoom
+- Fixed Freeplay/Story Menu difficulties related crashes.
