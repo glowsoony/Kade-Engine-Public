@@ -1,4 +1,4 @@
-1.4.2;
+1.4.4;
 - GPU Sprite Rendering
 - Memory leak fixes
 - Dynamic HUD zoom
