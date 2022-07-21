@@ -9,6 +9,7 @@ import haxe.Timer;
 import openfl.events.Event;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+import openfl.display3D.Context3D;
 #if gl_stats
 import openfl.display._internal.stats.Context3DStats;
 import openfl.display._internal.stats.DrawCallContext;
@@ -37,7 +38,11 @@ class KadeEngineFPS extends TextField
 
 	public var memoryMegas:Float = 0;
 
+	public var memoryTotal:Float = 0;
+
 	public var memoryUsage:String;
+
+	public var gpuMemory:Float = 0;
 
 	public var bitmap:Bitmap;
 
@@ -57,7 +62,7 @@ class KadeEngineFPS extends TextField
 		mouseEnabled = false;
 		defaultTextFormat = new TextFormat(openfl.utils.Assets.getFont("assets/fonts/vcr.ttf").fontName, 14, color);
 		text = "FPS: ";
-		width += 200;
+		width += 800;
 
 		cacheCount = 0;
 		currentTime = 0;
@@ -117,10 +122,24 @@ class KadeEngineFPS extends TextField
 		if (currentCount != cacheCount /*&& visible*/)
 		{
 			memoryMegas = Math.abs(FlxMath.roundDecimal(System.totalMemory / 1000000, 1));
-			memoryUsage = (FlxG.save.data.memoryDisplay ? "\nMemory Usage: " + memoryMegas + " MB" : "");
+
+			/* This shit gets the gpu usage of every program of ur pc and not from the game. The gpu usage will be very innacurate.*/
+			// gpuMemory = Math.abs(FlxMath.roundDecimal(FlxG.stage.context3D.totalGPUMemory / 1000000, 1));
+			// var gpuInfo:String = FlxG.stage.context3D.driverInfo.substr(FlxG.stage.context3D.driverInfo.indexOf('Renderer=') + 9);
+
+			if (memoryMegas > memoryTotal)
+				memoryTotal = memoryMegas;
+
+			/*if (FlxG.save.data.gpuRender)
+					memoryUsage = (FlxG.save.data.memoryDisplay?"Memory Usage: " + memoryMegas + " MB / " + memoryTotal + " MB" + "\nGPU Usage: " + gpuMemory
+						+ " MB" #if debug
+						+ gpuInfo #end : "");
+				else */
+			memoryUsage = (FlxG.save.data.memoryDisplay ? "Memory Usage: " + memoryMegas + " MB / " + memoryTotal + " MB" : "");
+
 			text = (FlxG.save.data.fps ? "FPS: "
 				+ currentFPS
-				+ memoryUsage
+				+ '\n$memoryUsage'
 				+ (Main.watermarks?"\nKade Engine " + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : "") : memoryUsage
 				+ (Main.watermarks?"\nKade Engine " + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : ""));
 

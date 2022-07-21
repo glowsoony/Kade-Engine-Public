@@ -62,13 +62,13 @@ class HitGraph extends Sprite
 		_axis = new Shape();
 		_axis.x = _labelWidth + 10;
 
-		ts = Math.floor((PlayState.rep.replay.sf / 60) * 1000) / 166;
+		ts = Math.floor((PlayState.rep.replay.sf / 60) * 1000) / Ratings.timingWindows[0];
 
 		var early = createTextField(10, 10, FlxColor.WHITE, 12);
 		var late = createTextField(10, _height - 20, FlxColor.WHITE, 12);
 
-		early.text = "Early (" + -166 * ts + "ms)";
-		late.text = "Late (" + 166 * ts + "ms)";
+		early.text = "Early (" + -Ratings.timingWindows[0] * ts + "ms)";
+		late.text = "Late (" + Ratings.timingWindows[0] * ts + "ms)";
 
 		addChild(early);
 		addChild(late);

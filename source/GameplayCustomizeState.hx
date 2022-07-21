@@ -14,6 +14,13 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import openfl.ui.Keyboard;
 import flixel.FlxSprite;
 import flixel.FlxG;
+import flixel.addons.ui.FlxUI;
+import flixel.addons.ui.FlxUIState;
+import flixel.addons.ui.FlxUICheckBox;
+import flixel.addons.ui.FlxUIDropDownMenu;
+import flixel.addons.ui.FlxUIInputText;
+import flixel.addons.ui.FlxUINumericStepper;
+import flixel.addons.ui.FlxUITabMenu;
 
 using StringTools;
 
@@ -24,6 +31,8 @@ class GameplayCustomizeState extends MusicBeatState
 
 	var sick:FlxSprite;
 
+	var UI_options:FlxUITabMenu;
+
 	var text:FlxText;
 	var blackBorder:FlxSprite;
 
@@ -31,8 +40,8 @@ class GameplayCustomizeState extends MusicBeatState
 	var laneunderlayOpponent:FlxSprite;
 
 	var strumLine:FlxSprite;
-	var strumLineNotes:FlxTypedGroup<FlxSprite>;
-	var playerStrums:FlxTypedGroup<FlxSprite>;
+	var strumLineNotes:FlxTypedGroup<StaticArrow>;
+	var playerStrums:FlxTypedGroup<StaticArrow>;
 	var cpuStrums:FlxTypedGroup<StaticArrow>;
 
 	var camPos:FlxPoint;
@@ -45,6 +54,9 @@ class GameplayCustomizeState extends MusicBeatState
 	private var camHUD:FlxCamera;
 	private var camGame:FlxCamera;
 	private var camFollow:FlxObject;
+
+	private var camStrums:FlxCamera;
+
 	private var dataSuffix:Array<String> = ['LEFT', 'DOWN', 'UP', 'RIGHT'];
 	private var dataColor:Array<String> = ['purple', 'blue', 'green', 'red'];
 
@@ -55,10 +67,13 @@ class GameplayCustomizeState extends MusicBeatState
 	public static var freeplayNoteStyle:String = 'normal';
 	public static var freeplayWeek:Int = 1;
 
+	public var mainCam:FlxCamera;
+
 	var changedPos:Bool = false;
 
 	public override function create()
 	{
+		Paths.clearStoredMemory();
 		super.create();
 
 		FlxG.save.data.optimize = false;
@@ -70,20 +85,47 @@ class GameplayCustomizeState extends MusicBeatState
 
 		camGame = new FlxCamera();
 		camHUD = new FlxCamera();
+		mainCam = new FlxCamera();
+		camStrums = new FlxCamera();
+		camStrums.height = 1300;
+		camStrums.bgColor.alpha = 0;
+		mainCam.bgColor.alpha = 0;
 		camHUD.bgColor.alpha = 0;
 
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.add(camHUD);
+		FlxG.cameras.add(camStrums);
+		FlxG.cameras.add(mainCam);
+
+		PsychTransition.nextCamera = mainCam;
 
 		FlxCamera.defaultCameras = [camGame];
 
 		camHUD.zoom = FlxG.save.data.zoom;
+
+		camStrums.zoom = camHUD.zoom;
 
 		persistentUpdate = persistentDraw = true;
 
 		// defaults if no stage was found in chart
 
 		// If the stage isn't specified in the chart, we use the story week value.
+		var opt_tabs = [{name: "Appeareance", label: 'Appeareance'}, {name: "WIP", label: 'wip'}];
+
+		UI_options = new FlxUITabMenu(null, opt_tabs, true);
+
+		UI_options.scrollFactor.set();
+		UI_options.selected_tab = 0;
+		UI_options.resize(150, 200);
+		UI_options.x = FlxG.width - 200;
+		UI_options.y = FlxG.height - 700;
+		if (!FlxG.save.data.downscroll)
+			UI_options.y = FlxG.height - (UI_options.height + 20);
+		UI_options.cameras = [mainCam];
+
+		add(UI_options);
+
+		addOptionsUI();
 
 		gf = new Character(400, 130, 'gf');
 
@@ -146,16 +188,16 @@ class GameplayCustomizeState extends MusicBeatState
 
 		// FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
-		strumLine = new FlxSprite(0, FlxG.save.data.strumline).makeGraphic(FlxG.width, 14);
+		strumLine = new FlxSprite(0, 0).makeGraphic(FlxG.width, 14);
 		strumLine.scrollFactor.set();
 		strumLine.alpha = 0.4;
 
 		add(strumLine);
 
 		if (FlxG.save.data.downscroll)
-			strumLine.y = FlxG.height - 165;
+			strumLine.y = FlxG.height - (165 * Math.pow(FlxG.save.data.zoom, 0.75));
 		else
-			strumLine.y += 60;
+			strumLine.y = FlxG.height - (647.5 / Math.pow(FlxG.save.data.zoom, 1.05));
 
 		laneunderlayOpponent = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height * 2);
 		laneunderlayOpponent.alpha = FlxG.save.data.laneTransparency;
@@ -178,10 +220,10 @@ class GameplayCustomizeState extends MusicBeatState
 			add(laneunderlay);
 		}
 
-		strumLineNotes = new FlxTypedGroup<FlxSprite>();
+		strumLineNotes = new FlxTypedGroup<StaticArrow>();
 		add(strumLineNotes);
 
-		playerStrums = new FlxTypedGroup<FlxSprite>();
+		playerStrums = new FlxTypedGroup<StaticArrow>();
 		cpuStrums = new FlxTypedGroup<StaticArrow>();
 
 		if (freeplayNoteStyle == 'pixel')
@@ -221,15 +263,15 @@ class GameplayCustomizeState extends MusicBeatState
 		laneunderlayOpponent.screenCenter(Y);
 
 		text = new FlxText(5, FlxG.height + 40, 0,
-			"Use Arrows or Mouse to move your combo Rate around. Press R to reset. Q/E to change zoom. C to show combo. Escape to exit.", 12);
+			"  Use Arrows or Mouse to move your combo Rate around. Press R to reset. Q/E to change zoom. C to show combo. Escape to exit.", 12);
 		text.scrollFactor.set();
 		text.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 
-		blackBorder = new FlxSprite(-30, FlxG.height + 40).makeGraphic((Std.int(text.width + 900)), Std.int(text.height + 600), FlxColor.BLACK);
+		blackBorder = new FlxSprite(-25, FlxG.height + 40).makeGraphic((Std.int(text.width + 900)), Std.int(text.height + 600), FlxColor.BLACK);
 		blackBorder.alpha = 0.5;
 
-		blackBorder.cameras = [camHUD];
-		text.cameras = [camHUD];
+		blackBorder.cameras = [mainCam];
+		text.cameras = [mainCam];
 
 		add(blackBorder);
 		add(text);
@@ -247,13 +289,48 @@ class GameplayCustomizeState extends MusicBeatState
 		sick.y = FlxG.save.data.changedHitY;
 
 		FlxG.mouse.visible = true;
+
+		// AFTER EVERYTHING LOAD DESTROY EVERYTHING TO SAVE MEMORY IN OPTIMIZED MOD
+		if (FlxG.save.data.optimize)
+		{
+			boyfriend.kill();
+			gf.destroy();
+			dad.kill();
+			boyfriend.destroy();
+			gf.destroy();
+			dad.destroy();
+			for (i in Stage.toAdd)
+			{
+				remove(i, true);
+				i.kill();
+				i.destroy();
+			}
+		}
+
+		if (!FlxG.save.data.background)
+		{
+			for (i in Stage.toAdd)
+			{
+				remove(i, true);
+				i.kill();
+				i.destroy();
+			}
+		}
+
+		Paths.clearUnusedMemory();
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		Stage.update(elapsed);
+		if (FlxG.save.data.zoom >= 0.8 && FlxG.save.data.zoom <= 1.2)
+		{
+			if (FlxG.save.data.downscroll)
+				strumLine.y = FlxG.height - (165 * Math.pow(FlxG.save.data.zoom, 0.75));
+			else
+				strumLine.y = FlxG.height - (647.5 / Math.pow(FlxG.save.data.zoom, 1.05));
+		}
 
 		if (FlxG.sound.music != null)
 			Conductor.songPosition = FlxG.sound.music.time;
@@ -268,6 +345,7 @@ class GameplayCustomizeState extends MusicBeatState
 
 		FlxG.camera.zoom = FlxMath.lerp(Stage.camZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio), 0, 1));
 		camHUD.zoom = FlxMath.lerp(FlxG.save.data.zoom, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio), 0, 1));
+		camStrums.zoom = camHUD.zoom;
 
 		if (FlxG.keys.justPressed.LEFT || FlxG.keys.pressed.LEFT)
 		{
@@ -293,7 +371,6 @@ class GameplayCustomizeState extends MusicBeatState
 			sick.x += 0;
 			changedPos = true;
 		}
-		var mousePos:FlxPoint = FlxG.mouse.getScreenPosition();
 
 		if (FlxG.mouse.overlaps(sick) && FlxG.mouse.pressed)
 		{
@@ -357,7 +434,8 @@ class GameplayCustomizeState extends MusicBeatState
 				comboSpr.setGraphicSize(Std.int(comboSpr.width * CoolUtil.daPixelZoom * 0.7));
 			}
 
-			add(comboSpr);
+			if (FlxG.save.data.showCombo)
+				add(comboSpr);
 
 			// make sure we have 3 digits to display (looks weird otherwise lol)
 			if (comboSplit.length == 1)
@@ -397,7 +475,8 @@ class GameplayCustomizeState extends MusicBeatState
 				numScore.velocity.y -= FlxG.random.int(140, 160);
 				numScore.velocity.x = FlxG.random.float(-5, 5);
 
-				add(numScore);
+				if (FlxG.save.data.showComboNum)
+					add(numScore);
 
 				visibleCombos.push(numScore);
 
@@ -475,7 +554,7 @@ class GameplayCustomizeState extends MusicBeatState
 			if (curBeat % 4 == 0)
 			{
 				FlxG.camera.zoom += 0.015;
-				camHUD.zoom += 0.010;
+				camHUD.zoom += 0.03;
 			}
 		}
 
@@ -564,6 +643,7 @@ class GameplayCustomizeState extends MusicBeatState
 			babyArrow.playAnim('static');
 			babyArrow.x += 110;
 			babyArrow.x += ((FlxG.width / 2) * player);
+			babyArrow.cameras = [camStrums];
 
 			if (FlxG.save.data.middleScroll)
 				babyArrow.x -= 320;
@@ -575,5 +655,31 @@ class GameplayCustomizeState extends MusicBeatState
 
 			strumLineNotes.add(babyArrow);
 		}
+	}
+
+	function addOptionsUI()
+	{
+		var comboSprite = new FlxUICheckBox(10, 35, null, null, "Show Combo Sprite", 100);
+		comboSprite.checked = FlxG.save.data.showCombo;
+		comboSprite.callback = function()
+		{
+			FlxG.save.data.showCombo = comboSprite.checked;
+		};
+
+		var comboNum = new FlxUICheckBox(10, 60, null, null, "Show Combo Numbers", 100);
+		comboNum.checked = FlxG.save.data.showComboNum;
+		comboNum.callback = function()
+		{
+			FlxG.save.data.showComboNum = comboNum.checked;
+		};
+
+		var tab_app = new FlxUI(null, UI_options);
+		tab_app.name = "Appeareance";
+		tab_app.add(comboSprite);
+		tab_app.add(comboNum);
+		UI_options.addGroup(tab_app);
+
+		var tab_wip = new FlxUI(null, UI_options);
+		UI_options.addGroup(tab_wip);
 	}
 }

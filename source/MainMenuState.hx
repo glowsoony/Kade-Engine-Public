@@ -1,6 +1,5 @@
 package;
 
-import flixel.input.mouse.FlxMouseEventManager;
 import flixel.input.gamepad.FlxGamepad;
 import Controls.KeyboardScheme;
 import flixel.FlxG;
@@ -41,9 +40,13 @@ class MainMenuState extends MusicBeatState
 
 	public static var nightly:String = "";
 
-	public static var gameVer:String = "0.2.7.1";
+	public static var gameVer:String = "0.2.8";
 
-	public static var kadeEngineVer:String = "1.8.1" + "\nFNF v" + gameVer + "\nCustom Build v1.4.1a" + nightly;
+	public static var kadeEngineVer:String = "1.8.1" + "\nFNF v" + gameVer + "\nCustom Build v1.4.2" + nightly;
+
+	public static var buildVer:String = "1.4.2";
+
+	public static var updateShit:Bool = false;
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;

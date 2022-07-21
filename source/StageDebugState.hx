@@ -12,7 +12,6 @@ import flixel.util.FlxCollision;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.net.FileReference;
-import AtlasFrameMaker;
 
 using StringTools;
 

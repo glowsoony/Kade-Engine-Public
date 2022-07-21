@@ -65,7 +65,10 @@ class KadeEngineData
 			FlxG.save.data.fpsRain = false;
 
 		if (FlxG.save.data.fpsCap == null)
-			FlxG.save.data.fpsCap = 60;
+			FlxG.save.data.fpsCap = 120;
+
+		if (FlxG.save.data.fpsCap < 60)
+			FlxG.save.data.fpsCap = 120; // baby proof so you can't hard lock ur copy of kade engine
 
 		if (FlxG.save.data.scrollSpeed == null)
 			FlxG.save.data.scrollSpeed = 1;
@@ -211,9 +214,33 @@ class KadeEngineData
 		if (FlxG.save.data.noteSplashes == null)
 			FlxG.save.data.noteSplashes = false;
 
+		if (FlxG.save.data.strumHit == null)
+			FlxG.save.data.strumHit = true;
+
+		if (FlxG.save.data.showCombo == null)
+			FlxG.save.data.showCombo = true;
+
+		if (FlxG.save.data.showComboNum == null)
+			FlxG.save.data.showComboNum = true;
+
 		// Gonna make this an option on another PR
 		if (FlxG.save.data.overrideNoteskins == null)
 			FlxG.save.data.overrideNoteskins = false;
+
+		if (FlxG.save.data.gpuRender == null)
+		{
+			#if html5
+			FlxG.save.data.gpuRender = false;
+			#else
+			FlxG.save.data.gpuRender = true;
+			#end
+		}
+
+		if (FlxG.save.data.volume == null)
+			FlxG.save.data.volume = 1;
+
+		if (FlxG.save.data.mute == null)
+			FlxG.save.data.mute = false;
 
 		var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
 

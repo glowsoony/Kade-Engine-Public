@@ -26,8 +26,6 @@ import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import openfl.Lib;
-import hscript.Parser;
-import hscript.Interp;
 import Shaders;
 
 using StringTools;
@@ -36,16 +34,11 @@ class ModchartState
 {
 	// public static var shaders:Array<LuaShader> = null;
 	public static var lua:State = null;
-	
-	public static var haxeInterp:Interp = null;
 
 	public static var shownNotes:Array<LuaNote> = [];
 
-	var lastCalledFunction:String = '';
 	function callLua(func_name:String, args:Array<Dynamic>, ?type:String):Dynamic
 	{
-		lastCalledFunction = func_name;
-
 		var result:Any = null;
 
 		Lua.getglobal(lua, func_name);
@@ -445,7 +438,8 @@ class ModchartState
 		if (result != 0)
 		{
 			Application.current.window.alert("LUA COMPILE ERROR:\n" + Lua.tostring(lua, result), "Kade Engine Modcharts");
-			lua = null;
+			MusicBeatState.switchState(new FreeplayState());
+			PlayState.instance.clean();
 			return;
 		}
 
@@ -456,7 +450,6 @@ class ModchartState
 		setVar("scrollspeed",
 			FlxG.save.data.scrollSpeed != 1 ? FlxG.save.data.scrollSpeed * PlayState.songMultiplier : PlayState.SONG.speed * PlayState.songMultiplier);
 		setVar("fpsCap", FlxG.save.data.fpsCap);
-		setVar("downscroll", FlxG.save.data.downscroll);
 		setVar("flashing", FlxG.save.data.flashing);
 		setVar("distractions", FlxG.save.data.distractions);
 		setVar("colour", FlxG.save.data.colour);
@@ -492,9 +485,9 @@ class ModchartState
 
 		setVar("strumLineY", PlayState.instance.strumLine.y);
 
-		Lua_helper.add_callback(lua, "precache", function(asset:String, type:String)
+		Lua_helper.add_callback(lua, "precache", function(asset:String, type:String, ?library:String)
 		{
-			PlayState.instance.precacheList.set(asset, type);
+			PlayState.instance.precacheThing(asset, type, library);
 		});
 
 		// callbacks
@@ -671,87 +664,6 @@ class ModchartState
 		Lua_helper.add_callback(lua, "clearEffects", function(camera:String)
 		{
 			PlayState.instance.clearShaderFromCamera(camera);
-		});
-				
-		Lua_helper.add_callback(lua, "runHaxeCode", function(codeToRun:String) {
-			if(haxeInterp == null)
-			{
-				haxeInterp = new Interp();
-				haxeInterp.variables.set('FlxG', FlxG);
-				haxeInterp.variables.set('FlxSprite', FlxSprite);
-				haxeInterp.variables.set('FlxCamera', FlxCamera);
-				haxeInterp.variables.set('FlxTween', FlxTween);
-				haxeInterp.variables.set('FlxEase', FlxEase);
-				haxeInterp.variables.set('PlayState', PlayState);
-				haxeInterp.variables.set('game', PlayState.instance);
-				haxeInterp.variables.set('Paths', Paths);
-				haxeInterp.variables.set('Conductor', Conductor);
-				haxeInterp.variables.set('Character', Character);
-				haxeInterp.variables.set('Alphabet', Alphabet);
-				haxeInterp.variables.set('StringTools', StringTools);
-				haxeInterp.variables.set('setVar', function(name:String, value:Dynamic)
-				{
-					PlayState.instance.variables.set(name, value);
-				});
-				haxeInterp.variables.set('getVar', function(name:String)
-				{
-					if(!PlayState.instance.variables.exists(name)) return null;
-					return PlayState.instance.variables.get(name);
-				});
-			}
-
-			try {
-				var myFunction:Dynamic = haxeInterp.expr(new Parser().parseString(codeToRun));
-				myFunction();
-			}
-			catch (e:Dynamic) {
-				switch(e)
-				{
-					case 'Null Function Pointer', 'SReturn':
-						//nothing
-					default:
-						Application.current.window.alert(path + ":" + lastCalledFunction + " - " + e, "Kade Engine Modcharts");
-				}
-			}
-		});
-
-		Lua_helper.add_callback(lua, "addHaxeLibrary", function(libName:String, ?libFolder:String = '') {
-			if(haxeInterp == null)
-			{
-				haxeInterp = new Interp();
-				haxeInterp.variables.set('FlxG', FlxG);
-				haxeInterp.variables.set('FlxSprite', FlxSprite);
-				haxeInterp.variables.set('FlxCamera', FlxCamera);
-				haxeInterp.variables.set('FlxTween', FlxTween);
-				haxeInterp.variables.set('FlxEase', FlxEase);
-				haxeInterp.variables.set('PlayState', PlayState);
-				haxeInterp.variables.set('game', PlayState.instance);
-				haxeInterp.variables.set('Paths', Paths);
-				haxeInterp.variables.set('Conductor', Conductor);
-				haxeInterp.variables.set('Character', Character);
-				haxeInterp.variables.set('Alphabet', Alphabet);
-				haxeInterp.variables.set('StringTools', StringTools);
-				haxeInterp.variables.set('setVar', function(name:String, value:Dynamic)
-				{
-					PlayState.instance.variables.set(name, value);
-				});
-				haxeInterp.variables.set('getVar', function(name:String)
-				{
-					if(!PlayState.instance.variables.exists(name)) return null;
-					return PlayState.instance.variables.get(name);
-				});
-			}
-
-			try {
-				var str:String = '';
-				if(libFolder.length > 0)
-					str = libFolder + '.';
-
-				haxeInterp.variables.set(libName, Type.resolveClass(str + libName));
-			}
-			catch (e:Dynamic) {
-				Application.current.window.alert(path + ":" + lastCalledFunction + " - " + e, "Kade Engine Modcharts");
-			}
 		});
 
 		for (i in 0...PlayState.strumLineNotes.length)

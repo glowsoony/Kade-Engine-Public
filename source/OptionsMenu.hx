@@ -136,6 +136,7 @@ class OptionsMenu extends FlxSubState
 				new AccuracyDOption("Change how accuracy is calculated. (Accurate = Simple, Complex = Milisecond Based)"),
 				new HitSoundOption("Toogle hitsound every time you hit a Strum Note."),
 				new HitSoundVolume("Set hitsound volume."),
+				new HitSoundMode("Set at what condition you want the hitsound to play."),
 				new GhostTapOption("Toggle counting pressing a directional input when no arrow is there as a miss."),
 				new DownscrollOption("Toggle making the notes scroll down rather than up."),
 				new BotPlay("A bot plays for you!"),
@@ -173,7 +174,8 @@ class OptionsMenu extends FlxSubState
 
 				new FPSOption("Toggle the FPS Counter"),
 				new DisplayMemory("Toggle the Memory Usage"),
-				#if FEATURE_DISCORD new DiscordOption("Change your Discord Rich Presence update interval."),
+				#if FEATURE_DISCORD
+				new DiscordOption("Change your Discord Rich Presence update interval."),
 				#end
 				new FlashingLightsOption("Toggle flashing lights that can cause epileptic seizures and strain."),
 				new WatermarkOption("Enable and disable all watermarks from the engine."),
@@ -183,6 +185,7 @@ class OptionsMenu extends FlxSubState
 				new ShowInput("Display every single input on the score screen."),
 			]),
 			new OptionCata(935, 40, "Performance", [
+				new GPURendering("Toggle GPU rendering to push Graphics textures to GPU, reducing CPU memory usage. "),
 				new OptimizeOption("Disable Background and Characters to save memory. Useful to low-end computers."),
 				new Background("Disable Stage Background to save memory (Only characters are visible)."),
 				new DistractionsAndEffectsOption("Toggle stage distractions that can hinder your gameplay and save memory.")
@@ -746,25 +749,26 @@ class OptionsMenu extends FlxSubState
 		if (selectedCatIndex == 0)
 		{
 			#if html5
-			selectedCat.optionObjects.members[8].color = FlxColor.YELLOW;
+			selectedCat.optionObjects.members[9].color = FlxColor.YELLOW;
 			#end
-			if (FlxG.save.data.optimize)
-				selectedCat.optionObjects.members[11].color = FlxColor.YELLOW;
 		}
 		if (FlxG.save.data.optimize && selectedCatIndex == 3)
 		{
-			selectedCat.optionObjects.members[1].color = FlxColor.YELLOW;
 			selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
 		}
-		if (!FlxG.save.data.background && selectedCatIndex == 3)
+		if ((!FlxG.save.data.background || FlxG.save.data.optimize) && selectedCatIndex == 3)
 		{
-			selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
+			selectedCat.optionObjects.members[3].color = FlxColor.YELLOW;
 		}
 		if (selectedCatIndex == 1)
 		{
 			if (!FlxG.save.data.healthBar)
 				selectedCat.optionObjects.members[12].color = FlxColor.YELLOW;
 		}
+		#if html5
+		if (selectedCatIndex == 3)
+			selectedCat.optionObjects.members[0].color = FlxColor.YELLOW;
+		#end
 
 		if (isInPause) // DUPLICATED CUZ MEMORY LEAK OR SMTH IDK
 		{
@@ -772,13 +776,14 @@ class OptionsMenu extends FlxSubState
 			{
 				case 0:
 					selectedCat.optionObjects.members[2].color = FlxColor.YELLOW;
-					selectedCat.optionObjects.members[14].color = FlxColor.YELLOW;
 					if (PlayState.isStoryMode)
-						selectedCat.optionObjects.members[7].color = FlxColor.YELLOW;
+						selectedCat.optionObjects.members[8].color = FlxColor.YELLOW;
+
+					selectedCat.optionObjects.members[15].color = FlxColor.YELLOW;
 				case 1:
 					selectedCat.optionObjects.members[17].color = FlxColor.YELLOW;
 				case 3:
-					for (i in 0...3)
+					for (i in 0...4)
 						selectedCat.optionObjects.members[i].color = FlxColor.YELLOW;
 				case 4:
 					for (i in 0...4)
@@ -793,39 +798,29 @@ class OptionsMenu extends FlxSubState
 				descText.text = "HEALTH BAR IS DISABLED! Colored health bar are disabled.";
 				descText.color = FlxColor.YELLOW;
 			}
-			if (selectedOptionIndex == 1 && FlxG.save.data.optimize && selectedCatIndex == 3)
-			{
-				descText.text = "OPTIMIZATION IS ENABLED! Distracions are disabled.";
-				descText.color = FlxColor.YELLOW;
-			}
 			if (selectedOptionIndex == 2 && FlxG.save.data.optimize && selectedCatIndex == 3)
 			{
 				descText.text = "OPTIMIZATION IS ENABLED! Backgrounds are disabled.";
 				descText.color = FlxColor.YELLOW;
 			}
-			if (selectedOptionIndex == 2 && !FlxG.save.data.background && selectedCatIndex == 3)
+			if (selectedOptionIndex == 3 && !FlxG.save.data.background && selectedCatIndex == 3)
 			{
-				descText.text = "BACKGROUNDS ARE DISABLED! Distracions are disabled.";
-				descText.color = FlxColor.YELLOW;
-			}
-			if (selectedOptionIndex == 9 && FlxG.save.data.optimize && selectedCatIndex == 0)
-			{
-				descText.text = "OPTIMIZATION IS ENABLED! Cam Zooming is disabled.";
+				descText.text = "BACKGROUNDS ARE DISABLED! Distractions are disabled.";
 				descText.color = FlxColor.YELLOW;
 			}
 			#if html5
-			if (selectedOptionIndex == 6 && selectedCatIndex == 0)
+			if (selectedOptionIndex == 9 && selectedCatIndex == 0)
 			{
 				descText.text = "FPS cap setting is disabled in browser build.";
 				descText.color = FlxColor.YELLOW;
 			}
 			#end
-			if (descText.text == "BOTPLAY is disabled on Story Mode.")
+			if (descText.text == "BOTPLAY is disabled on Story Mode."
+				|| descText.text == "This option cannot be toggled in the pause menu."
+				|| descText.text == "This option is handled automaticly by browser.")
 			{
 				descText.color = FlxColor.YELLOW;
 			}
-			if (descText.text == "This option cannot be toggled in the pause menu.")
-				descText.color = FlxColor.YELLOW;
 		}
 	}
 }

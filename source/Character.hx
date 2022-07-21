@@ -3,10 +3,7 @@ package;
 import flixel.util.FlxColor;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.animation.FlxBaseAnimation;
-import flixel.graphics.frames.FlxAtlasFrames;
-import openfl.utils.Assets as OpenFlAssets;
-import haxe.Json;
+import flixel.graphics.frames.FlxFramesCollection;
 import Section.SwagSection;
 import flixel.util.FlxSort;
 
@@ -81,15 +78,33 @@ class Character extends FlxSprite
 		var jsonData = Paths.loadJSON('characters/${curCharacter}');
 		if (jsonData == null)
 		{
-			Debug.logError('Failed to parse JSON data for character ${curCharacter}');
-			return;
+			Debug.logError('Failed to parse JSON data for character ${curCharacter}. Loading default characters...');
+			if (FlxG.fullscreen)
+				FlxG.fullscreen = !FlxG.fullscreen;
+			if (isPlayer)
+			{
+				Debug.displayAlert('Kade Engine JSON Parser', 'Failed to parse JSON data for character  ${curCharacter}. Loading default boyfriend...');
+				jsonData = Paths.loadJSON('characters/bf');
+			}
+			else if (replacesGF)
+			{
+				Debug.displayAlert('Kade Engine JSON Parser', 'Failed to parse JSON data for character  ${curCharacter}. Loading default girlfriend...');
+				jsonData = Paths.loadJSON('characters/gf');
+			}
+			else
+			{
+				Debug.displayAlert('Kade Engine JSON Parser', 'Failed to parse JSON data for character  ${curCharacter}. Loading default opponent...');
+				jsonData = Paths.loadJSON('characters/dad');
+			}
 		}
 
 		var data:CharacterData = cast jsonData;
-		var tex:FlxAtlasFrames;
+		var tex:FlxFramesCollection;
 
-		if (data.usePackerAtlas)
+		if (data.AtlasType == 'PackerAtlas')
 			tex = Paths.getPackerAtlas(data.asset, 'shared');
+		else if (data.AtlasType == 'TextureAtlas')
+			tex = Paths.getTextureAtlas(data.asset, 'shared');
 		else
 			tex = Paths.getSparrowAtlas(data.asset, 'shared');
 
@@ -365,10 +380,10 @@ typedef CharacterData =
 	var ?antialiasing:Bool;
 
 	/**
-	 * Whether this character uses PackerAtlas.
+	 * What type of Atlas the character uses.
 	 * @default false
 	 */
-	var ?usePackerAtlas:Bool;
+	var ?AtlasType:String;
 
 	/**
 	 * Whether this character uses a dancing idle instead of a regular idle.

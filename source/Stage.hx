@@ -12,7 +12,6 @@ import flixel.math.FlxMath;
 import flixel.math.FlxAngle;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
-import AtlasFrameMaker;
 
 class Stage extends MusicBeatState
 {
@@ -90,8 +89,8 @@ class Stage extends MusicBeatState
 							swagBacks['halloweenBG'] = halloweenBG;
 							toAdd.push(halloweenBG);
 						}
-						PlayState.instance.precacheList.set('thunder_1', 'sound');
-						PlayState.instance.precacheList.set('thunder_2', 'sound');
+						PlayState.instance.precacheThing('thunder_1', 'sound', 'shared');
+						PlayState.instance.precacheThing('thunder_2', 'sound', 'shared');
 					}
 				case 'philly':
 					{
@@ -549,7 +548,7 @@ class Stage extends MusicBeatState
 						{
 							var dummyGf:FlxSprite = new FlxSprite(200, 105);
 							dummyGf.antialiasing = FlxG.save.data.antialiasing;
-							dummyGf.frames = Paths.getSparrowAtlas('characters/gfTankmen');
+							dummyGf.frames = Paths.getSparrowAtlas('characters/gfTankmen', 'shared');
 							dummyGf.animation.addByPrefix('idle', 'GF Dancing at Gunpoint', 24, false);
 							dummyGf.animation.play('idle');
 							swagBacks['dummyGf'] = dummyGf;
@@ -557,7 +556,7 @@ class Stage extends MusicBeatState
 
 							var gfCutscene:FlxSprite = new FlxSprite(200, 85);
 							gfCutscene.antialiasing = FlxG.save.data.antialiasing;
-							gfCutscene.frames = Paths.getSparrowAtlas('cutscenes/stressGF');
+							gfCutscene.frames = Paths.getSparrowAtlas('cutscenes/stressGF', 'week7');
 							gfCutscene.animation.addByPrefix('dieBitch', 'GF STARTS TO TURN PART 1', 24, false);
 							gfCutscene.animation.addByPrefix('getRektLmao', 'GF STARTS TO TURN PART 2', 24, false);
 							gfCutscene.visible = false;
@@ -567,7 +566,7 @@ class Stage extends MusicBeatState
 							var picoCutscene:FlxSprite = new FlxSprite(-552, -298);
 							picoCutscene.antialiasing = FlxG.save.data.antialiasing;
 							swagBacks['picoCutscene'] = picoCutscene;
-							picoCutscene.frames = AtlasFrameMaker.construct('cutscenes/stressPico', 'week7');
+							picoCutscene.frames = Paths.getTextureAtlas('cutscenes/stressPico', 'week7');
 							picoCutscene.animation.addByPrefix('anim', 'Pico Badass', 24, false);
 							picoCutscene.visible = false;
 
@@ -575,15 +574,26 @@ class Stage extends MusicBeatState
 
 							var bfCutscene:FlxSprite = new FlxSprite(815, 500);
 							bfCutscene.antialiasing = FlxG.save.data.antialiasing;
-							bfCutscene.frames = Paths.getSparrowAtlas('characters/BOYFRIEND');
+							bfCutscene.frames = Paths.getSparrowAtlas('characters/BOYFRIEND', 'shared');
 							bfCutscene.animation.addByPrefix('idle', 'BF idle dance', 24, false);
 							bfCutscene.animation.play('idle', true);
 							swagBacks['bfCutscene'] = bfCutscene;
 							layInFront[2].push(bfCutscene);
 						}
 
-						var tankman:FlxSprite = new FlxSprite(18, 333);
-						tankman.frames = Paths.getSparrowAtlas('cutscenes/' + PlayState.SONG.songId);
+						var tankman:FlxSprite = new FlxSprite();
+
+						switch (PlayState.SONG.songId)
+						{
+							case 'ugh':
+								tankman.setPosition(-12, -PlayState.dad.y + 425);
+							case 'guns':
+								tankman.setPosition(18, 333);
+							case 'stress':
+								tankman.setPosition(-77, 307);
+						}
+
+						tankman.frames = Paths.getSparrowAtlas('cutscenes/' + PlayState.SONG.songId, 'week7');
 						tankman.antialiasing = FlxG.save.data.antialiasing;
 						swagBacks['tankman'] = tankman;
 						layInFront[2].push(tankman);

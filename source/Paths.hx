@@ -3,12 +3,20 @@ package;
 import flash.media.Sound;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxFramesCollection;
+import animateatlas.AtlasFrameMaker;
 import flixel.graphics.frames.FlxAtlasFrames;
 import haxe.Json;
 import lime.utils.Assets;
 import openfl.system.System;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
+import openfl.display3D.textures.Texture;
+import openfl.display.BitmapData;
+#if FEATURE_FILESYSTEM
+import sys.FileSystem;
+import sys.io.File;
+#end
 
 using StringTools;
 
@@ -33,6 +41,7 @@ class Paths
 		if (currentLevel != null)
 		{
 			var levelPath = getLibraryPathForce(file, currentLevel);
+
 			if (OpenFlAssets.exists(levelPath, type))
 				return levelPath;
 
@@ -53,11 +62,68 @@ class Paths
 	 */
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = [];
 
+	public static var currentTrackedTextures:Map<String, Texture> = [];
 	public static var currentTrackedSounds:Map<String, Sound> = [];
+
+	// Sprite content caching with GPU based on Forever Engine texture compression.
+	static function loadImage(key:String, ?library:String, ?gpuRender:Bool)
+	{
+		var path:String = '';
+		#if FEATURE_FILESYSTEM
+		if (library == null)
+			path = getPath('images/$key.png', IMAGE, library);
+		else
+			path = 'assets/$library/images/$key.png';
+		#else
+		path = getPath('images/$key.png', IMAGE, library);
+		#end
+		// Debug.logTrace(path);
+		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
+
+		if (#if FEATURE_FILESYSTEM FileSystem.exists(path) #else OpenFlAssets.exists(path, IMAGE) #end)
+		{
+			if (!currentTrackedAssets.exists(key))
+			{
+				var bitmap:BitmapData = #if FEATURE_FILESYSTEM BitmapData.fromFile(path) #else OpenFlAssets.getBitmapData(path, false) #end;
+				var graphic:FlxGraphic = null;
+
+				var graphic:FlxGraphic = null;
+				if (gpuRender)
+				{
+					var texture = FlxG.stage.context3D.createTexture(bitmap.width, bitmap.height, BGRA, false, 0);
+					texture.uploadFromBitmapData(bitmap);
+					currentTrackedTextures.set(key, texture);
+					bitmap.dispose();
+					bitmap.disposeImage();
+					bitmap = null;
+					graphic = FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture), false, key);
+					Debug.logTrace('Adding new texture to cache: $key');
+				}
+				else
+				{
+					graphic = FlxGraphic.fromBitmapData(bitmap, false, key, false);
+					Debug.logTrace('Adding new bitmap to cache: $key');
+				}
+				graphic.persist = true;
+				currentTrackedAssets.set(key, graphic);
+			}
+			else
+			{
+				// Get data from cache.
+				// Debug.logTrace('Loading existing image from cache: $key');
+			}
+			localTrackedAssets.push(key);
+			return currentTrackedAssets.get(key);
+		}
+
+		Debug.logWarn('Could not find image at path $path');
+		return null;
+	}
 
 	public static function loadSound(path:String, key:String, ?library:String)
 	{
 		// I hate this so god damn much
+
 		var gottenPath:String = getPath('$path/$key.$SOUND_EXT', SOUND, library);
 		gottenPath = gottenPath.substring(gottenPath.indexOf(':') + 1, gottenPath.length);
 		// trace(gottenPath);
@@ -68,7 +134,8 @@ class Paths
 			if (path == 'songs')
 				folder = 'songs:';
 
-			currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(folder + getPath('$path/$key.$SOUND_EXT', SOUND, library)));
+			currentTrackedSounds.set(gottenPath,
+				#if FEATURE_FILESYSTEM Sound.fromFile(gottenPath) #else OpenFlAssets.getSound(folder + getPath('$path/$key.$SOUND_EXT', SOUND, library)) #end);
 		}
 
 		localTrackedAssets.push(gottenPath);
@@ -83,18 +150,44 @@ class Paths
 
 	static public function loadJSON(key:String, ?library:String):Dynamic
 	{
-		var rawJson = OpenFlAssets.getText(Paths.json(key, library)).trim();
+		var rawJson = '';
+
+		#if FEATURE_FILESYSTEM
+		try
+		{
+			rawJson = sys.io.File.getContent(Paths.json(key, library)).trim();
+		}
+		catch (e)
+		{
+			rawJson = null;
+		}
+		#else
+		try
+		{
+			rawJson = OpenFlAssets.getText(Paths.json(key, library)).trim();
+		}
+		catch (e)
+		{
+			rawJson = null;
+		}
+		#end
 
 		// Perform cleanup on files that have bad data at the end.
-		while (!rawJson.endsWith("}"))
+		if (rawJson != null)
 		{
-			rawJson = rawJson.substr(0, rawJson.length - 1);
+			while (!rawJson.endsWith("}"))
+			{
+				rawJson = rawJson.substr(0, rawJson.length - 1);
+			}
 		}
 
 		try
 		{
 			// Attempt to parse and return the JSON data.
-			return Json.parse(rawJson);
+			if (rawJson != null)
+				return Json.parse(rawJson);
+
+			return null;
 		}
 		catch (e)
 		{
@@ -125,7 +218,14 @@ class Paths
 
 	inline static public function file(file:String, ?library:String, type:AssetType = TEXT)
 	{
+		#if FEATURE_FILESYSTEM
+		if (library == null)
+			return File.getContent(getPath(file, type, library));
+
+		return File.getContent('assets/$library/$file');
+		#else
 		return getPath(file, type, library);
+		#end
 	}
 
 	inline static public function lua(key:String, ?library:String)
@@ -262,7 +362,11 @@ class Paths
 
 	inline static public function doesTextAssetExist(path:String)
 	{
+		#if FEATURE_FILESYSTEM
+		return FileSystem.exists(path);
+		#else
 		return OpenFlAssets.exists(path, AssetType.TEXT);
+		#end
 	}
 
 	static public function video(key:String)
@@ -270,14 +374,11 @@ class Paths
 		return 'assets/videos/$key.$VIDEO_EXT';
 	}
 
-	inline static public function image(key:String, ?library:String):FlxGraphic
+	inline static public function image(key:String, ?library:String, ?gpuRender:Bool):FlxGraphic
 	{
-		var returnAsset = getPath('images/$key.png', IMAGE, library);
-		localTrackedAssets.push(returnAsset);
-		var newGraphic:FlxGraphic = FlxG.bitmap.add(returnAsset, false, returnAsset);
-		newGraphic.persist = true;
-		currentTrackedAssets.set(returnAsset, newGraphic);
-		return currentTrackedAssets.get(returnAsset);
+		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
+		var image:FlxGraphic = loadImage(key, library, gpuRender);
+		return image;
 	}
 
 	inline static public function font(key:String)
@@ -308,7 +409,16 @@ class Paths
 				@:privateAccess
 				if (obj != null)
 				{
+					var isTexture:Bool = currentTrackedTextures.exists(key);
+					if (isTexture)
+					{
+						var texture = currentTrackedTextures.get(key);
+						texture.dispose();
+						texture = null;
+						currentTrackedTextures.remove(key);
+					}
 					OpenFlAssets.cache.removeBitmapData(key);
+					OpenFlAssets.cache.clearBitmapData(key);
 					OpenFlAssets.cache.clear(key);
 					FlxG.bitmap._cache.remove(key);
 					obj.destroy();
@@ -334,7 +444,7 @@ class Paths
 
 		// clear anything not in the tracked assets list
 		var counterAssets:Int = 0;
-		var counterSound:Int = 0;
+
 		@:privateAccess
 		for (key in FlxG.bitmap._cache.keys())
 		{
@@ -342,6 +452,7 @@ class Paths
 			if (obj != null && !currentTrackedAssets.exists(key))
 			{
 				OpenFlAssets.cache.removeBitmapData(key);
+				OpenFlAssets.cache.clearBitmapData(key);
 				OpenFlAssets.cache.clear(key);
 				FlxG.bitmap._cache.remove(key);
 				obj.destroy();
@@ -352,17 +463,32 @@ class Paths
 
 		#if PRELOAD_ALL
 		// clear all sounds that are cached
+		var counterSound:Int = 0;
 		for (key in currentTrackedSounds.keys())
 		{
 			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key) && key != null)
 			{
 				// trace('test: ' + dumpExclusions, key);
-				Assets.cache.clear(key);
+				OpenFlAssets.cache.removeSound(key);
+				OpenFlAssets.cache.clearSounds(key);
 				currentTrackedSounds.remove(key);
 				counterSound++;
 				Debug.logTrace('Cleared and removed $counterSound cached sounds.');
 			}
 		}
+
+		// Clear everything everything that's left
+		var counterLeft:Int = 0;
+		for (key in OpenFlAssets.cache.getKeys())
+		{
+			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key) && key != null)
+			{
+				OpenFlAssets.cache.clear(key);
+				counterLeft++;
+				Debug.logTrace('Cleared and removed $counterLeft cached leftover assets.');
+			}
+		}
+
 		// flags everything to be cleared out next unused memory clear
 		localTrackedAssets = [];
 		openfl.Assets.cache.clear("songs");
@@ -371,29 +497,44 @@ class Paths
 
 	inline static public function fileExists(key:String, type:AssetType, ?library:String)
 	{
+		#if FEATURE_FILESYSTEM
+		if (FileSystem.exists(getPath(key, type)))
+			return true;
+		#else
 		if (OpenFlAssets.exists(getPath(key, type)))
 			return true;
+		#end
 		return false;
 	}
 
-	static public function getSparrowAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
+	static public function getSparrowAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?gpuRender:Bool)
 	{
+		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
 		if (isCharacter)
 		{
-			return FlxAtlasFrames.fromSparrow(image('characters/$key', library), file('images/characters/$key.xml', library));
+			return FlxAtlasFrames.fromSparrow(image('characters/$key', library, gpuRender), file('images/characters/$key.xml', library));
 		}
-		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
+		return FlxAtlasFrames.fromSparrow(image(key, library, gpuRender), file('images/$key.xml', library));
 	}
 
 	/**
 	 * Senpai in Thorns uses this instead of Sparrow and IDK why.
 	 */
-	inline static public function getPackerAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
+	inline static public function getPackerAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?gpuRender:Bool)
 	{
+		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
 		if (isCharacter)
 		{
-			return FlxAtlasFrames.fromSpriteSheetPacker(image('characters/$key', library), file('images/characters/$key.txt', library));
+			return FlxAtlasFrames.fromSpriteSheetPacker(image('characters/$key', library, gpuRender), file('images/characters/$key.txt', library));
 		}
-		return FlxAtlasFrames.fromSpriteSheetPacker(image(key, library), file('images/$key.txt', library));
+		return FlxAtlasFrames.fromSpriteSheetPacker(image(key, library, gpuRender), file('images/$key.txt', library));
+	}
+
+	inline static public function getTextureAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?excludeArray:Array<String>):FlxFramesCollection
+	{
+		if (isCharacter)
+			return AtlasFrameMaker.construct('characters/$key', library, excludeArray);
+
+		return AtlasFrameMaker.construct(key, library, excludeArray);
 	}
 }

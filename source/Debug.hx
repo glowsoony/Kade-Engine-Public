@@ -211,7 +211,7 @@ class Debug
 		logInfo('HaxeFlixel version: ${Std.string(FlxG.VERSION)}');
 		logInfo('Friday Night Funkin\' version: ${MainMenuState.gameVer}');
 		logInfo('Kade Engine version: ${MainMenuState.kadeEngineVer}');
-		logInfo('This is a custom build of KE. Current version: 1.4.1a');
+		logInfo('This is a custom build of KE. Current version: 1.4.2');
 	}
 
 	/**

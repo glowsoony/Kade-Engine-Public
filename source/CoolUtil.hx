@@ -1,6 +1,9 @@
 package;
 
 import openfl.utils.Assets as OpenFlAssets;
+#if FEATURE_FILESYSTEM
+import sys.io.File;
+#end
 
 using StringTools;
 
@@ -17,7 +20,13 @@ class CoolUtil
 
 	public static function coolTextFile(path:String):Array<String>
 	{
-		var daList:Array<String> = OpenFlAssets.getText(path).trim().split('\n');
+		var daList:Array<String>;
+
+		#if FEATURE_FILESYSTEM
+		daList = File.getContent(path).trim().split('\n');
+		#else
+		daList = OpenFlAssets.getText(path).trim().split('\n');
+		#end
 
 		for (i in 0...daList.length)
 		{

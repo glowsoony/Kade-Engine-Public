@@ -1,10 +1,10 @@
-package;
+package animateatlas;
 
 /**
  * All data needed for the json importer + some extra for after parsing.
  * Stolen mostly from https://github.com/TomByrne/Starling-Extension-Adobe-Animate-Hx/blob/master/hx/src/starling/extensions/animate/AnimationAtlasData.hx
  */
-typedef AnimationAtlasData =
+typedef AnimationData =
 {
 	?ANIMATION:SymbolData,
 	?SYMBOL_DICTIONARY:
@@ -110,7 +110,9 @@ typedef ColorData =
 	?redOffset:Float,
 	?greenOffset:Float,
 	?blueOffset:Float,
-	?AlphaOffset:Float
+	?AlphaOffset:Float,
+	?tintColor:String,
+	?tintMultiplier:Float
 }
 
 typedef BitmapPosData =

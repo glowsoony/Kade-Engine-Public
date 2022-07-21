@@ -6,9 +6,6 @@ import flixel.FlxSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
-#if polymod
-import polymod.format.ParseRules.TargetSignatureElement;
-#end
 import LuaClass;
 import PlayState;
 
@@ -79,6 +76,8 @@ class Note extends FlxSprite
 
 	var leBpm:Float = 0;
 
+	public var distance:Float = 2000;
+
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?inCharter:Bool = false, ?isAlt:Bool = false, ?bet:Float = 0)
 	{
 		super();
@@ -91,7 +90,7 @@ class Note extends FlxSprite
 		this.isAlt = isAlt;
 
 		this.prevNote = prevNote;
-		isSustainNote = sustainNote;
+		this.isSustainNote = sustainNote;
 
 		// MAKE SURE ITS DEFINITELY OFF SCREEN?
 		y -= 2000;
@@ -229,16 +228,6 @@ class Note extends FlxSprite
 			originColor = col;
 		}
 
-		// we make sure its downscroll and its a SUSTAIN NOTE (aka a trail, not a note)
-		// and flip it so it doesn't look weird.
-		// THIS DOESN'T FUCKING FLIP THE NOTE, CONTRIBUTERS DON'T JUST COMMENT THIS OUT JESUS
-		// then what is this lol
-		// BRO IT LITERALLY SAYS IT FLIPS IF ITS A TRAIL AND ITS DOWNSCROLL
-		if (FlxG.save.data.downscroll && sustainNote)
-		{
-			flipY = true;
-		}
-
 		stepHeight = (((0.45 * Conductor.stepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
 			2)) / PlayState.songMultiplier;
 
@@ -248,6 +237,9 @@ class Note extends FlxSprite
 
 			noteScore * 0.2;
 			alpha = 0.6;
+
+			if (FlxG.save.data.downscroll)
+				flipY = true;
 
 			x += width / 2;
 
@@ -303,6 +295,7 @@ class Note extends FlxSprite
 		}
 
 		super.update(elapsed);
+
 		if (!modifiedByLua)
 			angle = modAngle + localAngle;
 		else

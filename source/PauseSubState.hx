@@ -41,25 +41,30 @@ class PauseSubState extends MusicBeatSubstate
 	var bg:FlxSprite;
 
 	public static var textArray:Array<String> = [
-		"I should probably push my commits...",
-		"Yeah I use Kade Engine *insert gay fat guy dancing*",
-		"Kade engine *insert burning PC gif*",
-		"This is my kingdom cum",
-		"[Funny IP address joke]",
-		"Dead engine?",
-		"Amber best Pyro bow user fuck you!",
-		"*Insert Amoraltra cancel meme*",
-		"I love watching Yosuga No Sora with my sister.", // Wtf 💀
-		"Lag issues? Don't worry we are currently mining cryptocurrencies with ur pc :D",
-		"Also try Mic d'up Engine lol",
-		"Are you really reading this thing?",
-		"Acypto, Little Hazard's simp lolololol",
-		"WHEN FNF X RED SEQUEL???",
-		"I fced Sex mod with only one hand!",
-		"EPIC EMBED FAIL",
-		"Don't take these dialogues seriously lol",
-		"Fireable actually used my fork. Pog",
-		"I'm not gay, I'm default :trollface:"
+		"Yeah I use Kade Engine *insert gay fat guy dancing* (-Bolo)",
+		"Kade engine *insert burning PC gif* (-Bolo)",
+		"This is my kingdom cum (-Bolo)",
+		"192.0.0.1 (-Kori)",
+		"Dead engine? (-Bolo)",
+		"Amber best Pyro bow user fuck you! (-Bolo)",
+		"I love watching Yosuga No Sora with my sister. (-Bolo)", // Wtf 💀
+		"Lag issues? Don't worry we are currently mining cryptocurrencies with ur pc :D (-Bolo)",
+		"Are you really reading this thing? (-Bolo)",
+		"I fced Sex mod with only one hand! (-Bolo)",
+		"EPIC EMBED FAIL (-Bolo)",
+		"Don't take these dialogues seriously lol (-Bolo)",
+		"Fireable actually used my fork. Pog (-Bolo)",
+		"I'm not gay, I'm default :trollface: (-Bolo)",
+		"0.01% batch (-PopCat)",
+		"Are you have the stupid? (-BombasticTom)",
+		"I am here (-Faid)",
+		"I love men (-HomoKori)",
+		"Why do I have a pic of Mario with massive tits on my phone? (-Rudy)",
+		"I mom (-NxtVithor)",
+		"Ur black in real life or ur black in discord theme (-Bolo)",
+		"I'm not longer a minor :( (-Bolo)",
+		"We are gonna be using your fork as a base for myth engine (-Awoofle)",
+		"Cool ass looking shit. Imma go steal ur code and give u credit (-BeastlyGhost)"
 	];
 
 	public function new()
@@ -132,7 +137,7 @@ class PauseSubState extends MusicBeatSubstate
 
 		grpMenuShit = new FlxTypedGroup<Alphabet>();
 		add(grpMenuShit);
-		perSongOffset = new FlxText(0, FlxG.height - 18, FlxG.width, textArray[FlxG.random.int(0, textArray.length - 1)] + " (-Bolo)", 12);
+		perSongOffset = new FlxText(0, FlxG.height - 18, FlxG.width, textArray[FlxG.random.int(0, textArray.length - 1)], 12);
 		perSongOffset.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 
 		perSongOffset.scrollFactor.set();
@@ -262,9 +267,9 @@ class PauseSubState extends MusicBeatSubstate
 						PlayState.luaModchart.die();
 						PlayState.luaModchart = null;
 					}
-					if (ModchartState.haxeInterp != null)
-						ModchartState.haxeInterp = null;
 					#end
+					if (FlxG.save.data.fpsCap > 300)
+						(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
 
 					PlayState.instance.clean();
 

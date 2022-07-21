@@ -12,6 +12,7 @@ import Discord.DiscordClient;
 #end
 import OptionsMenu;
 import KadeEngineData;
+import flixel.input.gamepad.FlxGamepad;
 
 class Option
 {
@@ -19,6 +20,8 @@ class Option
 	{
 		display = updateDisplay();
 	}
+
+	var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
 
 	private var description:String = "";
 
@@ -111,7 +114,11 @@ class UpKeybind extends Option
 	{
 		if (waitingType)
 		{
-			FlxG.save.data.upBind = text;
+			if (gamepad != null)
+				FlxG.save.data.gpupBind = text;
+			else
+				FlxG.save.data.upBind = text;
+
 			waitingType = false;
 		}
 	}
@@ -143,7 +150,10 @@ class DownKeybind extends Option
 	{
 		if (waitingType)
 		{
-			FlxG.save.data.downBind = text;
+			if (gamepad != null)
+				FlxG.save.data.gpdownBind = text;
+			else
+				FlxG.save.data.downBind = text;
 			waitingType = false;
 		}
 	}
@@ -175,7 +185,11 @@ class RightKeybind extends Option
 	{
 		if (waitingType)
 		{
-			FlxG.save.data.rightBind = text;
+			if (gamepad != null)
+				FlxG.save.data.gprightBind = text;
+			else
+				FlxG.save.data.rightBind = text;
+
 			waitingType = false;
 		}
 	}
@@ -207,7 +221,11 @@ class LeftKeybind extends Option
 	{
 		if (waitingType)
 		{
-			FlxG.save.data.leftBind = text;
+			if (gamepad != null)
+				FlxG.save.data.gplefttBind = text;
+			else
+				FlxG.save.data.leftBind = text;
+
 			waitingType = false;
 		}
 	}
@@ -239,7 +257,11 @@ class PauseKeybind extends Option
 	{
 		if (waitingType)
 		{
-			FlxG.save.data.pauseBind = text;
+			if (gamepad != null)
+				FlxG.save.data.gppauseBind = text;
+			else
+				FlxG.save.data.pauseBind = text;
+
 			waitingType = false;
 		}
 	}
@@ -271,7 +293,10 @@ class ResetBind extends Option
 	{
 		if (waitingType)
 		{
-			FlxG.save.data.resetBind = text;
+			if (gamepad != null)
+				FlxG.save.data.gpresetBind = text;
+			else
+				FlxG.save.data.resetBind = text;
 			waitingType = false;
 		}
 	}
@@ -597,6 +622,57 @@ class NoteCocks extends Option
 	private override function updateDisplay():String
 	{
 		return "Note Splashes: < " + (!FlxG.save.data.noteSplashes ? "off" : "on") + " >";
+	}
+}
+
+class GPURendering extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+			description = "This option cannot be toggled in the pause menu.";
+		else
+			description = desc;
+
+		#if html5
+		description = "This option is handled automaticly by browser.";
+		#end
+	}
+
+	public override function left():Bool
+	{
+		#if !html5
+		if (OptionsMenu.isInPause)
+			return false;
+
+		FlxG.save.data.gpuRender = !FlxG.save.data.gpuRender;
+		display = updateDisplay();
+		return true;
+		#else
+		return false;
+		#end
+	}
+
+	public override function right():Bool
+	{
+		#if !html5
+		if (OptionsMenu.isInPause)
+			return false;
+		left();
+		return true;
+		#else
+		return false;
+		#end
+	}
+
+	private override function updateDisplay():String
+	{
+		#if !html5
+		return "GPU Rendering: < " + (!FlxG.save.data.gpuRender ? "off" : "on") + " >";
+		#else
+		return "GPU Rendering: < " + "Auto" + " >";
+		#end
 	}
 }
 
@@ -1590,8 +1666,6 @@ class CamZoomOption extends Option
 
 	public override function left():Bool
 	{
-		if (FlxG.save.data.optimize)
-			return false;
 		FlxG.save.data.camzoom = !FlxG.save.data.camzoom;
 		display = updateDisplay();
 		return true;
@@ -2001,6 +2075,65 @@ class ScoreSmoothing extends Option
 	}
 }
 
+class HitSoundMode extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+	}
+
+	public override function left():Bool
+	{
+		FlxG.save.data.strumHit = !FlxG.save.data.strumHit;
+
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Hitsound Mode: < " + (FlxG.save.data.strumHit ? "On Key Hit" : "On Note Hit") + " >";
+	}
+}
+
+class Shader extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+	}
+
+	public override function left():Bool
+	{
+		if (OptionsMenu.isInPause)
+			return false;
+
+		FlxG.save.data.shaders = !FlxG.save.data.shaders;
+
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Shaders: < " + (FlxG.save.data.shaders ? "On" : "Off") + " >";
+	}
+}
+
 class DebugMode extends Option
 {
 	public function new(desc:String)
@@ -2213,6 +2346,11 @@ class ResetSettings extends Option
 		FlxG.save.data.lerpScore = null;
 		FlxG.save.data.hitSound = null;
 		FlxG.save.data.hitVolume = null;
+		FlxG.save.data.strumHit = null;
+		FlxG.save.data.volume = null;
+		FlxG.save.data.mute = null;
+		FlxG.save.data.showCombo = null;
+		FlxG.save.data.showComboNum = null;
 
 		KadeEngineData.initSave();
 		confirm = false;

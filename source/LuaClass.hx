@@ -559,6 +559,8 @@ class LuaReceptor extends LuaClass
 	var defaultAngle = 0.0;
 	var defaultScaleX = 0.0;
 	var defaultScaleY = 0.0;
+	var defaultDirection = 0.0;
+	var defaultScrollType = false;
 
 	public static var receptorTween:FlxTween;
 
@@ -567,9 +569,11 @@ class LuaReceptor extends LuaClass
 		super();
 		defaultY = connectedSprite.y;
 		defaultX = connectedSprite.x;
-		defaultAngle = connectedSprite.angle;
+		defaultAngle = connectedSprite.modAngle;
 		defaultScaleX = connectedSprite.scale.x;
 		defaultScaleY = connectedSprite.scale.y;
+		defaultDirection = connectedSprite.direction;
+		defaultScrollType = connectedSprite.downScroll;
 
 		sprite = connectedSprite;
 
@@ -645,6 +649,36 @@ class LuaReceptor extends LuaClass
 				setter: SetNumProperty
 			},
 
+			"direction" => {
+				defaultValue: 90,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, connectedSprite.direction);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
+			"defaultDirection" => {
+				defaultValue: 90,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, defaultDirection);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
+			"downScroll" => {
+				defaultValue: 0,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushboolean(l, connectedSprite.downScroll);
+					return 1;
+				},
+				setter: SetNumProperty
+			},
+
 			"defaultAngle" => {
 				defaultValue: defaultAngle,
 				getter: function(l:State, data:Any):Int
@@ -694,7 +728,7 @@ class LuaReceptor extends LuaClass
 			},
 
 			"scaleX" => {
-				defaultValue: connectedSprite.scale.x,
+				defaultValue: 1,
 				getter: function(l:State, data:Any):Int
 				{
 					Lua.pushnumber(l, connectedSprite.scale.x);
@@ -704,7 +738,7 @@ class LuaReceptor extends LuaClass
 			},
 
 			"scaleY" => {
-				defaultValue: connectedSprite.scale.y,
+				defaultValue: 1,
 				getter: function(l:State, data:Any):Int
 				{
 					Lua.pushnumber(l, connectedSprite.scale.y);
@@ -714,7 +748,7 @@ class LuaReceptor extends LuaClass
 			},
 
 			"defaultScaleX" => {
-				defaultValue: defaultScaleX,
+				defaultValue: 1,
 				getter: function(l:State, data:Any):Int
 				{
 					Lua.pushnumber(l, defaultScaleX);
@@ -724,7 +758,7 @@ class LuaReceptor extends LuaClass
 			},
 
 			"defaultScaleY" => {
-				defaultValue: defaultScaleY,
+				defaultValue: 1,
 				getter: function(l:State, data:Any):Int
 				{
 					Lua.pushnumber(l, defaultScaleY);
@@ -757,6 +791,20 @@ class LuaReceptor extends LuaClass
 				setter: function(l:State)
 				{
 					LuaL.error(l, "tweenScale is read-only.");
+					return 0;
+				}
+			},
+
+			"tweenDirection" => {
+				defaultValue: 0,
+				getter: function(l:State, data:Any)
+				{
+					Lua.pushcfunction(l, tweenDirectionC);
+					return 1;
+				},
+				setter: function(l:State)
+				{
+					LuaL.error(l, "tweenDirection is read-only.");
 					return 0;
 				}
 			},
@@ -872,6 +920,39 @@ class LuaReceptor extends LuaClass
 		return 0;
 	}
 
+	private static function tweenDirection(l:StatePointer):Int
+	{
+		// 1 = self
+		// 2 = angle
+		// 3 = time
+		var direction = LuaL.checknumber(state, 2);
+		var time = LuaL.checknumber(state, 3);
+		var ease = LuaL.checkstring(state, 4);
+
+		Lua.getfield(state, 1, "id");
+		var index = Std.parseInt(Lua.tostring(state, -1).split('_')[1]);
+
+		var receptor = findReceptor(index);
+
+		var luaObject = receptor.luaObject;
+
+		if (receptor == null)
+		{
+			LuaL.error(state, "Failure to tween (couldn't find receptor " + index + ")");
+			return 0;
+		}
+
+		PlayState.instance.createTween(receptor, {direction: direction}, time, {
+			ease: ModchartState.getFlxEaseByString(ease),
+			onUpdate: function(tw)
+			{
+				luaObject.defaultDirection = receptor.direction;
+			}
+		});
+
+		return 0;
+	}
+
 	private static function tweenAlpha(l:StatePointer):Int
 	{
 		// 1 = self
@@ -930,7 +1011,7 @@ class LuaReceptor extends LuaClass
 	}
 
 	private static var tweenScaleC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenScale);
-
+	private static var tweenDirectionC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenDirection);
 	private static var tweenPosC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenPos);
 	private static var tweenAngleC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenAngle);
 	private static var tweenAlphaC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenAlpha);

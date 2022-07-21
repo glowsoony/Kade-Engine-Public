@@ -1,31 +1,28 @@
-package;
+package animateatlas.tilecontainer;
 
-import openfl.filters.GlowFilter;
-import openfl.filters.BlurFilter;
-import openfl.display.PixelSnapping;
-import openfl.geom.Point;
-import openfl.display.BitmapData;
-import openfl.display.Bitmap;
-import openfl.display.Sprite;
+import openfl.display.Tileset;
+import animateatlas.JSONData.PointData;
 import openfl.errors.ArgumentError;
 import openfl.geom.Rectangle;
 import openfl.errors.Error;
-import JSONData.ElementData;
-import HelperEnums.LoopMode;
-import HelperEnums.SymbolType;
+import animateatlas.JSONData.ElementData;
+import animateatlas.HelperEnums.LoopMode;
+import animateatlas.HelperEnums.SymbolType;
 import openfl.display.FrameLabel;
-import JSONData.SymbolData;
-import JSONData.SymbolInstanceData;
-import JSONData.LayerData;
-import JSONData.BitmapPosData;
-import JSONData.Matrix3DData;
-import JSONData.LayerFrameData;
-import JSONData.ColorData;
+import animateatlas.JSONData.SymbolData;
+import animateatlas.JSONData.SymbolInstanceData;
+import animateatlas.JSONData.LayerData;
+import animateatlas.JSONData.BitmapPosData;
+import animateatlas.JSONData.Matrix3DData;
+import animateatlas.JSONData.LayerFrameData;
+import animateatlas.JSONData.ColorData;
 import openfl.geom.Matrix;
 import openfl.geom.ColorTransform;
-import JSONData.FilterData;
+import openfl.display.DisplayObjectContainer;
+import openfl.display.TileContainer;
+import openfl.display.Tile;
 
-class SpriteSymbol extends Sprite
+class TileContainerSymbol extends TileContainer
 {
 	public var currentLabel(get, never):String;
 	public var currentFrame(get, set):Int;
@@ -36,35 +33,23 @@ class SpriteSymbol extends Sprite
 	public var numFrames(get, never):Int;
 
 	private var _data:SymbolData;
-
-	public var _library:SpriteAnimationLibrary;
-
+	private var _library:TileAnimationLibrary;
 	private var _symbolName:String;
 	private var _type:String;
 	private var _loopMode:String;
-
 	private var _currentFrame:Int;
 	private var _composedFrame:Int;
-	private var _bitmap:Bitmap;
+	private var _bitmap:Tile;
 	private var _numFrames:Int;
 	private var _numLayers:Int;
 	private var _frameLabels:Array<FrameLabel>;
 	private var _colorTransform:ColorTransform;
+	private var _layers:Array<TileContainer>;
 
-	public var _layers:Array<Sprite>;
-
-	private var _texture:BitmapData;
-	private var _tempRect = new Rectangle();
-	private var _zeroPoint = new Point(0, 0);
-	private var filterHelper:BitmapData;
-
-	public var smoothing:Bool = true;
-
-	private static var sMatrix:Matrix = new Matrix();
-
-	public function new(data:SymbolData, library:SpriteAnimationLibrary, texture:BitmapData)
+	private function new(data:SymbolData, library:TileAnimationLibrary, tileset:Tileset)
 	{
 		super();
+		this.tileset = tileset;
 		_data = data;
 		_library = library;
 		_composedFrame = -1;
@@ -74,7 +59,6 @@ class SpriteSymbol extends Sprite
 		_symbolName = data.SYMBOL_name;
 		_type = SymbolType.GRAPHIC;
 		_loopMode = LoopMode.LOOP;
-		_texture = texture;
 
 		createLayers();
 
@@ -101,8 +85,14 @@ class SpriteSymbol extends Sprite
 
 	public function reset():Void
 	{
-		sMatrix.identity();
-		transform.matrix = sMatrix.clone();
+		matrix.identity();
+
+		// copied from the setter for tile so we don't create a new matrix.
+		__rotation = null;
+		__scaleX = null;
+		__scaleY = null;
+		__setRenderDirty();
+
 		alpha = 1.0;
 		_currentFrame = 0;
 		_composedFrame = -1;
@@ -138,12 +128,12 @@ class SpriteSymbol extends Sprite
 
 		for (l in 0..._numLayers)
 		{
-			var layer:Sprite = getLayer(l);
-			var numElements:Int = layer.numChildren;
+			var layer:TileContainer = getLayer(l);
+			var numElements:Int = layer.numTiles;
 
 			for (e in 0...numElements)
 			{
-				(try cast(layer.getChildAt(e), SpriteSymbol)
+				(try cast(layer.getTileAt(e), TileContainerSymbol)
 				catch (e:Dynamic) null).moveMovieclip_MovieClips(direction);
 			}
 		}
@@ -162,32 +152,29 @@ class SpriteSymbol extends Sprite
 	@:access(animateatlas)
 	private function updateLayer(layerIndex:Int):Void
 	{
-		var layer:Sprite = getLayer(layerIndex);
+		var layer:TileContainer = getLayer(layerIndex);
 		var frameData:LayerFrameData = getFrameData(layerIndex, _currentFrame);
 		var elements:Array<ElementData> = (frameData != null) ? frameData.elements : null;
 		var numElements:Int = (elements != null) ? elements.length : 0;
 		for (i in 0...numElements)
 		{
 			var elementData:SymbolInstanceData = elements[i].SYMBOL_Instance;
-
 			if (elementData == null)
 			{
 				continue;
 			}
-
 			// this is confusing but needed :(
-			var oldSymbol:SpriteSymbol = (layer.numChildren > i) ? try
-				cast(layer.getChildAt(i), SpriteSymbol)
+			var oldSymbol:TileContainerSymbol = (layer.numTiles > i) ? try
+				cast(layer.getTileAt(i), TileContainerSymbol)
 			catch (e:Dynamic)
 				null : null;
 
-			var newSymbol:SpriteSymbol = null;
-
+			var newSymbol:TileContainerSymbol = null;
 			var symbolName:String = elementData.SYMBOL_name;
 
 			if (!_library.hasSymbol(symbolName))
 			{
-				symbolName = SpriteAnimationLibrary.BITMAP_SYMBOL_NAME;
+				symbolName = TileAnimationLibrary.BITMAP_SYMBOL_NAME;
 			}
 
 			if (oldSymbol != null && oldSymbol._symbolName == symbolName)
@@ -199,17 +186,16 @@ class SpriteSymbol extends Sprite
 				if (oldSymbol != null)
 				{
 					if (oldSymbol.parent != null)
-						oldSymbol.removeChild(oldSymbol);
+						oldSymbol.removeTile(oldSymbol);
 					_library.putSymbol(oldSymbol);
 				}
 
 				newSymbol = cast(_library.getSymbol(symbolName));
-				layer.addChildAt(newSymbol, i);
+				layer.addTileAt(newSymbol, i);
 			}
 
 			newSymbol.setTransformationMatrix(elementData.Matrix3D);
 			newSymbol.setBitmap(elementData.bitmap);
-			newSymbol.setFilterData(elementData.filters);
 			newSymbol.setColor(elementData.color);
 			newSymbol.setLoop(elementData.loop);
 			newSymbol.setType(elementData.symbolType);
@@ -234,13 +220,13 @@ class SpriteSymbol extends Sprite
 			}
 		}
 
-		var numObsoleteSymbols:Int = (layer.numChildren - numElements);
+		var numObsoleteSymbols:Int = (layer.numTiles - numElements);
 
 		for (i in 0...numObsoleteSymbols)
 		{
 			try
 			{
-				var oldSymbol = cast(layer.removeChildAt(numElements), SpriteSymbol);
+				var oldSymbol = cast(layer.removeTileAt(numElements), TileContainerSymbol);
 				if (oldSymbol != null)
 					_library.putSymbol(oldSymbol);
 			}
@@ -257,7 +243,7 @@ class SpriteSymbol extends Sprite
 		{
 			throw new Error("You must not call this twice");
 		}
-		_layers = new Array<Sprite>();
+		_layers = new Array<TileContainer>();
 
 		if (_numLayers <= 1)
 		{
@@ -267,9 +253,16 @@ class SpriteSymbol extends Sprite
 		{
 			for (i in 0..._numLayers)
 			{
-				var layer:Sprite = new Sprite();
-				layer.name = getLayerData(i).Layer_name;
-				addChild(layer);
+				var layer:TileContainer = new TileContainer();
+				if (layer.data == null)
+				{
+					layer.data = {layerName: getLayerData(i).Layer_name};
+				}
+				else
+				{
+					layer.data.layerName = getLayerData(i).Layer_name;
+				}
+				addTile(layer);
 				_layers.push(layer);
 			}
 		}
@@ -284,18 +277,14 @@ class SpriteSymbol extends Sprite
 
 			if (_bitmap == null)
 			{
-				_bitmap = new Bitmap(new BitmapData(1, 1), PixelSnapping.AUTO, smoothing);
-				addChild(_bitmap);
+				_bitmap = new Tile(-1);
+				_bitmap.rect = new Rectangle();
+				addTile(_bitmap);
 			}
 
-			if (_tempRect.x != spriteData.x || _tempRect.y != spriteData.y || _tempRect.width != spriteData.w || _tempRect.height != spriteData.h)
-			{
-				var clippedTexture = new BitmapData(spriteData.w, spriteData.h);
-				_tempRect.setTo(spriteData.x, spriteData.y, spriteData.w, spriteData.h);
-				clippedTexture.copyPixels(_texture, _tempRect, _zeroPoint);
-				_bitmap.bitmapData = clippedTexture;
-				_bitmap.smoothing = smoothing;
-			}
+			_bitmap.rect.setTo(spriteData.x, spriteData.y, spriteData.w, spriteData.h);
+			_bitmap.__setRenderDirty(); // setTo() doesn't trigger the renderdirty
+
 			// aditional checks for rotation
 			if (spriteData.rotated)
 			{
@@ -310,54 +299,27 @@ class SpriteSymbol extends Sprite
 				_bitmap.y = data.Position.y;
 			}
 
-			addChildAt(_bitmap, 0);
+			addTileAt(_bitmap, 0);
 		}
 		else if (_bitmap != null)
 		{
 			if (_bitmap.parent != null)
-				_bitmap.parent.removeChild(_bitmap);
-		}
-	}
-
-	@:access(animateatlas)
-	private function setFilterData(data:FilterData):Void
-	{
-		var blur:BlurFilter;
-		var glow:GlowFilter;
-		if (data != null)
-		{
-			if (data.BlurFilter != null)
-			{
-				blur = new BlurFilter();
-				blur.blurX = data.BlurFilter.blurX;
-				blur.blurY = data.BlurFilter.blurY;
-				blur.quality = data.BlurFilter.quality;
-				// _bitmap.bitmapData.applyFilter(_bitmap.bitmapData,new Rectangle(0,0,_bitmap.bitmapData.width,_bitmap.bitmapData.height),new Point(0,0),blur);
-				// filters.push(blur);
-			}
-			if (data.GlowFilter != null)
-			{
-				// trace('GLOW' + data.GlowFilter);
-				// glow = new GlowFilter();
-				// glow.blurX = data.GlowFilter.blurX;
-				// glow.blurY = data.GlowFilter.blurY;
-				// glow.color = data.GlowFilter.color;
-				// glow.alpha = data.GlowFilter.alpha;
-				// glow.quality = data.GlowFilter.quality;
-				// glow.strength = data.GlowFilter.strength;
-				// glow.knockout = data.GlowFilter.knockout;
-				// glow.inner = data.GlowFilter.inner;
-				// filters.push(glow);
-			}
+				_bitmap.parent.removeTile(_bitmap);
 		}
 	}
 
 	private function setTransformationMatrix(data:Matrix3DData):Void
 	{
-		sMatrix.setTo(data.m00, data.m01, data.m10, data.m11, data.m30, data.m31);
-		if (sMatrix.a != transform.matrix.a || sMatrix.b != transform.matrix.b || sMatrix.c != transform.matrix.c || sMatrix.d != transform.matrix.d
-			|| sMatrix.tx != transform.matrix.tx || sMatrix.ty != transform.matrix.ty)
-			transform.matrix = sMatrix.clone(); // todo stop the cloning :(
+		if (data.m00 != matrix.a || data.m01 != matrix.b || data.m10 != matrix.c || data.m11 != matrix.d || data.m30 != matrix.tx || data.m31 != matrix.ty)
+		{
+			matrix.setTo(data.m00, data.m01, data.m10, data.m11, data.m30, data.m31);
+
+			// copied from the setter for tile so we don't create a new matrix.
+			__rotation = null;
+			__scaleX = null;
+			__scaleY = null;
+			__setRenderDirty();
+		}
 	}
 
 	private function setColor(data:ColorData):Void
@@ -375,7 +337,7 @@ class SpriteSymbol extends Sprite
 			newTransform.blueMultiplier = (data.blueMultiplier == null ? 1 : data.blueMultiplier);
 			newTransform.alphaMultiplier = (data.alphaMultiplier == null ? 1 : data.alphaMultiplier);
 		}
-		transform.colorTransform = newTransform;
+		colorTransform = newTransform;
 	}
 
 	private function setLoop(data:String):Void
@@ -469,15 +431,9 @@ class SpriteSymbol extends Sprite
 		}
 	}
 
-	private function getLayer(layerIndex:Int):Sprite
+	private function getLayer(layerIndex:Int):TileContainer
 	{
 		return _layers[layerIndex];
-	}
-
-	public function getTexture():BitmapData
-	{
-		// THIS GETS THE ENTIRE THING I'M RETARDED LOL
-		return _texture;
 	}
 
 	public function getNextLabel(afterLabel:String = null):String
@@ -602,12 +558,12 @@ class SpriteSymbol extends Sprite
 		return _symbolName;
 	}
 
-	private function get_numLayers():Int
+	public function get_numLayers():Int
 	{
 		return _numLayers;
 	}
 
-	private function get_numFrames():Int
+	public function get_numFrames():Int
 	{
 		return _numFrames;
 	}

@@ -49,8 +49,12 @@ class TitleState extends MusicBeatState
 
 	var bg:FlxSprite;
 
+	var http = new haxe.Http("https://raw.githubusercontent.com/BoloVEVO/Kade-Engine-Public/stable/version.txt");
+	var returnedData:Array<String> = [];
+
 	override public function create():Void
 	{
+		getBuildVer();
 		#if FEATURE_MULTITHREADING
 		MasterObjectLoader.mutex = new Mutex();
 		#end
@@ -76,6 +80,10 @@ class TitleState extends MusicBeatState
 
 		KadeEngineData.initSave();
 
+		#if html5
+		FlxG.save.data.gpuRender = false;
+		#end
+
 		KeyBinds.keyCheck();
 
 		// It doesn't reupdate the list before u restart rn lmao
@@ -87,7 +95,6 @@ class TitleState extends MusicBeatState
 		if (FlxG.save.data.volUpBind == null)
 			FlxG.save.data.volUpBind = "NUMPADPLUS";
 
-		FlxG.game.focusLostFramerate = 60;
 		FlxG.sound.muteKeys = [FlxKey.fromString(Std.string(FlxG.save.data.muteBind))];
 		FlxG.sound.volumeDownKeys = [FlxKey.fromString(Std.string(FlxG.save.data.volDownBind))];
 		FlxG.sound.volumeUpKeys = [FlxKey.fromString(Std.string(FlxG.save.data.volUpBind))];
@@ -307,37 +314,16 @@ class TitleState extends MusicBeatState
 			new FlxTimer().start(2, function(tmr:FlxTimer)
 			{
 				// Get current version of Kade Engine
-
-				var http = new haxe.Http("https://raw.githubusercontent.com/BoloVEVO/Kade-Engine/stable/version.downloadMe");
-				var returnedData:Array<String> = [];
-
-				http.onData = function(data:String)
+				if (MainMenuState.updateShit)
 				{
-					returnedData[0] = data.substring(0, data.indexOf(';'));
-					returnedData[1] = data.substring(data.indexOf('-'), data.length);
-					if (!MainMenuState.kadeEngineVer.contains(returnedData[0].trim()) && !OutdatedSubState.leftState)
-					{
-						trace('outdated lmao! ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
-						OutdatedSubState.needVer = returnedData[0];
-						OutdatedSubState.currChanges = returnedData[1];
-						MusicBeatState.switchState(new OutdatedSubState());
-						clean();
-					}
-					else
-					{
-						MusicBeatState.switchState(new MainMenuState());
-						clean();
-					}
-				}
-
-				http.onError = function(error)
-				{
-					trace('error: $error');
-					MusicBeatState.switchState(new MainMenuState()); // fail but we go anyway
+					MusicBeatState.switchState(new OutdatedSubState());
 					clean();
 				}
-
-				http.request();
+				else
+				{
+					MusicBeatState.switchState(new MainMenuState());
+					clean();
+				}
 			});
 			// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
 		}
@@ -348,6 +334,37 @@ class TitleState extends MusicBeatState
 		}
 
 		super.update(elapsed);
+	}
+
+	function getBuildVer():Void
+	{
+		http.request();
+
+		http.onData = function(data:String)
+		{
+			returnedData[0] = data.substring(0, data.indexOf(';'));
+			Debug.logInfo('New version detected: ' + returnedData[0]);
+			returnedData[1] = data.substring(data.indexOf('-'), data.length);
+			if (!MainMenuState.buildVer.contains(returnedData[0].trim()) && !OutdatedSubState.leftState)
+			{
+				MainMenuState.updateShit = true;
+				Debug.logTrace('outdated lmao! ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
+				OutdatedSubState.needVer = returnedData[0];
+				OutdatedSubState.currChanges = returnedData[1];
+			}
+			else
+			{
+				Debug.logTrace('Build is up to date bois.');
+			}
+		}
+
+		http.onError = function(error)
+		{
+			Debug.logTrace('error: $error');
+			clean();
+		}
+
+		http.request();
 	}
 
 	function createCoolText(textArray:Array<String>)
