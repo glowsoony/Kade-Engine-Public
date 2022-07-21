@@ -50,6 +50,8 @@ class KadeEngineFPS extends TextField
 	@:noCompletion private var currentTime:Float;
 	@:noCompletion private var times:Array<Float>;
 
+	static var engineName = "Kade Engine ";
+
 	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000)
 	{
 		super();
@@ -138,10 +140,12 @@ class KadeEngineFPS extends TextField
 			memoryUsage = (FlxG.save.data.memoryDisplay ? "Memory Usage: " + memoryMegas + " MB / " + memoryTotal + " MB" : "");
 
 			text = (FlxG.save.data.fps ? "FPS: "
-				+ currentFPS
-				+ '\n$memoryUsage'
-				+ (Main.watermarks?"\nKade Engine " + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : "") : memoryUsage
-				+ (Main.watermarks?"\nKade Engine " + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : ""));
+				+ '$currentFPS\n'
+				+ '$memoryUsage\n'
+				+ "FNF v"
+				+ MainMenuState.gameVer
+				+ (Main.watermarks?'\n$engineName ' + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : "") : memoryUsage
+				+ (Main.watermarks?'\n$engineName ' + "v" + MainMenuState.kadeEngineVer #if debug + "\nDEBUG MODE" #end : ""));
 
 			#if (gl_stats && !disable_cffi && (!html5 || !canvas))
 			text += "\ntotalDC: " + Context3DStats.totalDrawCalls();
@@ -169,5 +173,27 @@ class KadeEngineFPS extends TextField
 		}
 
 		cacheCount = currentCount;
+	}
+
+	public static function updateEngineName()
+	{
+		if (FlxG.random.bool(5))
+		{
+			switch (FlxG.random.int(0, 5))
+			{
+				case 0:
+					engineName = "Dake Engine ";
+				case 1:
+					engineName = "Rudy Engine ";
+				case 2:
+					engineName = "Faid Engine ";
+				case 3:
+					engineName = "Jigsaw Engine ";
+				case 4:
+					engineName = "Sora Engine ";
+				case 5:
+					engineName = "Kade Engine ";
+			}
+		}
 	}
 }

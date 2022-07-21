@@ -1,5 +1,6 @@
 package;
 
+import flixel.graphics.FlxGraphic;
 import flixel.input.gamepad.FlxGamepad;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -118,21 +119,21 @@ class StoryMenuState extends MusicBeatState
 			if (splitDiffs[0].contains('easy'))
 				diffsThatExists.push('easy');
 			else if (splitDiffs[0].contains('normal'))
-				diffsThatExists.push('');
+				diffsThatExists.push('normal');
 			else if (splitDiffs[0].contains('hard'))
 				diffsThatExists.push('hard');
 
 			if (splitDiffs[1].contains('easy'))
 				diffsThatExists.push('easy');
 			else if (splitDiffs[1].contains('normal'))
-				diffsThatExists.push('');
+				diffsThatExists.push('normal');
 			else if (splitDiffs[1].contains('hard'))
 				diffsThatExists.push('hard');
 
 			if (splitDiffs[2].contains('easy'))
 				diffsThatExists.push('easy');
 			else if (splitDiffs[2].contains('normal'))
-				diffsThatExists.push('');
+				diffsThatExists.push('normal');
 			else if (splitDiffs[2].contains('hard'))
 				diffsThatExists.push('hard');
 		}
@@ -142,7 +143,7 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		if (diffsThatExists.length == 0)
-			diffsThatExists = ["easy", "", "hard"];
+			diffsThatExists = ["easy", "normal", "hard"];
 	}
 
 	override function create()
@@ -165,7 +166,7 @@ class StoryMenuState extends MusicBeatState
 		{
 			if (!FlxG.sound.music.playing)
 			{
-				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
 				Conductor.changeBPM(102);
 			}
 		}
@@ -245,19 +246,14 @@ class StoryMenuState extends MusicBeatState
 		leftArrow.antialiasing = FlxG.save.data.antialiasing;
 		difficultySelectors.add(leftArrow);
 
-		sprDifficulty = new FlxSprite(leftArrow.x + 130, leftArrow.y);
-		sprDifficulty.frames = ui_tex;
-		sprDifficulty.animation.addByPrefix('easy', 'EASY');
-		sprDifficulty.animation.addByPrefix('normal', 'NORMAL');
-		sprDifficulty.animation.addByPrefix('hard', 'HARD');
-		sprDifficulty.animation.play('easy');
+		sprDifficulty = new FlxSprite(0, leftArrow.y);
 		sprDifficulty.antialiasing = FlxG.save.data.antialiasing;
 		cleanDifficulties();
 		changeDifficulty();
 
 		difficultySelectors.add(sprDifficulty);
 
-		rightArrow = new FlxSprite(sprDifficulty.x + sprDifficulty.width + 50, leftArrow.y);
+		rightArrow = new FlxSprite(leftArrow.x + sprDifficulty.width + 68, leftArrow.y);
 		rightArrow.frames = ui_tex;
 		rightArrow.animation.addByPrefix('idle', 'arrow right');
 		rightArrow.animation.addByPrefix('press', "arrow push right", 24, false);
@@ -455,13 +451,15 @@ class StoryMenuState extends MusicBeatState
 
 			PlayState.storyDifficulty = curDifficulty;
 
-			var diff:String = diffsThatExists[PlayState.storyDifficulty];
+			var diff:String = '-${diffsThatExists[PlayState.storyDifficulty]}';
+			if (diff == '-normal')
+				diff = '';
 			PlayState.sicks = 0;
 			PlayState.bads = 0;
 			PlayState.shits = 0;
 			PlayState.goods = 0;
 			PlayState.campaignMisses = 0;
-			PlayState.SONG = Song.conversionChecks(Song.loadFromJson(PlayState.storyPlaylist[0], '-$diff'));
+			PlayState.SONG = Song.conversionChecks(Song.loadFromJson(PlayState.storyPlaylist[0], diff));
 			PlayState.storyWeek = curWeek;
 			PlayState.campaignScore = 0;
 			PlayState.campaignAccuracy = 0;
@@ -490,6 +488,8 @@ class StoryMenuState extends MusicBeatState
 		}
 	}
 
+	var tweenDifficulty:FlxTween;
+
 	function changeDifficulty(change:Int = 0):Void
 	{
 		curDifficulty += change;
@@ -499,17 +499,24 @@ class StoryMenuState extends MusicBeatState
 		if (curDifficulty > diffsThatExists.length - 1)
 			curDifficulty = 0;
 
-		sprDifficulty.offset.x = 0;
+		var newImage:FlxGraphic = Paths.image('menuDifficulties/${diffsThatExists[curDifficulty]}');
 
-		if (diffsThatExists[curDifficulty] == '')
+		if (sprDifficulty.graphic != newImage)
 		{
-			sprDifficulty.animation.play('normal');
-			sprDifficulty.offset.x = 70;
-		}
-		else
-		{
-			sprDifficulty.animation.play(diffsThatExists[curDifficulty]);
-			sprDifficulty.offset.x = 20;
+			sprDifficulty.loadGraphic(newImage);
+			sprDifficulty.x = leftArrow.x + 60;
+			sprDifficulty.x += (308 - sprDifficulty.width) / 3;
+			sprDifficulty.alpha = 0;
+			sprDifficulty.y = leftArrow.y - 15;
+
+			if (tweenDifficulty != null)
+				tweenDifficulty.cancel();
+			tweenDifficulty = FlxTween.tween(sprDifficulty, {y: leftArrow.y + 15, alpha: 1}, 0.07, {
+				onComplete: function(twn:FlxTween)
+				{
+					tweenDifficulty = null;
+				}
+			});
 		}
 
 		sprDifficulty.alpha = 0;

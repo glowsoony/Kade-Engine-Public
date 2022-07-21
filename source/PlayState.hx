@@ -3650,7 +3650,7 @@ class PlayState extends MusicBeatState
 
 				daNote.y = strumY + Math.sin(angleDir) * daNote.distance;
 
-				daNote.localAngle = strumDirection - 90 + strumAngle;
+				daNote.modAngle = strumDirection - 90 + strumAngle;
 
 				if (PlayStateChangeables.useDownscroll)
 				{
@@ -3997,7 +3997,7 @@ class PlayState extends MusicBeatState
 
 		if (offsetTesting)
 		{
-			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
 			offsetTesting = false;
 			PsychTransition.nextCamera = mainCam;
 			LoadingState.loadAndSwitchState(new OptionsMenu());
@@ -4068,7 +4068,7 @@ class PlayState extends MusicBeatState
 					{
 						GameplayCustomizeState.freeplayNoteStyle = 'normal';
 						GameplayCustomizeState.freeplayWeek = 1;
-						FlxG.sound.playMusic(Paths.music('freakyMenu'));
+						FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
 						Conductor.changeBPM(102);
 						PsychTransition.nextCamera = mainCam;
 						MusicBeatState.switchState(new StoryMenuState());
@@ -4208,7 +4208,11 @@ class PlayState extends MusicBeatState
 
 					add(sploosh);
 					sploosh.cameras = [camStrums];
-					sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.noteData);
+
+					if (!FlxG.save.data.stepMania)
+						sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.noteData);
+					else
+						sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.originColor);
 					sploosh.alpha = 0.6;
 					sploosh.offset.x += 90;
 					sploosh.offset.y += 80;
@@ -4230,7 +4234,10 @@ class PlayState extends MusicBeatState
 
 					add(sploosh);
 					sploosh.cameras = [camStrums];
-					sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.noteData);
+					if (!FlxG.save.data.stepMania)
+						sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.noteData);
+					else
+						sploosh.animation.play('splash ' + FlxG.random.int(0, 1) + " " + daNote.originColor);
 					sploosh.alpha = 0.6;
 					sploosh.offset.x += 90;
 					sploosh.offset.y += 80; // lets stick to eight not nine
@@ -4382,9 +4389,6 @@ class PlayState extends MusicBeatState
 			if (loadRep)
 				msTiming = HelperFunctions.truncateFloat(findByTime(daNote.strumTime)[3], 3);
 
-			if (currentTimingShown != null)
-				remove(currentTimingShown);
-
 			currentTimingShown = new FlxText(0, 0, 0, "0ms");
 			timeShown = 0;
 			switch (daRating)
@@ -4421,11 +4425,9 @@ class PlayState extends MusicBeatState
 				offsetTest = HelperFunctions.truncateFloat(total / hits.length, 2);
 			}
 
-			if (currentTimingShown.alpha != 1)
-				currentTimingShown.alpha = 1;
-
-			if (!PlayStateChangeables.botPlay || loadRep)
-				add(currentTimingShown);
+			if (FlxG.save.data.showMs)
+				if (!PlayStateChangeables.botPlay || loadRep)
+					add(currentTimingShown);
 
 			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2, pixelShitPart3));
 			comboSpr.screenCenter();
@@ -4569,14 +4571,24 @@ class PlayState extends MusicBeatState
 			coolText.text = Std.string(seperatedScore);
 			// add(coolText);
 
+			if (FlxG.save.data.showMs)
+			{
+				FlxTween.cancelTweensOf(currentTimingShown);
+
+				FlxTween.tween(currentTimingShown, {alpha: 0}, 0.2, {
+					onComplete: function(twn)
+					{
+						if (currentTimingShown != null)
+						{
+							remove(currentTimingShown);
+							currentTimingShown.destroy();
+						}
+					}
+				});
+			}
+
 			createTween(rating, {alpha: 0}, 0.2, {
-				startDelay: (Conductor.crochet * Math.pow(songMultiplier, 2)) * 0.001,
-				onUpdate: function(tween:FlxTween)
-				{
-					if (currentTimingShown != null)
-						currentTimingShown.alpha -= 0.02;
-					timeShown++;
-				}
+				startDelay: (Conductor.crochet * Math.pow(songMultiplier, 2)) * 0.001
 			});
 
 			createTween(comboSpr, {alpha: 0}, 0.2, {
@@ -4584,11 +4596,6 @@ class PlayState extends MusicBeatState
 				{
 					coolText.destroy();
 					comboSpr.destroy();
-					if (currentTimingShown != null && timeShown >= 20)
-					{
-						remove(currentTimingShown);
-						currentTimingShown = null;
-					}
 					rating.destroy();
 				},
 				startDelay: (Conductor.crochet * Math.pow(songMultiplier, 2)) * 0.001
@@ -6385,6 +6392,7 @@ class PlayState extends MusicBeatState
 			while (Character.animationNotes.length > 0)
 			{
 				Character.animationNotes.pop();
+				Character.animationNotes = [];
 			}
 		}
 

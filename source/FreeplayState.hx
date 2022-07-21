@@ -106,7 +106,7 @@ class FreeplayState extends MusicBeatState
 		PlayState.wentToChartEditor = false;
 		if (!FlxG.sound.music.playing)
 		{
-			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
 			MainMenuState.freakyPlaying = true;
 		}
 

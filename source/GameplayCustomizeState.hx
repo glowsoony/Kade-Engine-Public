@@ -67,9 +67,13 @@ class GameplayCustomizeState extends MusicBeatState
 	public static var freeplayNoteStyle:String = 'normal';
 	public static var freeplayWeek:Int = 1;
 
+	var currentTimingShown:FlxText = null;
+
 	public var mainCam:FlxCamera;
 
 	var changedPos:Bool = false;
+
+	var timeShown = 0;
 
 	public override function create()
 	{
@@ -116,7 +120,7 @@ class GameplayCustomizeState extends MusicBeatState
 
 		UI_options.scrollFactor.set();
 		UI_options.selected_tab = 0;
-		UI_options.resize(150, 200);
+		UI_options.resize(150, 115);
 		UI_options.x = FlxG.width - 200;
 		UI_options.y = FlxG.height - 700;
 		if (!FlxG.save.data.downscroll)
@@ -143,6 +147,12 @@ class GameplayCustomizeState extends MusicBeatState
 					if (person.curCharacter == char)
 						person.setPosition(pos[0], pos[1]);
 		}
+
+		for (person in [boyfriend, gf, dad])
+		{
+			person.animation.curAnim.frameRate = Math.round(person.animation.curAnim.frameRate / PlayState.songMultiplier);
+		}
+
 		for (i in Stage.toAdd)
 		{
 			add(i);
@@ -437,6 +447,21 @@ class GameplayCustomizeState extends MusicBeatState
 			if (FlxG.save.data.showCombo)
 				add(comboSpr);
 
+			currentTimingShown = new FlxText(0, 0, 0, "0ms");
+			currentTimingShown.color = FlxColor.CYAN;
+			currentTimingShown.borderStyle = OUTLINE;
+			currentTimingShown.borderSize = 1;
+			currentTimingShown.borderColor = FlxColor.BLACK;
+			currentTimingShown.text = "69ms";
+			currentTimingShown.size = 20;
+
+			if (FlxG.save.data.showMs)
+				add(currentTimingShown);
+
+			currentTimingShown.screenCenter();
+			currentTimingShown.x = comboSpr.x + 600;
+			currentTimingShown.y = sick.y + 350;
+
 			// make sure we have 3 digits to display (looks weird otherwise lol)
 			if (comboSplit.length == 1)
 			{
@@ -463,6 +488,8 @@ class GameplayCustomizeState extends MusicBeatState
 
 				if (freeplayNoteStyle != 'pixel')
 				{
+					currentTimingShown.x -= 15;
+					currentTimingShown.y -= 15;
 					numScore.antialiasing = FlxG.save.data.antialiasing;
 					numScore.setGraphicSize(Std.int(numScore.width * 0.5));
 				}
@@ -506,6 +533,22 @@ class GameplayCustomizeState extends MusicBeatState
 				}
 
 				daLoop++;
+			}
+
+			if (FlxG.save.data.showMs)
+			{
+				FlxTween.cancelTweensOf(currentTimingShown);
+
+				FlxTween.tween(currentTimingShown, {alpha: 0}, 0.2, {
+					onComplete: function(twn)
+					{
+						if (currentTimingShown != null)
+						{
+							remove(currentTimingShown);
+							currentTimingShown.destroy();
+						}
+					}
+				});
 			}
 
 			FlxTween.tween(comboSpr, {alpha: 0}, 0.2, {
@@ -659,24 +702,32 @@ class GameplayCustomizeState extends MusicBeatState
 
 	function addOptionsUI()
 	{
-		var comboSprite = new FlxUICheckBox(10, 35, null, null, "Show Combo Sprite", 100);
+		var comboSprite = new FlxUICheckBox(10, 15, null, null, "Show Combo Sprite", 100);
 		comboSprite.checked = FlxG.save.data.showCombo;
 		comboSprite.callback = function()
 		{
 			FlxG.save.data.showCombo = comboSprite.checked;
 		};
 
-		var comboNum = new FlxUICheckBox(10, 60, null, null, "Show Combo Numbers", 100);
+		var comboNum = new FlxUICheckBox(10, 40, null, null, "Show Combo Number", 100);
 		comboNum.checked = FlxG.save.data.showComboNum;
 		comboNum.callback = function()
 		{
 			FlxG.save.data.showComboNum = comboNum.checked;
 		};
 
+		var msTiming = new FlxUICheckBox(10, 65, null, null, "Show Timing MS", 100);
+		msTiming.checked = FlxG.save.data.showMs;
+		msTiming.callback = function()
+		{
+			FlxG.save.data.showMs = msTiming.checked;
+		};
+
 		var tab_app = new FlxUI(null, UI_options);
 		tab_app.name = "Appeareance";
 		tab_app.add(comboSprite);
 		tab_app.add(comboNum);
+		tab_app.add(msTiming);
 		UI_options.addGroup(tab_app);
 
 		var tab_wip = new FlxUI(null, UI_options);

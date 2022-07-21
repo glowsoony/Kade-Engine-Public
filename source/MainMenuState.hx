@@ -42,7 +42,7 @@ class MainMenuState extends MusicBeatState
 
 	public static var gameVer:String = "0.2.8";
 
-	public static var kadeEngineVer:String = "1.8.1" + "\nFNF v" + gameVer + "\nCustom Build v1.4.2" + nightly;
+	public static var kadeEngineVer:String = "1.8.1" + "\nCustom Build v1.4.2" + nightly;
 
 	public static var buildVer:String = "1.4.2";
 
@@ -70,7 +70,7 @@ class MainMenuState extends MusicBeatState
 
 		if (!FlxG.sound.music.playing)
 		{
-			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
 			freakyPlaying = true;
 		}
 

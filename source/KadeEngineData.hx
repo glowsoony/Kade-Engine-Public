@@ -223,6 +223,9 @@ class KadeEngineData
 		if (FlxG.save.data.showComboNum == null)
 			FlxG.save.data.showComboNum = true;
 
+		if (FlxG.save.data.showMs == null)
+			FlxG.save.data.showMs = true;
+
 		// Gonna make this an option on another PR
 		if (FlxG.save.data.overrideNoteskins == null)
 			FlxG.save.data.overrideNoteskins = false;

@@ -1488,6 +1488,10 @@ class WatermarkOption extends Option
 	{
 		Main.watermarks = !Main.watermarks;
 		FlxG.save.data.watermark = Main.watermarks;
+		FlxG.sound.music.stop();
+		FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
+		Conductor.changeBPM(102);
+		KadeEngineFPS.updateEngineName();
 		display = updateDisplay();
 		return true;
 	}
@@ -1500,7 +1504,7 @@ class WatermarkOption extends Option
 
 	private override function updateDisplay():String
 	{
-		return "Watermarks: < " + (Main.watermarks ? "on" : "off") + " >";
+		return "Watermarks: < " + (FlxG.save.data.watermark ? "on" : "off") + " >";
 	}
 }
 

@@ -381,7 +381,7 @@ typedef CharacterData =
 
 	/**
 	 * What type of Atlas the character uses.
-	 * @default false
+	 * @default SparrowAtlas
 	 */
 	var ?AtlasType:String;
 
