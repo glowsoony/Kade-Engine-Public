@@ -343,24 +343,24 @@ class TitleState extends MusicBeatState
 		http.onData = function(data:String)
 		{
 			returnedData[0] = data.substring(0, data.indexOf(';'));
-			Debug.logInfo('New version detected: ' + returnedData[0]);
 			returnedData[1] = data.substring(data.indexOf('-'), data.length);
 			if (!MainMenuState.buildVer.contains(returnedData[0].trim()) && !OutdatedSubState.leftState)
 			{
+				Debug.logInfo('New version detected: ' + returnedData[0]);
 				MainMenuState.updateShit = true;
-				Debug.logTrace('outdated lmao! ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
+				Debug.logInfo('outdated lmao! ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
 				OutdatedSubState.needVer = returnedData[0];
 				OutdatedSubState.currChanges = returnedData[1];
 			}
 			else
 			{
-				Debug.logTrace('Build is up to date bois.');
+				Debug.logInfo('Build is up to date bois.');
 			}
 		}
 
 		http.onError = function(error)
 		{
-			Debug.logTrace('error: $error');
+			Debug.logError('error: $error');
 			clean();
 		}
 
