@@ -70,11 +70,9 @@ Links: **[itch.io page](https://bolo24.itch.io/kade-engine-181) ⋅ [latest stab
  - [Kawai Sprite](https://twitter.com/kawaisprite) - Music
 
 This game was made with love to Newgrounds and its community. Extra love to Tom Fulp.
-### Kade Engine
+### Original Kade Engine
 - [KadeDeveloper](https://twitter.com/KadeDeveloper) - Maintainer and lead programmer
 - [The contributors](https://github.com/KadeDev/Kade-Engine/graphs/contributors)
-- [Bolo](https://github.com/BoloVEVO/Kade-Engine) - Engine fixes and some features.
-
 
 
 ### Shoutouts
@@ -87,4 +85,7 @@ This game was made with love to Newgrounds and its community. Extra love to Tom 
 - [Fox](https://twitter.com/FoxeruKun) - circle noteskins
 - [Orbyy](https://twitter.com/orbyynew) - pixel circle noteskins
 - [Glowsoony](https://github.com/glowsoony) - Note Splashes code.
+- [Awoofle](https://twitter.com/awoofle) - Tween Manager and Assets Cache.
+- [MAJigsaw77](https://twitter.com/jigsaw1_ma) - Shaders, MP4, and future polymod hscript support.
+- [Bolo](https://github.com/BoloVEVO/Kade-Engine) - Engine fixes and some features.
 - [Shubs](https://github.com/Yoshubs) - Forever Engine dump cache
