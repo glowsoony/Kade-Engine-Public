@@ -5,22 +5,6 @@ function start(song) -- do nothing
     bfsinging= true;
     spinLength = 0
 
-    if getProperty('LuaMidscroll') then
-        if getProperty('LuaOpponent') then
-            for i=0,3 do
-                local receptor = _G['receptor_'..i]
-                receptor.x = receptor.defaultX + 310.25;
-                setOpponentLaneUnderLayOpponentPos(_G['receptor_'..0].x - 25)
-            end
-        else
-            for i=4,7 do
-                local playerReceptor = _G['receptor_'..i]
-                playerReceptor.x = playerReceptor.defaultX-303.25;
-                setLaneUnderLayPos(_G['receptor_'..4].x-25)
-            end
-        end
-    end
-
 end
 
 local function camZoom() --Simulate a camZoom 
@@ -62,27 +46,13 @@ function update(elapsed) --Sway Strum's X and Y
         if spinLength < 32 then
             spinLength = spinLength + 0.2
         end
-        if not getProperty('LuaMidscroll') then
+
             for i=0,7 do
                 local receptor = _G['receptor_'..i]
                 receptor.x = receptor.defaultX + spinLength * math.sin((currentBeat + i*0.25) * math.pi)
                 receptor.y = (receptor.defaultY+10) + spinLength * math.cos((currentBeat + i*0.25) * math.pi)
             end
-        else
-            if getProperty('LuaOpponent') then
-                for i=0,3 do
-                    local receptor = _G['receptor_'..i]
-                    receptor.x = (receptor.defaultX+310.25) + spinLength * math.sin((currentBeat + i*0.25) * math.pi)
-                    receptor.y = (receptor.defaultY+10) + spinLength * math.cos((currentBeat + i*0.25) * math.pi)
-                end
-            else
-                for i=4,7 do
-                    local receptor = _G['receptor_'..i]
-                    receptor.x = (receptor.defaultX-303.5) + spinLength * math.sin((currentBeat + i*0.25) * math.pi)
-                    receptor.y = (receptor.defaultY+10) + spinLength * math.cos((currentBeat + i*0.25) * math.pi)
-                end
-            end
-        end
+       
     end
 end
 
