@@ -4358,14 +4358,14 @@ class PlayState extends MusicBeatState
 			var pixelShitPart1:String = "";
 			var pixelShitPart2:String = '';
 			var pixelShitPart3:String = 'shared';
-			var pixelShitPart4:String = null;
+			var pixelShitPart4:String = '';
 
 			if (SONG.noteStyle == 'pixel')
 			{
 				pixelShitPart1 = 'weeb/pixelUI/';
 				pixelShitPart2 = '-pixel';
 				pixelShitPart3 = 'week6';
-				pixelShitPart4 = pixelShitPart3;
+				pixelShitPart4 = 'week6';
 			}
 
 			rating.loadGraphic(Paths.image(pixelShitPart1 + daRating + pixelShitPart2, pixelShitPart3));
@@ -4388,6 +4388,9 @@ class PlayState extends MusicBeatState
 
 			if (loadRep)
 				msTiming = HelperFunctions.truncateFloat(findByTime(daNote.strumTime)[3], 3);
+
+			if (currentTimingShown != null)
+				remove(currentTimingShown);
 
 			currentTimingShown = new FlxText(0, 0, 0, "0ms");
 			timeShown = 0;
@@ -4424,6 +4427,9 @@ class PlayState extends MusicBeatState
 
 				offsetTest = HelperFunctions.truncateFloat(total / hits.length, 2);
 			}
+
+			if (currentTimingShown.alpha != 1)
+				currentTimingShown.alpha = 1;
 
 			if (FlxG.save.data.showMs)
 				if (!PlayStateChangeables.botPlay || loadRep)
@@ -4511,11 +4517,6 @@ class PlayState extends MusicBeatState
 				numScore.y = rating.y + 100;
 				numScore.cameras = [camHUD];
 
-				if (combo >= 1000)
-					numScore.x -= 20;
-				if (combo >= 10000)
-					numScore.x -= 20;
-
 				if (SONG.noteStyle != 'pixel')
 				{
 					numScore.antialiasing = FlxG.save.data.antialiasing;
@@ -4530,6 +4531,7 @@ class PlayState extends MusicBeatState
 				numScore.acceleration.y = FlxG.random.int(200, 300);
 				numScore.velocity.y -= FlxG.random.int(140, 160);
 				numScore.velocity.x = FlxG.random.float(-5, 5);
+
 				if (FlxG.save.data.showComboNum)
 					if (combo >= 5)
 						add(numScore);
@@ -4571,24 +4573,14 @@ class PlayState extends MusicBeatState
 			coolText.text = Std.string(seperatedScore);
 			// add(coolText);
 
-			if (FlxG.save.data.showMs)
-			{
-				FlxTween.cancelTweensOf(currentTimingShown);
-
-				FlxTween.tween(currentTimingShown, {alpha: 0}, 0.2, {
-					onComplete: function(twn)
-					{
-						if (currentTimingShown != null)
-						{
-							remove(currentTimingShown);
-							currentTimingShown.destroy();
-						}
-					}
-				});
-			}
-
 			createTween(rating, {alpha: 0}, 0.2, {
-				startDelay: (Conductor.crochet * Math.pow(songMultiplier, 2)) * 0.001
+				startDelay: (Conductor.crochet * Math.pow(songMultiplier, 2)) * 0.001,
+				onUpdate: function(tween:FlxTween)
+				{
+					if (currentTimingShown != null)
+						currentTimingShown.alpha -= 0.02;
+					timeShown++;
+				}
 			});
 
 			createTween(comboSpr, {alpha: 0}, 0.2, {
@@ -4596,6 +4588,11 @@ class PlayState extends MusicBeatState
 				{
 					coolText.destroy();
 					comboSpr.destroy();
+					if (currentTimingShown != null && timeShown >= 20)
+					{
+						remove(currentTimingShown);
+						currentTimingShown = null;
+					}
 					rating.destroy();
 				},
 				startDelay: (Conductor.crochet * Math.pow(songMultiplier, 2)) * 0.001
