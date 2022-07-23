@@ -13,10 +13,6 @@ import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
 import openfl.display3D.textures.Texture;
 import openfl.display.BitmapData;
-#if FEATURE_FILESYSTEM
-import sys.FileSystem;
-import sys.io.File;
-#end
 
 using StringTools;
 
@@ -69,22 +65,17 @@ class Paths
 	static function loadImage(key:String, ?library:String, ?gpuRender:Bool)
 	{
 		var path:String = '';
-		#if FEATURE_FILESYSTEM
-		if (library == null)
-			path = getPath('images/$key.png', IMAGE, library);
-		else
-			path = 'assets/$library/images/$key.png';
-		#else
+
 		path = getPath('images/$key.png', IMAGE, library);
-		#end
+
 		// Debug.logTrace(path);
 		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
 
-		if (#if FEATURE_FILESYSTEM FileSystem.exists(path) #else OpenFlAssets.exists(path, IMAGE) #end)
+		if (OpenFlAssets.exists(path, IMAGE))
 		{
 			if (!currentTrackedAssets.exists(key))
 			{
-				var bitmap:BitmapData = #if FEATURE_FILESYSTEM BitmapData.fromFile(path) #else OpenFlAssets.getBitmapData(path, false) #end;
+				var bitmap:BitmapData = OpenFlAssets.getBitmapData(path, false);
 				var graphic:FlxGraphic = null;
 
 				var graphic:FlxGraphic = null;
@@ -134,8 +125,7 @@ class Paths
 			if (path == 'songs')
 				folder = 'songs:';
 
-			currentTrackedSounds.set(gottenPath,
-				#if FEATURE_FILESYSTEM Sound.fromFile(gottenPath) #else OpenFlAssets.getSound(folder + getPath('$path/$key.$SOUND_EXT', SOUND, library)) #end);
+			currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(folder + getPath('$path/$key.$SOUND_EXT', SOUND, library)));
 		}
 
 		localTrackedAssets.push(gottenPath);
@@ -152,16 +142,6 @@ class Paths
 	{
 		var rawJson = '';
 
-		#if FEATURE_FILESYSTEM
-		try
-		{
-			rawJson = sys.io.File.getContent(Paths.json(key, library)).trim();
-		}
-		catch (e)
-		{
-			rawJson = null;
-		}
-		#else
 		try
 		{
 			rawJson = OpenFlAssets.getText(Paths.json(key, library)).trim();
@@ -170,7 +150,6 @@ class Paths
 		{
 			rawJson = null;
 		}
-		#end
 
 		// Perform cleanup on files that have bad data at the end.
 		if (rawJson != null)
@@ -218,14 +197,7 @@ class Paths
 
 	inline static public function file(file:String, ?library:String, type:AssetType = TEXT)
 	{
-		#if FEATURE_FILESYSTEM
-		if (library == null)
-			return File.getContent(getPath(file, type, library));
-
-		return File.getContent('assets/$library/$file');
-		#else
 		return getPath(file, type, library);
-		#end
 	}
 
 	inline static public function lua(key:String, ?library:String)
@@ -362,11 +334,7 @@ class Paths
 
 	inline static public function doesTextAssetExist(path:String)
 	{
-		#if FEATURE_FILESYSTEM
-		return FileSystem.exists(path);
-		#else
 		return OpenFlAssets.exists(path, AssetType.TEXT);
-		#end
 	}
 
 	static public function video(key:String)
@@ -501,13 +469,9 @@ class Paths
 
 	inline static public function fileExists(key:String, type:AssetType, ?library:String)
 	{
-		#if FEATURE_FILESYSTEM
-		if (FileSystem.exists(getPath(key, type)))
-			return true;
-		#else
 		if (OpenFlAssets.exists(getPath(key, type)))
 			return true;
-		#end
+
 		return false;
 	}
 
