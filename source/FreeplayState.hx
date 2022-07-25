@@ -398,6 +398,24 @@ class FreeplayState extends MusicBeatState
 			diffsThatExist.push("Normal");
 		if (Paths.doesTextAssetExist(Paths.json('songs/$songName/$songName-hard')))
 			diffsThatExist.push("Hard");
+
+		var customDiffs = CoolUtil.coolTextFile(Paths.txt('data/songs/$songName/customDiffs'));
+
+		if (customDiffs != null)
+		{
+			for (i in 0...customDiffs.length)
+			{
+				var cDiff = customDiffs[i];
+				if (Paths.doesTextAssetExist(Paths.json('songs/$songName/$songName-${cDiff.toLowerCase()}')))
+				{
+					Debug.logInfo('New Difficulties detected for $songName: $cDiff');
+					diffsThatExist.push(cDiff);
+					CoolUtil.suffixDiffsArray.push('-${cDiff.toLowerCase()}');
+					CoolUtil.difficultyArray.push(cDiff);
+				}
+			}
+		}
+
 		if (diffsThatExist.length == 0)
 		{
 			if (FlxG.fullscreen)
@@ -411,6 +429,16 @@ class FreeplayState extends MusicBeatState
 			FreeplayState.loadDiff(1, songName, diffs);
 		if (diffsThatExist.contains("Hard"))
 			FreeplayState.loadDiff(2, songName, diffs);
+
+		if (customDiffs != null)
+		{
+			for (i in 0...customDiffs.length)
+			{
+				var cDiff = customDiffs[i];
+				if (diffsThatExist.contains(cDiff))
+					FreeplayState.loadDiff(CoolUtil.difficultyArray.indexOf(cDiff), songName, diffs);
+			}
+		}
 
 		meta.diffs = diffsThatExist;
 

@@ -54,7 +54,7 @@ class PauseSubState extends MusicBeatSubstate
 		"EPIC EMBED FAIL (-Bolo)",
 		"Don't take these dialogues seriously lol (-Bolo)",
 		"Fireable actually used my fork. Pog (-Bolo)",
-		"I'm not gay, I'm default :trollface: (-Bolo)",
+		"I'm not gay, I'm default :trollface: (-Bolo)", // homhopobic 😭
 		"0.01% batch (-PopCat)",
 		"Are you have the stupid? (-BombasticTom)",
 		"I am here (-Faid)",
@@ -64,7 +64,8 @@ class PauseSubState extends MusicBeatSubstate
 		"Ur black in real life or ur black in discord theme (-Bolo)",
 		"I'm not longer a minor :( (-Bolo)",
 		"We are gonna be using your fork as a base for myth engine (-Awoofle)",
-		"Cool ass looking shit. Imma go steal ur code and give u credit (-BeastlyGhost)"
+		"Cool ass looking shit. Imma go steal ur code and give u credit (-BeastlyGhost)",
+		"Camellia's 2.5 fork poggers. (-Bolo)"
 	];
 
 	public function new()
