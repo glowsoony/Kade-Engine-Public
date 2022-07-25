@@ -28,6 +28,10 @@ import Discord.DiscordClient;
 #end
 import FreeplaySubState;
 import Modifiers;
+#if FEATURE_FILESYSTEM
+import sys.FileSystem;
+import sys.io.File;
+#end
 
 using StringTools;
 
@@ -80,19 +84,7 @@ class FreeplayState extends MusicBeatState
 	public static var instance:FreeplayState;
 
 	public static function loadDiff(diff:Int, songId:String, array:Array<SongData>)
-	{
-		var diffName:String = "";
-
-		switch (diff)
-		{
-			case 0:
-				diffName = "-easy";
-			case 2:
-				diffName = "-hard";
-		}
-
-		array.push(Song.conversionChecks(Song.loadFromJson(songId, diffName)));
-	}
+		array.push(Song.conversionChecks(Song.loadFromJson(songId, CoolUtil.suffixDiffsArray[diff])));
 
 	public static var list:Array<String> = [];
 
@@ -332,8 +324,27 @@ class FreeplayState extends MusicBeatState
 			if (Paths.doesTextAssetExist(Paths.json('songs/$songId/$songId-hard')))
 				diffsThatExist.push("Hard");
 
+			var customDiffs = CoolUtil.coolTextFile(Paths.txt('data/songs/$songId/customDiffs'));
+
+			if (customDiffs != null)
+			{
+				for (i in 0...customDiffs.length)
+				{
+					var cDiff = customDiffs[i];
+					if (Paths.doesTextAssetExist(Paths.json('songs/$songId/$songId-${cDiff.toLowerCase()}')))
+					{
+						Debug.logInfo('New Difficulties detected for $songId: $cDiff');
+						diffsThatExist.push(cDiff);
+						CoolUtil.suffixDiffsArray.push('-${cDiff.toLowerCase()}');
+						CoolUtil.difficultyArray.push(cDiff);
+					}
+				}
+			}
+
 			if (diffsThatExist.length == 0)
 			{
+				if (FlxG.fullscreen)
+					FlxG.fullscreen = !FlxG.fullscreen;
 				Debug.displayAlert(meta.songName + " Chart", "No difficulties found for chart, skipping.");
 			}
 
@@ -343,6 +354,16 @@ class FreeplayState extends MusicBeatState
 				FreeplayState.loadDiff(1, songId, diffs);
 			if (diffsThatExist.contains("Hard"))
 				FreeplayState.loadDiff(2, songId, diffs);
+
+			if (customDiffs != null)
+			{
+				for (i in 0...customDiffs.length)
+				{
+					var cDiff = customDiffs[i];
+					if (diffsThatExist.contains(cDiff))
+						FreeplayState.loadDiff(CoolUtil.difficultyArray.indexOf(cDiff), songId, diffs);
+				}
+			}
 
 			meta.diffs = diffsThatExist;
 
@@ -891,7 +912,19 @@ class FreeplayState extends MusicBeatState
 
 	public function updateDiffCalc():Void
 	{
-		diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
+		if (songData.get(songs[curSelected].songName)[curDifficulty] != null)
+		{
+			diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
+			diffCalcText.alpha = 1;
+			diffText.alpha = 1;
+		}
+		else
+		{
+			Debug.logError('Error on calculating difficulty rate from song: ${songs[curSelected].songName}');
+			diffCalcText.alpha = 0.5;
+			diffText.alpha = 0.5;
+			diffCalcText.text = 'RATING: N/A';
+		}
 	}
 }
 

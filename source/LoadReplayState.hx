@@ -228,7 +228,7 @@ class LoadReplayState extends MusicBeatState
 					}
 					else
 					{
-						var diff:String = ["-easy", "", "-hard"][PlayState.rep.replay.songDiff];
+						var diff:String = CoolUtil.suffixDiffsArray[PlayState.rep.replay.songDiff];
 						PlayState.SONG = Song.loadFromJson(PlayState.rep.replay.songName, diff);
 					}
 				}

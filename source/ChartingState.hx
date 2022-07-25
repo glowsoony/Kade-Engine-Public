@@ -200,7 +200,7 @@ class ChartingState extends MusicBeatState
 			}
 			else
 			{
-				var diff:String = ["-easy", "", "-hard"][PlayState.storyDifficulty];
+				var diff:String = CoolUtil.suffixDiffsArray[PlayState.storyDifficulty];
 				_song = Song.conversionChecks(Song.loadFromJson(PlayState.SONG.songId, diff));
 			}
 		}
@@ -1536,7 +1536,7 @@ class ChartingState extends MusicBeatState
 			}
 			else
 			{
-				var diff:String = ["-easy", "", "-hard"][PlayState.storyDifficulty];
+				var diff:String = CoolUtil.suffixDiffsArray[PlayState.storyDifficulty];
 				_song = Song.conversionChecks(Song.loadFromJson(PlayState.SONG.songId, diff));
 			}
 		}
@@ -3517,9 +3517,7 @@ class ChartingState extends MusicBeatState
 
 	function loadJson(songId:String):Void
 	{
-		var difficultyArray:Array<String> = ["-easy", "", "-hard"];
-
-		PlayState.SONG = Song.loadFromJson(songId, difficultyArray[PlayState.storyDifficulty]);
+		PlayState.SONG = Song.loadFromJson(songId, CoolUtil.suffixDiffsArray[PlayState.storyDifficulty]);
 
 		while (curRenderedNotes.members.length > 0)
 		{
@@ -3622,8 +3620,6 @@ class ChartingState extends MusicBeatState
 
 	private function saveLevel()
 	{
-		var difficultyArray:Array<String> = ["-easy", "", "-hard"];
-
 		var toRemove = [];
 
 		for (i in _song.notes)
@@ -3649,7 +3645,7 @@ class ChartingState extends MusicBeatState
 			_file.addEventListener(Event.COMPLETE, onSaveComplete);
 			_file.addEventListener(Event.CANCEL, onSaveCancel);
 			_file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-			_file.save(data.trim(), _song.songId.toLowerCase() + difficultyArray[PlayState.storyDifficulty] + ".json");
+			_file.save(data.trim(), _song.songId.toLowerCase() + CoolUtil.suffixDiffsArray[PlayState.storyDifficulty] + ".json");
 		}
 	}
 

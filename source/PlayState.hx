@@ -4091,7 +4091,7 @@ class PlayState extends MusicBeatState
 				}
 				else
 				{
-					var diff:String = ["-easy", "", "-hard"][storyDifficulty];
+					var diff:String = CoolUtil.suffixDiffsArray[storyDifficulty];
 
 					FlxTransitionableState.skipNextTransIn = true;
 					FlxTransitionableState.skipNextTransOut = true;

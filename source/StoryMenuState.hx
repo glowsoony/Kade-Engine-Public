@@ -53,16 +53,6 @@ class StoryMenuState extends MusicBeatState
 		['tankman', 'bf', 'gf']
 	];
 
-	var weekDiffs:Array<Dynamic> = [
-		['easy', 'normal', 'hard'],
-		['easy', 'normal', 'hard'],
-		['easy', 'normal', 'hard'],
-		['easy', 'normal', 'hard'],
-		['easy', 'normal', 'hard'],
-		['easy', 'normal', 'hard'],
-		['easy', 'normal', 'hard']
-	];
-
 	var weekNames:Array<String> = CoolUtil.coolTextFile(Paths.txt('data/weekNames'));
 
 	var diffList:Array<String> = [];
