@@ -6298,7 +6298,7 @@ class PlayState extends MusicBeatState
 			bg.cameras = [camHUD];
 			add(bg);
 
-			#if (!html5)
+			#if (!html5 && !linux)
 			var daVid:VideoHandler = new VideoHandler();
 			daVid.playVideo(fileName);
 			(daVid).finishCallback = function()
