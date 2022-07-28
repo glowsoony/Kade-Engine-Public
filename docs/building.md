@@ -21,7 +21,7 @@
 	* `sudo apt-get install vlc-bin`
 	* `sudo apt-get -y install libidn12`
 	
-     <b>All platforms (Windows , Mac, HTML5, Linux):</b> 
+     <b>All platforms (Windows, Mac, HTML5, Linux):</b> 
 	 - `haxelib install lime 7.9.0`
 	 - `haxelib install openfl`
 	 - `haxelib install flixel`
