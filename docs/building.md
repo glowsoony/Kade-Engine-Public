@@ -19,7 +19,6 @@
 	 - `haxelib install flixel-tools`
 	 - `haxelib install flixel-ui`
 	 - `haxelib install hscript`
-	 - `haxelib git hxCodec https://github.com/polybiusproxy/hxCodec`
 	 - `haxelib install hxCodec`
 	 - `haxelib install hxcpp-debug-server`
 	 - `haxelib install flixel-addons`
