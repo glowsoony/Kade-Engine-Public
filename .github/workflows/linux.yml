@@ -25,8 +25,8 @@ jobs:
           sudo add-apt-repository ppa:haxe/releases -y
           sudo apt-get update
           sudo apt-get install gcc-multilib g++-multilib haxe -y
-          sudo apt-get install libvlc-dev libvlccore-dev -y
-          sudo apt-get install vlc-bin
+          sudo apt-get install libvlc-dev
+          sudo apt-get install libvlccore-dev
           mkdir "%HAXELIB_ROOT%"
           haxelib setup "%HAXELIB_ROOT%"
           haxelib install lime 7.9.0
@@ -39,7 +39,8 @@ jobs:
           haxelib install flixel-addons
           haxelib install flixel-ui
           haxelib install hscript
-          haxelib install hxCodec 
+          haxelib git hxCodec https://github.com/polybiusproxy/hxCodec
+          haxelib install hxCodec
           haxelib install flixel-addons
           haxelib git faxe https://github.com/uhrobots/faxe
           haxelib install polymod
