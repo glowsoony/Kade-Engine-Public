@@ -89,11 +89,12 @@ class FreeplayState extends MusicBeatState
 	public static var list:Array<String> = [];
 
 	override function create()
-	{Paths.clearStoredMemory();
-		Paths.clearUnusedMemory();
-
-		FlxG.mouse.visible = true;
+	{FlxG.mouse.visible = true;
 		instance = this;
+
+		Main.dumpCache();
+		Paths.clearStoredMemory();
+		Paths.clearUnusedMemory();
 
 		PlayState.wentToChartEditor = false;
 		if (!FlxG.sound.music.playing)
@@ -610,8 +611,15 @@ class FreeplayState extends MusicBeatState
 			#if desktop
 			if (FlxG.keys.justPressed.SPACE)
 			{
-				FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
-				MainMenuState.freakyPlaying = false;
+				try
+				{
+					FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
+					MainMenuState.freakyPlaying = false;
+				}
+				catch (e)
+				{
+					Debug.logError(e);
+				}
 			}
 			#end
 		}

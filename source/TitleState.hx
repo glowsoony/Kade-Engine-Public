@@ -35,7 +35,7 @@ using StringTools;
 
 class TitleState extends MusicBeatState
 {
-	static var initialized:Bool = false;
+	public static var initialized:Bool = false;
 
 	var blackScreen:FlxSprite;
 	var credGroup:FlxGroup;
@@ -58,6 +58,7 @@ class TitleState extends MusicBeatState
 		#if FEATURE_MULTITHREADING
 		MasterObjectLoader.mutex = new Mutex();
 		#end
+		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 		// TODO: Refactor this to use OpenFlAssets.
 		#if FEATURE_FILESYSTEM

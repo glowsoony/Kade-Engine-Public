@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxState;
 import flixel.util.FlxSpriteUtil;
 import lime.media.openal.AL;
 import Song.Event;
@@ -49,8 +50,9 @@ import LuaClass;
 #if FEATURE_WEBM
 import webm.WebmPlayer;
 #end
-#if FEATURE_MP4VIDEOS
-import vlc.MP4Handler;
+#if !html5
+import VideoHandler;
+import VideoSprite;
 #end
 #if FEATURE_STEPMANIA
 import smTools.SMFile;
@@ -414,6 +416,8 @@ class PlayState extends MusicBeatState
 		{
 			currentSong = SONG.songName;
 			Paths.clearStoredMemory();
+			if (!FlxG.save.data.gpuRender)
+				Main.dumpCache();
 		}
 
 		sicks = 0;
@@ -775,7 +779,7 @@ class PlayState extends MusicBeatState
 		{
 			gf = new Character(400, 130, gfCheck);
 
-			if (gf.frames == null)
+			if (!FlxG.save.data.optimize && gf.frames == null)
 			{
 				#if debug
 				FlxG.log.warn(["Couldn't load gf: " + gfCheck + ". Loading default gf"]);
@@ -785,7 +789,7 @@ class PlayState extends MusicBeatState
 
 			boyfriend = new Boyfriend(770, 450, SONG.player1);
 
-			if (boyfriend.frames == null)
+			if (!FlxG.save.data.optimize && boyfriend.frames == null)
 			{
 				#if debug
 				FlxG.log.warn(["Couldn't load boyfriend: " + SONG.player1 + ". Loading default boyfriend"]);
@@ -795,7 +799,7 @@ class PlayState extends MusicBeatState
 
 			dad = new Character(100, 100, SONG.player2);
 
-			if (dad.frames == null)
+			if (!FlxG.save.data.optimize && dad.frames == null)
 			{
 				#if debug
 				FlxG.log.warn(["Couldn't load opponent: " + SONG.player2 + ". Loading default opponent"]);
@@ -816,96 +820,108 @@ class PlayState extends MusicBeatState
 						person.setPosition(pos[0], pos[1]);
 		}
 
-		for (i in Stage.toAdd)
+		if (!FlxG.save.data.optimize)
 		{
-			add(i);
-		}
-
-		if (!FlxG.save.data.optimize && FlxG.save.data.distractions && FlxG.save.data.background)
-		{
-			if (SONG.songId == 'stress')
+			if (FlxG.save.data.background)
 			{
-				switch (gf.curCharacter)
+				for (i in Stage.toAdd)
 				{
-					case 'pico-speaker':
-						Character.loadMappedAnims();
+					add(i);
+				}
+
+				if (FlxG.save.data.distractions)
+				{
+					if (SONG.songId == 'stress')
+					{
+						switch (gf.curCharacter)
+						{
+							case 'pico-speaker':
+								Character.loadMappedAnims();
+						}
+					}
+				}
+
+				for (index => array in Stage.layInFront)
+				{
+					switch (index)
+					{
+						case 0:
+							add(gf);
+							gf.scrollFactor.set(0.95, 0.95);
+							for (bg in array)
+								add(bg);
+						case 1:
+							add(dad);
+							for (bg in array)
+								add(bg);
+						case 2:
+							add(boyfriend);
+							for (bg in array)
+								add(bg);
+					}
 				}
 			}
+
+			gf.x += gf.charPos[0];
+			gf.y += gf.charPos[1];
+			dad.x += dad.charPos[0];
+			dad.y += dad.charPos[1];
+			boyfriend.x += boyfriend.charPos[0];
+			boyfriend.y += boyfriend.charPos[1];
+
+			if (dad.replacesGF)
+			{
+				if (!stageTesting)
+					dad.setPosition(gf.x, gf.y);
+				gf.visible = false;
+
+				camPos.x += 600;
+				tweenCamIn();
+			}
+
+			if (dad.hasTrail)
+			{
+				if (FlxG.save.data.distractions)
+				{
+					// trailArea.scrollFactor.set();
+					if (!FlxG.save.data.optimize)
+					{
+						var evilTrail = new FlxTrail(dad, null, 4, 24, 0.3, 0.069);
+						// evilTrail.changeValuesEnabled(false, false, false, false);
+						// evilTrail.changeGraphic()
+						add(evilTrail);
+					}
+					// evilTrail.scrollFactor.set(1.1, 1.1);
+				}
+			}
+			if (FlxG.save.data.background)
+				Stage.update(0);
 		}
 
 		if (!FlxG.save.data.optimize)
-			for (index => array in Stage.layInFront)
+		{
+			camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0], dad.getGraphicMidpoint().y + dad.camPos[1]);
+
+			switch (Stage.curStage)
 			{
-				switch (index)
-				{
-					case 0:
-						add(gf);
-						gf.scrollFactor.set(0.95, 0.95);
-						for (bg in array)
-							add(bg);
-					case 1:
-						add(dad);
-						for (bg in array)
-							add(bg);
-					case 2:
-						add(boyfriend);
-						for (bg in array)
-							add(bg);
-				}
-			}
-
-		gf.x += gf.charPos[0];
-		gf.y += gf.charPos[1];
-		dad.x += dad.charPos[0];
-		dad.y += dad.charPos[1];
-		boyfriend.x += boyfriend.charPos[0];
-		boyfriend.y += boyfriend.charPos[1];
-
-		camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0], dad.getGraphicMidpoint().y + dad.camPos[1]);
-
-		switch (Stage.curStage)
-		{
-			case 'halloween':
-				camPos = new FlxPoint(gf.getMidpoint().x + dad.camPos[0], gf.getMidpoint().y + dad.camPos[1]);
-			case 'tank':
-				if (SONG.player2 == 'tankman')
-					camPos = new FlxPoint(436.5, 534.5);
-			case 'stage':
-				if (dad.replacesGF)
-					camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0] - 200, dad.getGraphicMidpoint().y + dad.camPos[1]);
-			case 'mallEvil':
-				camPos = new FlxPoint(boyfriend.getMidpoint().x - 100 + boyfriend.camPos[0], boyfriend.getMidpoint().y - 100 + boyfriend.camPos[1]);
-			default:
-				camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0], dad.getGraphicMidpoint().y + dad.camPos[1]);
-		}
-
-		if (dad.replacesGF)
-		{
-			if (!stageTesting)
-				dad.setPosition(gf.x, gf.y);
-			gf.visible = false;
-
-			camPos.x += 600;
-			tweenCamIn();
-		}
-
-		if (dad.hasTrail)
-		{
-			if (FlxG.save.data.distractions)
-			{
-				// trailArea.scrollFactor.set();
-				if (!FlxG.save.data.optimize)
-				{
-					var evilTrail = new FlxTrail(dad, null, 4, 24, 0.3, 0.069);
-					// evilTrail.changeValuesEnabled(false, false, false, false);
-					// evilTrail.changeGraphic()
-					add(evilTrail);
-				}
-				// evilTrail.scrollFactor.set(1.1, 1.1);
+				case 'halloween':
+					camPos = new FlxPoint(gf.getMidpoint().x + dad.camPos[0], gf.getMidpoint().y + dad.camPos[1]);
+				case 'tank':
+					if (SONG.player2 == 'tankman')
+						camPos = new FlxPoint(436.5, 534.5);
+				case 'stage':
+					if (dad.replacesGF)
+						camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0] - 200, dad.getGraphicMidpoint().y + dad.camPos[1]);
+				case 'mallEvil':
+					camPos = new FlxPoint(boyfriend.getMidpoint().x - 100 + boyfriend.camPos[0], boyfriend.getMidpoint().y - 100 + boyfriend.camPos[1]);
+				default:
+					camPos = new FlxPoint(dad.getGraphicMidpoint().x + dad.camPos[0], dad.getGraphicMidpoint().y + dad.camPos[1]);
 			}
 		}
-		if (!FlxG.save.data.optimize && FlxG.save.data.background)
-			Stage.update(0);
+		else
+		{
+			camPos = new FlxPoint(0, 0);
+		}
 
 		if (loadRep)
 		{
@@ -1356,11 +1372,8 @@ class PlayState extends MusicBeatState
 						tankIntro();
 					else
 					{
-						#if FEATURE_MP4VIDEOS
+						removeStaticArrows();
 						startVideo('cutscenes/${SONG.songId}_cutscene');
-						#else
-						startCountdown();
-						#end
 					}
 
 				default:
@@ -1395,33 +1408,6 @@ class PlayState extends MusicBeatState
 		FlxG.keys.preventDefaultKeys = [];
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, releaseInput);
-
-		// AFTER EVERYTHING LOAD DESTROY EVERYTHING TO SAVE MEMORY IN OPTIMIZED MOD
-		if (FlxG.save.data.optimize)
-		{
-			boyfriend.kill();
-			gf.destroy();
-			dad.kill();
-			boyfriend.destroy();
-			gf.destroy();
-			dad.destroy();
-			for (i in Stage.toAdd)
-			{
-				remove(i, true);
-				i.kill();
-				i.destroy();
-			}
-		}
-
-		if (!FlxG.save.data.background)
-		{
-			for (i in Stage.toAdd)
-			{
-				remove(i, true);
-				i.kill();
-				i.destroy();
-			}
-		}
 
 		super.create();
 
@@ -1468,6 +1454,8 @@ class PlayState extends MusicBeatState
 		if (isStoryMode)
 			initStoryLength = StoryMenuState.weekData()[storyWeek].length;
 
+		if (FlxG.save.data.optimize)
+			Stage.destroy();
 		Paths.clearUnusedMemory();
 
 		PsychTransition.nextCamera = mainCam;
@@ -2011,9 +1999,6 @@ class PlayState extends MusicBeatState
 
 	function startSong():Void
 	{
-		if (useVideo)
-			BackgroundVideo.get().resume();
-
 		startingSong = false;
 		songStarted = true;
 		previousFrameTime = FlxG.game.ticks;
@@ -2044,9 +2029,6 @@ class PlayState extends MusicBeatState
 					allowedToCheer = false;
 			}
 		}
-
-		if (useVideo)
-			BackgroundVideo.get().resume();
 
 		#if FEATURE_LUAMODCHART
 		if (executeModchart)
@@ -2126,6 +2108,14 @@ class PlayState extends MusicBeatState
 			createTween(skipText, {alpha: 1}, 0.2);
 			add(skipText);
 		}
+
+		#if !html5
+		if (videoHandler != null)
+		{
+			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+			videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+		}
+		#end
 	}
 
 	var debugNum:Int = 0;
@@ -2491,8 +2481,12 @@ class PlayState extends MusicBeatState
 		#end
 		if (paused)
 		{
-			if (useVideo)
-				BackgroundVideo.get().pause();
+			#if !html5
+			if (videoHandler != null)
+			{
+				videoHandler.bitmap.pause();
+			}
+			#end
 
 			if (FlxG.sound.music.playing)
 				FlxG.sound.music.pause();
@@ -2545,8 +2539,14 @@ class PlayState extends MusicBeatState
 		}
 		else if (paused)
 		{
-			if (useVideo)
-				BackgroundVideo.get().resume();
+			#if !html5
+			if (videoHandler != null)
+			{
+				var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+				videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+				videoHandler.bitmap.resume();
+			}
+			#end
 
 			if (FlxG.sound.music != null && !startingSong)
 			{
@@ -2850,14 +2850,7 @@ class PlayState extends MusicBeatState
 		}
 		if (PlayStateChangeables.botPlay && FlxG.keys.justPressed.ONE)
 			camHUD.visible = !camHUD.visible;
-		if (useVideo && BackgroundVideo.get() != null && !stopUpdate)
-		{
-			if (BackgroundVideo.get().ended && !removedVideo)
-			{
-				remove(videoSprite);
-				removedVideo = true;
-			}
-		}
+
 		#if FEATURE_LUAMODCHART
 		if (executeModchart && luaModchart != null && songStarted)
 		{
@@ -2953,12 +2946,6 @@ class PlayState extends MusicBeatState
 		}
 		if (FlxG.keys.justPressed.FIVE && songStarted)
 		{
-			if (useVideo)
-			{
-				BackgroundVideo.get().stop();
-				remove(videoSprite);
-				removedVideo = true;
-			}
 			cannotDie = true;
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new WaveformTestState());
@@ -2980,12 +2967,7 @@ class PlayState extends MusicBeatState
 			if (PlayStateChangeables.mirrorMode)
 				PlayStateChangeables.mirrorMode = !PlayStateChangeables.mirrorMode;
 			executeModchart = false;
-			if (useVideo)
-			{
-				BackgroundVideo.get().stop();
-				remove(videoSprite);
-				removedVideo = true;
-			}
+
 			cannotDie = true;
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new ChartingState());
@@ -3045,12 +3027,6 @@ class PlayState extends MusicBeatState
 		#if debug
 		if (FlxG.keys.justPressed.SIX)
 		{
-			if (useVideo)
-			{
-				BackgroundVideo.get().stop();
-				remove(videoSprite);
-				removedVideo = true;
-			}
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new AnimationDebug(dad.curCharacter));
 			clean();
@@ -3069,12 +3045,6 @@ class PlayState extends MusicBeatState
 			if (FlxG.keys.justPressed.EIGHT && songStarted)
 			{
 				paused = true;
-				if (useVideo)
-				{
-					BackgroundVideo.get().stop();
-					remove(videoSprite);
-					removedVideo = true;
-				}
 				new FlxTimer().start(0.3, function(tmr:FlxTimer)
 				{
 					for (bg in Stage.toAdd)
@@ -3216,6 +3186,14 @@ class PlayState extends MusicBeatState
 			// Conductor.songPosition = FlxG.sound.music.time;
 			Conductor.songPosition += FlxG.elapsed * 1000;
 			Conductor.rawPosition = FlxG.sound.music.time;
+
+			#if !html5
+			if (videoHandler != null)
+			{
+				if (!paused && !endingSong)
+					videoHandler.bitmap.resume();
+			}
+			#end
 			// sync
 			/*@:privateAccess
 				{
@@ -3434,8 +3412,11 @@ class PlayState extends MusicBeatState
 				if (SONG.songId == 'tutorial')
 					tweenCamZoom(true);
 				#end
-				camFollow.x += dad.camFollow[0];
-				camFollow.y += dad.camFollow[1];
+				if (!FlxG.save.data.optimize)
+				{
+					camFollow.x += dad.camFollow[0];
+					camFollow.y += dad.camFollow[1];
+				}
 			}
 			if (currentSection.mustHitSection && camFollow.x != boyfriend.getMidpoint().x - 100)
 			{
@@ -3469,8 +3450,11 @@ class PlayState extends MusicBeatState
 							camFollow.x = boyfriend.getMidpoint().x - 300;
 							camFollow.y = boyfriend.getMidpoint().y - 300;
 					}
-				camFollow.x += boyfriend.camFollow[0];
-				camFollow.y += boyfriend.camFollow[1];
+				if (!FlxG.save.data.optimize)
+				{
+					camFollow.x += boyfriend.camFollow[0];
+					camFollow.y += boyfriend.camFollow[1];
+				}
 			}
 		}
 		if (camZooming)
@@ -3946,11 +3930,6 @@ class PlayState extends MusicBeatState
 		endingSong = true;
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
-		if (useVideo)
-		{
-			BackgroundVideo.get().stop();
-			PlayState.instance.remove(PlayState.instance.videoSprite);
-		}
 
 		if (!loadRep)
 			rep.SaveReplay(saveNotes, saveJudge, replayAna);
@@ -4108,22 +4087,8 @@ class PlayState extends MusicBeatState
 					PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0], diff);
 					FlxG.sound.music.stop();
 
-					#if !FEATURE_MP4VIDEOS
-					if (storyWeek == 7 && (FlxG.save.data.optimize || !FlxG.save.data.background))
-					{
-						switch (SONG.songId)
-						{
-							case 'guns':
-								LoadingState.loadAndSwitchState(new VideoState('cutscenes/guns_cutscene', new PlayState()), true);
-							case 'stress':
-								LoadingState.loadAndSwitchState(new VideoState('cutscenes/stress_cutscene', new PlayState()), true);
-						}
-					}
-					else
-						LoadingState.loadAndSwitchState(new PlayState());
-					#else
 					LoadingState.loadAndSwitchState(new PlayState());
-					#end
+
 					clean();
 				}
 			}
@@ -4930,65 +4895,70 @@ class PlayState extends MusicBeatState
 	public var fuckingVolume:Float = 1;
 	public var useVideo = false;
 
-	public static var webmHandler:WebmHandler;
-
 	public var playingDathing = false;
-	public var videoSprite:FlxSprite;
 
-	public function backgroundVideo(source:String) // for background videos
-	{
-		#if FEATURE_WEBM
-		useVideo = true;
+	public var videoSprite:FlxSprite = null;
 
-		var ourSource:String = "assets/videos/daWeirdVid/dontDelete.webm";
-		WebmPlayer.SKIP_STEP_LIMIT = 90;
-		var str1:String = "WEBM SHIT";
-		webmHandler = new WebmHandler();
-		webmHandler.source(ourSource);
-		webmHandler.makePlayer();
-		webmHandler.webm.name = str1;
+	#if !html5
+	var videoHandler:VideoSprite = null;
+	#end
 
-		BackgroundVideo.setWebm(webmHandler);
+	// Broken until I found out what's going on here.
 
-		BackgroundVideo.get().source(source);
-		BackgroundVideo.get().clearPause();
-		if (BackgroundVideo.isWebm)
+	/*public function backgroundVideo(source:String, layInFront:Int = 2, screenCenter:Bool = true, camera:FlxCamera, looped:Bool, ?x:Float, ?y:Float,
+				?width:Int = 1280, ?height:Int = 720) // for background videos
 		{
-			BackgroundVideo.get().updatePlayer();
-		}
-		BackgroundVideo.get().show();
+			#if !html5
+			useVideo = true;
+			var daSource = Paths.video(source);
 
-		if (BackgroundVideo.isWebm)
-		{
-			BackgroundVideo.get().restart();
-		}
-		else
-		{
-			BackgroundVideo.get().play();
-		}
+			videoSprite = new FlxSprite();
+			videoSprite.antialiasing = true;
+			videoSprite.scrollFactor.set(0, 0);
 
-		var data = webmHandler.webm.bitmapData;
+			videoSprite.screenCenter();
+			videoSprite.cameras = [camHUD];
 
-		videoSprite = new FlxSprite(-470, -30).loadGraphic(data);
+			videoHandler = new VideoSprite();
+			videoHandler.playVideo(daSource, looped, true, false);
 
-		remove(gf);
-		remove(boyfriend);
-		remove(dad);
-		add(videoSprite);
-		add(gf);
-		add(boyfriend);
-		add(dad);
+			videoHandler.readyCallBack = function()
+			{
+				videoSprite.loadGraphic(videoHandler.bitmap.bitmapData);
+				add(videoSprite);
+			}
 
-		Debug.logInfo(videoSprite == null ? 'Webm background video is null NOOOOOOOOO' : 'Webm background video looks like ass.');
-		trace('poggers');
+			videoSprite.setGraphicSize(width, height);
 
-		if (!songStarted)
-			webmHandler.pause();
-		else
-			webmHandler.resume();
-		#end
-	}
+			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+			videoHandler.bitmap.seek(perecentSupposed);
+			videoHandler.bitmap.resume();
 
+			switch (layInFront)
+				{
+					case 0:
+						remove(gf);
+						add(videoSprite);
+						add(gf);
+					case 1:
+						remove(dad);
+						remove(gf);
+						add(videoSprite);
+						add(gf);
+						add(dad);
+					case 2:
+						remove(dad);
+						remove(gf);
+						remove(boyfriend);
+						add(videoSprite);
+						add(gf);
+						add(dad);
+						add(boyfriend);
+			}
+
+			Debug.logInfo(videoSprite == null ? 'MP4 background video is null NOOOOOOOOO' : 'MP4 background video looks like ass.');
+			#end
+	}*/
 	function noteMiss(direction:Int = 1, daNote:Note):Void
 	{
 		if (!boyfriend.stunned)
@@ -5189,7 +5159,7 @@ class PlayState extends MusicBeatState
 
 	function opponentNoteHit(daNote:Note):Void
 	{
-		if (SONG.songId != 'tutorial' && !FlxG.save.data.optimize)
+		if (SONG.songId != 'tutorial')
 			camZooming = FlxG.save.data.camzoom;
 		var altAnim:String = "";
 		var curSection:Int = Math.floor((curStep / 16));
@@ -6320,47 +6290,41 @@ class PlayState extends MusicBeatState
 		Paths.sound('introGo' + altSuffix);
 	}
 
-	public function startVideo(name:String):Void
+	function startVideo(name:String):Void
 	{
-		#if FEATURE_MP4VIDEOS
-		Debug.logTrace('Playing video cutscene. Poggers');
-
 		var foundFile:Bool = false;
 		var fileName = Paths.video(name);
-		#if FEATURE_FILESYSTEM
-		if (FileSystem.exists(fileName))
+		try
 		{
-			foundFile = true;
-		}
-		#else
-		if (OpenFlAssets.exists(fileName))
-		{
-			foundFile = true;
-		}
-		#end
-		if (foundFile)
-		{
+			Debug.logTrace('Playing video cutscene. Poggers');
 			inCinematic = true;
 			var bg = new FlxSprite(-FlxG.width, -FlxG.height).makeGraphic(FlxG.width * 3, FlxG.height * 3, FlxColor.BLACK);
 			bg.scrollFactor.set();
 			bg.cameras = [camHUD];
 			add(bg);
 
-			var daVid:MP4Handler = new MP4Handler();
+			#if (!html5)
+			var daVid:VideoHandler = new VideoHandler();
 			daVid.playVideo(fileName);
 			(daVid).finishCallback = function()
 			{
 				remove(bg);
 				startAndEnd();
 			};
+			#else
+			new FlxVideo(fileName).finishCallback = function()
+			{
+				remove(bg);
+				startAndEnd();
+			}
+			#end
 			return;
 		}
-		else
+		catch (e)
 		{
 			FlxG.log.warn("Video not found: " + fileName);
 			startAndEnd();
 		}
-		#end
 	}
 
 	function startAndEnd()
@@ -6394,12 +6358,14 @@ class PlayState extends MusicBeatState
 		}
 
 		unspawnNotes = [];
+		notes.clear();
 	}
 
-	override function destroy()
+	override function switchTo(nextState:FlxState)
 	{
 		funniKill();
-		super.destroy();
+
+		return super.switchTo(nextState);
 	}
 
 	// Precache List for some stuff (Like frames, sounds and that kinda of shit)

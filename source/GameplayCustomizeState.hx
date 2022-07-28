@@ -80,8 +80,6 @@ class GameplayCustomizeState extends MusicBeatState
 		Paths.clearStoredMemory();
 		super.create();
 
-		FlxG.save.data.optimize = false;
-
 		#if FEATURE_DISCORD
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("Customizing Gameplay Modules", null);
@@ -139,51 +137,58 @@ class GameplayCustomizeState extends MusicBeatState
 
 		Stage = new Stage('stage');
 
-		var positions = Stage.positions[Stage.curStage];
-		if (positions != null)
+		if (!FlxG.save.data.optimize)
 		{
-			for (char => pos in positions)
-				for (person in [boyfriend, gf, dad])
-					if (person.curCharacter == char)
-						person.setPosition(pos[0], pos[1]);
-		}
-
-		for (person in [boyfriend, gf, dad])
-		{
-			person.animation.curAnim.frameRate = Math.round(person.animation.curAnim.frameRate / PlayState.songMultiplier);
-		}
-
-		for (i in Stage.toAdd)
-		{
-			add(i);
-		}
-		for (index => array in Stage.layInFront)
-		{
-			switch (index)
+			var positions = Stage.positions[Stage.curStage];
+			if (positions != null)
 			{
-				case 0:
-					add(gf);
-					gf.scrollFactor.set(0.95, 0.95);
-					for (bg in array)
-						add(bg);
-				case 1:
-					add(dad);
-					for (bg in array)
-						add(bg);
-				case 2:
-					add(boyfriend);
-					for (bg in array)
-						add(bg);
+				for (char => pos in positions)
+					for (person in [boyfriend, gf, dad])
+						if (person.curCharacter == char)
+							person.setPosition(pos[0], pos[1]);
+			}
+
+			for (person in [boyfriend, gf, dad])
+			{
+				person.animation.curAnim.frameRate = Math.round(person.animation.curAnim.frameRate / PlayState.songMultiplier);
+			}
+
+			for (i in Stage.toAdd)
+			{
+				add(i);
+			}
+			for (index => array in Stage.layInFront)
+			{
+				switch (index)
+				{
+					case 0:
+						add(gf);
+						gf.scrollFactor.set(0.95, 0.95);
+						for (bg in array)
+							add(bg);
+					case 1:
+						add(dad);
+						for (bg in array)
+							add(bg);
+					case 2:
+						add(boyfriend);
+						for (bg in array)
+							add(bg);
+				}
+			}
+
+			camPos = new FlxPoint(boyfriend.getMidpoint().x - 100, boyfriend.getMidpoint().y - 100);
+
+			switch (dad.curCharacter)
+			{
+				case 'gf':
+					dad.setPosition(gf.x, gf.y);
+					gf.visible = false;
 			}
 		}
-
-		camPos = new FlxPoint(boyfriend.getMidpoint().x - 100, boyfriend.getMidpoint().y - 100);
-
-		switch (dad.curCharacter)
+		else
 		{
-			case 'gf':
-				dad.setPosition(gf.x, gf.y);
-				gf.visible = false;
+			camPos = new FlxPoint(0, 0);
 		}
 
 		camFollow = new FlxObject(0, 0, 1, 1);
@@ -300,33 +305,6 @@ class GameplayCustomizeState extends MusicBeatState
 
 		FlxG.mouse.visible = true;
 
-		// AFTER EVERYTHING LOAD DESTROY EVERYTHING TO SAVE MEMORY IN OPTIMIZED MOD
-		if (FlxG.save.data.optimize)
-		{
-			boyfriend.kill();
-			gf.destroy();
-			dad.kill();
-			boyfriend.destroy();
-			gf.destroy();
-			dad.destroy();
-			for (i in Stage.toAdd)
-			{
-				remove(i, true);
-				i.kill();
-				i.destroy();
-			}
-		}
-
-		if (!FlxG.save.data.background)
-		{
-			for (i in Stage.toAdd)
-			{
-				remove(i, true);
-				i.kill();
-				i.destroy();
-			}
-		}
-
 		Paths.clearUnusedMemory();
 	}
 
@@ -384,8 +362,16 @@ class GameplayCustomizeState extends MusicBeatState
 
 		if (FlxG.mouse.overlaps(sick) && FlxG.mouse.pressed)
 		{
-			sick.x = (FlxG.mouse.x - (sick.width + 145));
-			sick.y = (FlxG.mouse.y - (sick.height + 145));
+			if (!FlxG.save.data.optimize)
+			{
+				sick.x = (FlxG.mouse.x - (sick.width + 145));
+				sick.y = (FlxG.mouse.y - (sick.height + 145));
+			}
+			else
+			{
+				sick.x = (FlxG.mouse.x - (sick.width + 145)) + (FlxG.width * 0.7);
+				sick.y = (FlxG.mouse.y - (sick.height + 145)) + (FlxG.height * 0.8);
+			}
 			changedPos = true;
 		}
 

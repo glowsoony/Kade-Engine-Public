@@ -90,6 +90,7 @@ class LoadingState extends MusicBeatState
 			}
 
 			// Essential libraries (characters,notes,gameplay elements)
+			checkLibrary("videos");
 			checkLibrary("shared");
 			if (!FlxG.save.data.optimize && FlxG.save.data.background)
 			{

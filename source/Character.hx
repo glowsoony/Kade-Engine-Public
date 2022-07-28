@@ -99,6 +99,7 @@ class Character extends FlxSprite
 		}
 
 		var data:CharacterData = cast jsonData;
+
 		var tex:FlxFramesCollection;
 
 		if (data.AtlasType == 'PackerAtlas')
@@ -154,9 +155,9 @@ class Character extends FlxSprite
 
 		antialiasing = data.antialiasing == null ? FlxG.save.data.antialiasing : data.antialiasing;
 
-		barColor = FlxColor.fromString(data.barColor);
-
 		playAnim(data.startingAnim);
+
+		barColor = FlxColor.fromString(data.barColor);
 	}
 
 	override function update(elapsed:Float)

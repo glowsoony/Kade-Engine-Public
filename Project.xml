@@ -61,7 +61,7 @@
 	<!-- Defines whether the Thread class can be used. -->
 	<haxedef name="FEATURE_MULTITHREADING" if="cpp" />
 	<!-- Defines whether the mp4 videos should be enabled. -->
-	<define name="FEATURE_MP4VIDEOS" if="windows | linux" unless="32bits"/>
+	<define name="FEATURE_MP4VIDEOS" if="desktop | web" unless="32bits"/>
 	<!-- Defines whether the Mods menu will display before launching. -->
 	<haxedef name="FEATURE_MODCORE" if="desktop" />
 
@@ -96,12 +96,10 @@
 		<library name="week6"    preload="false" />
 		<library name="week7"    preload="false" />
 		<library name="sm"    preload="false" />
-		<library name="videos"    preload="true" />
+		<library name="videos"    preload="false" />
 	</section>
 	
-	<assets path="assets/videos" library="videos"  exclude="*.webm|*.ogg|*.txt" if="windows | linux"/>
-	<assets path="assets/videos" library="videos" exclude="*.mp4"  unless="windows | linux"/>
-	<assets path="assets/videos" library="videos" exclude="cutscenes"/>
+	<assets path="assets/videos"    library="videos"/>
 	<assets path="assets/songs"    library="songs"    exclude="*.ogg" if="web"/>
 	<assets path="assets/songs"    library="songs"    exclude="*.mp3" unless="web"/>
 	<assets path="assets/shared"   library="shared"   exclude="*.ogg" if="web"/>
@@ -161,7 +159,7 @@
 	<haxelib name="linc_luajit" if="desktop"/>
 	<haxelib name="hxvm-luajit" if="desktop"/>
 	<haxelib name="hxcpp-debug-server" if="desktop"/>
-	<haxelib name="hxCodec" if="FEATURE_MP4VIDEOS"/>
+	<haxelib name="hxCodec"/>
 
 	<!-- <haxelib name="markdown" /> -->
 	<!-- <haxelib name="HtmlParser" /> -->

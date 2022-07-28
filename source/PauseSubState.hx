@@ -73,12 +73,6 @@ class PauseSubState extends MusicBeatSubstate
 		Paths.clearUnusedMemory();
 		super();
 
-		if (PlayState.instance.useVideo)
-		{
-			if (BackgroundVideo.get().playing)
-				BackgroundVideo.get().pause();
-		}
-
 		if (FlxG.sound.music.playing)
 			FlxG.sound.music.pause();
 
@@ -235,12 +229,6 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.instance.scrollSpeed = (FlxG.save.data.scrollSpeed == 1 ? PlayState.SONG.speed * PlayState.songMultiplier : FlxG.save.data.scrollSpeed * PlayState.songMultiplier);
 				case "Restart Song":
 					PlayState.startTime = 0;
-					if (PlayState.instance.useVideo)
-					{
-						BackgroundVideo.get().stop();
-						PlayState.instance.remove(PlayState.instance.videoSprite);
-						PlayState.instance.removedVideo = true;
-					}
 					MusicBeatState.switchState(new PlayState());
 					PlayState.stageTesting = false;
 				case "Options":
@@ -248,12 +236,6 @@ class PauseSubState extends MusicBeatSubstate
 					close();
 				case "Exit to menu":
 					PlayState.startTime = 0;
-					if (PlayState.instance.useVideo)
-					{
-						BackgroundVideo.get().stop();
-						PlayState.instance.remove(PlayState.instance.videoSprite);
-						PlayState.instance.removedVideo = true;
-					}
 					if (PlayState.loadRep)
 					{
 						FlxG.save.data.botplay = false;

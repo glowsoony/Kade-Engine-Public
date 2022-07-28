@@ -60,8 +60,6 @@ class Main extends Sprite
 		}
 	}
 
-	public static var webmHandler:WebmHandler;
-
 	private function init(?E:Event):Void
 	{
 		if (hasEventListener(Event.ADDED_TO_STAGE))
@@ -94,7 +92,9 @@ class Main extends Sprite
 		Debug.onInitProgram();
 
 		// Gotta run this before any assets get loaded.
-		ModCore.initialize();
+		#if FEATURE_MODCORE
+		ModCore.reload();
+		#end
 
 		#if FEATURE_DISCORD
 		Discord.DiscordClient.initialize();
@@ -118,28 +118,34 @@ class Main extends Sprite
 		toggleFPS(FlxG.save.data.fps);
 		#end
 
-		var ourSource:String = "assets/videos/daWeirdVid/dontDelete.webm";
-
-		#if web
-		var str1:String = "HTML CRAP";
-		var vHandler = new VideoHandler();
-		vHandler.init1();
-		vHandler.video.name = str1;
-		addChild(vHandler.video);
-		vHandler.init2();
-		GlobalVideo.setVid(vHandler);
-		vHandler.source(ourSource);
-		#end
-
 		// Finish up loading debug tools.
 		Debug.onGameStart();
 	}
 
-	// taken from forever engine, cuz optimization very pog.
-	// thank you shubs :)
 	var game:FlxGame;
 
 	var fpsCounter:KadeEngineFPS;
+
+	public static function dumpCache()
+	{
+		///* SPECIAL THANKS TO HAYA
+		#if PRELOAD_ALL
+		@:privateAccess
+		for (key in FlxG.bitmap._cache.keys())
+		{
+			var obj = FlxG.bitmap._cache.get(key);
+			if (obj != null)
+			{
+				Assets.cache.removeBitmapData(key);
+				FlxG.bitmap._cache.remove(key);
+				obj.destroy();
+			}
+		}
+		Assets.cache.clear("songs");
+		Assets.cache.clear("images");
+		#end
+		// */
+	}
 
 	public function toggleFPS(fpsEnabled:Bool):Void
 	{

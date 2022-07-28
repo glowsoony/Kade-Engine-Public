@@ -571,49 +571,6 @@ class ModchartState
 			PlayState.instance.camHUD.zoom = zoomAmount;
 		});
 
-		Lua_helper.add_callback(lua, "initBackgroundVideo", function(videoName:String)
-		{
-			trace('playing assets/videos/' + videoName + '.webm');
-			PlayState.instance.backgroundVideo("assets/videos/" + videoName + ".webm");
-		});
-
-		Lua_helper.add_callback(lua, "pauseVideo", function()
-		{
-			if (!BackgroundVideo.get().paused)
-				BackgroundVideo.get().pause();
-		});
-
-		Lua_helper.add_callback(lua, "resumeVideo", function()
-		{
-			if (BackgroundVideo.get().paused)
-				BackgroundVideo.get().pause();
-		});
-
-		Lua_helper.add_callback(lua, "restartVideo", function()
-		{
-			BackgroundVideo.get().restart();
-		});
-
-		Lua_helper.add_callback(lua, "getVideoSpriteX", function()
-		{
-			return PlayState.instance.videoSprite.x;
-		});
-
-		Lua_helper.add_callback(lua, "getVideoSpriteY", function()
-		{
-			return PlayState.instance.videoSprite.y;
-		});
-
-		Lua_helper.add_callback(lua, "setVideoSpritePos", function(x:Int, y:Int)
-		{
-			PlayState.instance.videoSprite.setPosition(x, y);
-		});
-
-		Lua_helper.add_callback(lua, "setVideoSpriteScale", function(scale:Float)
-		{
-			PlayState.instance.videoSprite.setGraphicSize(Std.int(PlayState.instance.videoSprite.width * scale));
-		});
-
 		Lua_helper.add_callback(lua, "setLaneUnderLayPos", function(value:Int)
 		{
 			PlayState.instance.laneunderlay.x = value;

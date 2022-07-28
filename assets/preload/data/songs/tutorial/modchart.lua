@@ -4,7 +4,6 @@
 function start(song) -- do nothing
     bfsinging= true;
     spinLength = 0
-
 end
 
 local function camZoom() --Simulate a camZoom 

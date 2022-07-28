@@ -41,10 +41,21 @@ class MusicBeatState extends GlobalUIState
 
 	override function destroy()
 	{
+		clean();
+
 		Application.current.window.onFocusIn.remove(onWindowFocusOut);
 		Application.current.window.onFocusIn.remove(onWindowFocusIn);
 
 		super.destroy();
+	}
+
+	public function destroyObject(Object:Dynamic):Void
+	{
+		Object.kill();
+		Object.alive = false;
+		remove(Object, true);
+		Object.destroy();
+		Object = null;
 	}
 
 	override function add(Object:FlxBasic):FlxBasic
@@ -83,7 +94,7 @@ class MusicBeatState extends GlobalUIState
 			#if FEATURE_MULTITHREADING
 			for (i in MasterObjectLoader.Objects)
 			{
-				remove(i);
+				destroyObject(i);
 			}
 			#else
 			for (i in assets)
