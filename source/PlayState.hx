@@ -47,7 +47,7 @@ import Discord.DiscordClient;
 #if FEATURE_LUAMODCHART
 import LuaClass;
 #end
-#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+#if (FEATURE_MP4VIDEOS && !html5)
 import VideoHandler;
 import VideoSprite;
 #end
@@ -2104,7 +2104,7 @@ class PlayState extends MusicBeatState
 			add(skipText);
 		}
 
-		#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+		#if (FEATURE_MP4VIDEOS && !html5)
 		if (videoHandler != null)
 		{
 			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
@@ -2476,7 +2476,7 @@ class PlayState extends MusicBeatState
 		#end
 		if (paused)
 		{
-			#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+			#if (FEATURE_MP4VIDEOS && !html5)
 			if (videoHandler != null)
 			{
 				videoHandler.bitmap.pause();
@@ -2534,7 +2534,7 @@ class PlayState extends MusicBeatState
 		}
 		else if (paused)
 		{
-			#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+			#if (FEATURE_MP4VIDEOS && !html5)
 			if (videoHandler != null)
 			{
 				var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
@@ -3184,7 +3184,7 @@ class PlayState extends MusicBeatState
 			Conductor.songPosition += FlxG.elapsed * 1000;
 			Conductor.rawPosition = FlxG.sound.music.time;
 
-			#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+			#if (FEATURE_MP4VIDEOS && !html5)
 			if (videoHandler != null)
 			{
 				if (!paused && !endingSong)
@@ -4896,7 +4896,7 @@ class PlayState extends MusicBeatState
 
 	public var videoSprite:FlxSprite;
 
-	#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+	#if (FEATURE_MP4VIDEOS && !html5)
 	var videoHandler:VideoSprite;
 	#end
 
@@ -4904,7 +4904,7 @@ class PlayState extends MusicBeatState
 	public function backgroundVideo(source:String, layInFront:Int = 2, screenCenter:Bool = true, camera:FlxCamera, looped:Bool, ?width:Int = 1280,
 			?height:Int = 720, ?x:Float, ?y:Float)
 	{
-		#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+		#if (FEATURE_MP4VIDEOS && !html5)
 		useVideo = true;
 		var daSource = Paths.video(source);
 
@@ -6298,7 +6298,7 @@ class PlayState extends MusicBeatState
 			bg.cameras = [camHUD];
 			add(bg);
 
-			#if (!html5 && !linux)
+			#if (!html5)
 			var daVid:VideoHandler = new VideoHandler();
 			daVid.playVideo(fileName);
 			(daVid).finishCallback = function()
