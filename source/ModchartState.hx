@@ -27,6 +27,10 @@ import flixel.FlxCamera;
 import flixel.FlxG;
 import openfl.Lib;
 import Shaders;
+import openfl.utils.Assets as OpenFlAssets;
+#if FEATURE_FILESYSTEM
+import sys.io.File;
+#end
 
 using StringTools;
 
@@ -429,14 +433,16 @@ class ModchartState
 				songLowercase = 'milf';
 		}
 
-		var path = Paths.lua('songs/${PlayState.SONG.songId}/modchart');
+		var path = OpenFlAssets.getText(Paths.lua('songs/${PlayState.SONG.songId}/modchart'));
 		if (PlayState.isSM)
-			path = PlayState.pathToSm + "/modchart.lua";
+			path = File.getContent(PlayState.pathToSm + "/modchart.lua");
 
-		var result = LuaL.dofile(lua, path); // execute le file
+		var result = LuaL.dostring(lua, path); // execute le file
 
 		if (result != 0)
 		{
+			if (FlxG.fullscreen)
+				FlxG.fullscreen = !FlxG.fullscreen;
 			Application.current.window.alert("LUA COMPILE ERROR:\n" + Lua.tostring(lua, result), "Kade Engine Modcharts");
 			MusicBeatState.switchState(new FreeplayState());
 			PlayState.instance.clean();

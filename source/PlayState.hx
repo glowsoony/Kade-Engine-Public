@@ -47,7 +47,7 @@ import Discord.DiscordClient;
 #if FEATURE_LUAMODCHART
 import LuaClass;
 #end
-#if (FEATURE_MP4VIDEOS && !html5)
+#if (FEATURE_MP4VIDEOS && (!html5 && !linux)
 import VideoHandler;
 import VideoSprite;
 #end
@@ -476,17 +476,13 @@ class PlayState extends MusicBeatState
 		#if FEATURE_LUAMODCHART
 		// TODO: Refactor this to use OpenFlAssets.
 		if (!isStoryMode)
-			executeModchart = FileSystem.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart')) && PlayStateChangeables.modchart;
+			executeModchart = OpenFlAssets.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart')) && PlayStateChangeables.modchart;
 		else
-			executeModchart = FileSystem.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart'));
+			executeModchart = OpenFlAssets.exists(Paths.lua('songs/${PlayState.SONG.songId}/modchart'));
+		#if FEATURE_STEPMANIA
 		if (isSM)
 			executeModchart = FileSystem.exists(pathToSm + "/modchart.lua") && PlayStateChangeables.modchart;
-		/*if (executeModchart)
-			FlxG.save.data.optimize = false; */
 		#end
-
-		#if !cpp
-		executeModchart = false; // FORCE disable for non cpp targets
 		#end
 
 		Debug.logInfo('Searching for mod chart? ($executeModchart) at ' + Paths.lua('songs/${PlayState.SONG.songId}/modchart'));
@@ -2108,13 +2104,13 @@ class PlayState extends MusicBeatState
 			add(skipText);
 		}
 
-		/*#if !html5
-			if (videoHandler != null)
-			{
-				var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-				videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
-			}
-			#end */
+		#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+		if (videoHandler != null)
+		{
+			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+			videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+		}
+		#end
 	}
 
 	var debugNum:Int = 0;
@@ -2480,12 +2476,12 @@ class PlayState extends MusicBeatState
 		#end
 		if (paused)
 		{
-			/*#if !html5
-				if (videoHandler != null)
-				{
-					videoHandler.bitmap.pause();
-				}
-				#end */
+			#if (FEATURE_MP4VIDEOS && !html5)
+			if (videoHandler != null)
+			{
+				videoHandler.bitmap.pause();
+			}
+			#end
 
 			if (FlxG.sound.music.playing)
 				FlxG.sound.music.pause();
@@ -2538,14 +2534,14 @@ class PlayState extends MusicBeatState
 		}
 		else if (paused)
 		{
-			/*#if !html5
-				if (videoHandler != null)
-				{
-					var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-					videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
-					videoHandler.bitmap.resume();
-				}
-				#end */
+			#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+			if (videoHandler != null)
+			{
+				var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+				videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+				videoHandler.bitmap.resume();
+			}
+			#end
 
 			if (FlxG.sound.music != null && !startingSong)
 			{
@@ -3177,7 +3173,9 @@ class PlayState extends MusicBeatState
 				Conductor.songPosition += FlxG.elapsed * 1000;
 				Conductor.rawPosition = Conductor.songPosition;
 				if (Conductor.songPosition >= 0)
+				{
 					startSong();
+				}
 			}
 		}
 		else
@@ -3186,17 +3184,17 @@ class PlayState extends MusicBeatState
 			Conductor.songPosition += FlxG.elapsed * 1000;
 			Conductor.rawPosition = FlxG.sound.music.time;
 
-			/*#if !html5
-				if (videoHandler != null)
+			#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+			if (videoHandler != null)
+			{
+				if (!paused && !endingSong)
+					videoHandler.bitmap.resume();
+			}
+			#end
+			// sync
+			/*@:privateAccess
 				{
-					if (!paused && !endingSong)
-						videoHandler.bitmap.resume();
-				}
-				#end
-				// sync
-				/*@:privateAccess
-					{
-						FlxG.sound.music._channel.
+					FlxG.sound.music._channel.
 			}*/
 			songPositionBar = (Conductor.songPosition - songLength) / 1000;
 			currentSection = getSectionByTime(Conductor.songPosition);
@@ -4896,67 +4894,68 @@ class PlayState extends MusicBeatState
 
 	public var playingDathing = false;
 
-	public var videoSprite:FlxSprite = null;
+	public var videoSprite:FlxSprite;
 
-	/*#if !html5
-		var videoHandler:VideoSprite = null;
-		#end */
-	// Broken until I found out what's going on here.
+	#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+	var videoHandler:VideoSprite;
+	#end
 
-	/*public function backgroundVideo(source:String, layInFront:Int = 2, screenCenter:Bool = true, camera:FlxCamera, looped:Bool, ?x:Float, ?y:Float,
-				?width:Int = 1280, ?height:Int = 720) // for background videos
+
+	// THIS FUNCTION IS BROKEN FOR NOW. JIGSAW HELP ME PLS 
+	public function backgroundVideo(source:String, layInFront:Int = 2, screenCenter:Bool = true, camera:FlxCamera, looped:Bool, ?width:Int = 1280,
+			?height:Int = 720, ?x:Float, ?y:Float) // for background videos
+	{
+		#if (FEATURE_MP4VIDEOS && (!html5 && !linux))
+		useVideo = true;
+		var daSource = Paths.video(source);
+
+		videoSprite = new FlxSprite();
+		videoSprite.antialiasing = true;
+		videoSprite.scrollFactor.set(0, 0);
+
+		videoSprite.screenCenter();
+		videoSprite.cameras = [camera];
+
+		videoHandler = new VideoSprite();
+		videoHandler.playVideo(daSource, looped, true, false);
+
+		videoSprite.loadGraphic(videoHandler.bitmap.bitmapData);
+
+		videoSprite.setGraphicSize(width, height);
+
+		var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+		videoHandler.bitmap.seek(perecentSupposed);
+		videoHandler.bitmap.resume();
+
+		if (camera == camGame)
 		{
-			#if !html5
-			useVideo = true;
-			var daSource = Paths.video(source);
-
-			videoSprite = new FlxSprite();
-			videoSprite.antialiasing = true;
-			videoSprite.scrollFactor.set(0, 0);
-
-			videoSprite.screenCenter();
-			videoSprite.cameras = [camHUD];
-
-			videoHandler = new VideoSprite();
-			videoHandler.playVideo(daSource, looped, true, false);
-
-			videoHandler.readyCallBack = function()
-			{
-				videoSprite.loadGraphic(videoHandler.bitmap.bitmapData);
-				add(videoSprite);
-			}
-
-			videoSprite.setGraphicSize(width, height);
-
-			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-			videoHandler.bitmap.seek(perecentSupposed);
-			videoHandler.bitmap.resume();
-
 			switch (layInFront)
-				{
-					case 0:
-						remove(gf);
-						add(videoSprite);
-						add(gf);
-					case 1:
-						remove(dad);
-						remove(gf);
-						add(videoSprite);
-						add(gf);
-						add(dad);
-					case 2:
-						remove(dad);
-						remove(gf);
-						remove(boyfriend);
-						add(videoSprite);
-						add(gf);
-						add(dad);
-						add(boyfriend);
+			{
+				case 0:
+					remove(gf);
+					add(videoSprite);
+					add(gf);
+				case 1:
+					remove(dad);
+					remove(gf);
+					add(videoSprite);
+					add(gf);
+					add(dad);
+				case 2:
+					remove(dad);
+					remove(gf);
+					remove(boyfriend);
+					add(videoSprite);
+					add(gf);
+					add(dad);
+					add(boyfriend);
 			}
+		}
 
-			Debug.logInfo(videoSprite == null ? 'MP4 background video is null NOOOOOOOOO' : 'MP4 background video looks like ass.');
-			#end
-	}*/
+		Debug.logInfo(videoSprite.graphic == null ? 'MP4 background video is null NOOOOOOOOO. Only audio' : 'Playing MP4 background video sprite!: $daSource');
+		#end
+	}
+
 	function noteMiss(direction:Int = 1, daNote:Note):Void
 	{
 		if (!boyfriend.stunned)
@@ -6300,7 +6299,7 @@ class PlayState extends MusicBeatState
 			bg.cameras = [camHUD];
 			add(bg);
 
-			#if (!html5)
+			#if (!html5 && !linux)
 			var daVid:VideoHandler = new VideoHandler();
 			daVid.playVideo(fileName);
 			(daVid).finishCallback = function()
