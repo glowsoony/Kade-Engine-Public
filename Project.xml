@@ -156,7 +156,7 @@
 	<haxelib name="linc_luajit" if="desktop"/>
 	<haxelib name="hxvm-luajit" if="desktop"/>
 	<haxelib name="hxcpp-debug-server" if="desktop"/>
-	<haxelib name="hxCodec" if="FEATURE_MP4VIDEOS !web"/>
+	<haxelib name="hxCodec" if="FEATURE_MP4VIDEOS" unless="web"/>
 
 	<!-- <haxelib name="markdown" /> -->
 	<!-- <haxelib name="HtmlParser" /> -->
