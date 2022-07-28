@@ -21,14 +21,17 @@ class ModCore
 
 	static final MOD_DIRECTORY = "mods";
 
-	#if FEATURE_MODCORE
-	public static function reload()
+	public static function initialize()
 	{
-		Debug.logInfo("Reloading ModCore...");
-
-		loadModsById([for (i in Polymod.scan(MOD_DIRECTORY)) i.id]);
+		#if FEATURE_MODCORE
+		Debug.logInfo("Initializing ModCore...");
+		loadModsById(getModIds());
+		#else
+		Debug.logInfo("ModCore not initialized; not supported on this platform.");
+		#end
 	}
 
+	#if FEATURE_MODCORE
 	public static function loadModsById(ids:Array<String>)
 	{
 		Debug.logInfo('Attempting to load ${ids.length} mods...');

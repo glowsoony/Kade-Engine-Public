@@ -93,7 +93,7 @@ class Main extends Sprite
 
 		// Gotta run this before any assets get loaded.
 		#if FEATURE_MODCORE
-		ModCore.reload();
+		ModCore.initialize();
 		#end
 
 		#if FEATURE_DISCORD
