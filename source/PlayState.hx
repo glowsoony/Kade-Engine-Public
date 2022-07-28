@@ -47,10 +47,7 @@ import Discord.DiscordClient;
 #if FEATURE_LUAMODCHART
 import LuaClass;
 #end
-#if FEATURE_WEBM
-import webm.WebmPlayer;
-#end
-#if !html5
+#if (FEATURE_MP4VIDEOS && !html5)
 import VideoHandler;
 import VideoSprite;
 #end
@@ -1373,7 +1370,9 @@ class PlayState extends MusicBeatState
 					else
 					{
 						removeStaticArrows();
+						#if FEATURE_MP4VIDEOS
 						startVideo('cutscenes/${SONG.songId}_cutscene');
+						#end
 					}
 
 				default:
@@ -2109,13 +2108,13 @@ class PlayState extends MusicBeatState
 			add(skipText);
 		}
 
-		#if !html5
-		if (videoHandler != null)
-		{
-			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-			videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
-		}
-		#end
+		/*#if !html5
+			if (videoHandler != null)
+			{
+				var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+				videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+			}
+			#end */
 	}
 
 	var debugNum:Int = 0;
@@ -2481,12 +2480,12 @@ class PlayState extends MusicBeatState
 		#end
 		if (paused)
 		{
-			#if !html5
-			if (videoHandler != null)
-			{
-				videoHandler.bitmap.pause();
-			}
-			#end
+			/*#if !html5
+				if (videoHandler != null)
+				{
+					videoHandler.bitmap.pause();
+				}
+				#end */
 
 			if (FlxG.sound.music.playing)
 				FlxG.sound.music.pause();
@@ -2539,14 +2538,14 @@ class PlayState extends MusicBeatState
 		}
 		else if (paused)
 		{
-			#if !html5
-			if (videoHandler != null)
-			{
-				var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-				videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
-				videoHandler.bitmap.resume();
-			}
-			#end
+			/*#if !html5
+				if (videoHandler != null)
+				{
+					var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+					videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+					videoHandler.bitmap.resume();
+				}
+				#end */
 
 			if (FlxG.sound.music != null && !startingSong)
 			{
@@ -3187,17 +3186,17 @@ class PlayState extends MusicBeatState
 			Conductor.songPosition += FlxG.elapsed * 1000;
 			Conductor.rawPosition = FlxG.sound.music.time;
 
-			#if !html5
-			if (videoHandler != null)
-			{
-				if (!paused && !endingSong)
-					videoHandler.bitmap.resume();
-			}
-			#end
-			// sync
-			/*@:privateAccess
+			/*#if !html5
+				if (videoHandler != null)
 				{
-					FlxG.sound.music._channel.
+					if (!paused && !endingSong)
+						videoHandler.bitmap.resume();
+				}
+				#end
+				// sync
+				/*@:privateAccess
+					{
+						FlxG.sound.music._channel.
 			}*/
 			songPositionBar = (Conductor.songPosition - songLength) / 1000;
 			currentSection = getSectionByTime(Conductor.songPosition);
@@ -4899,10 +4898,9 @@ class PlayState extends MusicBeatState
 
 	public var videoSprite:FlxSprite = null;
 
-	#if !html5
-	var videoHandler:VideoSprite = null;
-	#end
-
+	/*#if !html5
+		var videoHandler:VideoSprite = null;
+		#end */
 	// Broken until I found out what's going on here.
 
 	/*public function backgroundVideo(source:String, layInFront:Int = 2, screenCenter:Bool = true, camera:FlxCamera, looped:Bool, ?x:Float, ?y:Float,
@@ -6292,7 +6290,6 @@ class PlayState extends MusicBeatState
 
 	function startVideo(name:String):Void
 	{
-		var foundFile:Bool = false;
 		var fileName = Paths.video(name);
 		try
 		{

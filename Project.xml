@@ -54,14 +54,12 @@
 	<haxedef name="FEATURE_FILESYSTEM"  if="desktop"/>
 	<!-- Defines whether Lua Modcharts should be enabled -->
 	<haxedef name="FEATURE_LUAMODCHART" if="desktop" />
-	<!-- Defines whether Sprite WebM videos should be enabled -->
-	<haxedef name="FEATURE_WEBM" if="desktop" />
 	<!-- Defines whether StepMania files can be loaded. -->
 	<haxedef name="FEATURE_STEPMANIA" if="desktop" />
 	<!-- Defines whether the Thread class can be used. -->
 	<haxedef name="FEATURE_MULTITHREADING" if="cpp" />
 	<!-- Defines whether the mp4 videos should be enabled. -->
-	<define name="FEATURE_MP4VIDEOS" if="desktop | web" unless="32bits"/>
+	<define name="FEATURE_MP4VIDEOS" unless="32bits"/>
 	<!-- Defines whether the Mods menu will display before launching. -->
 	<haxedef name="FEATURE_MODCORE" if="desktop" />
 
@@ -149,7 +147,6 @@
 	<define name="hscriptPos" />
 
 	<haxelib name="actuate" />
-	<haxelib name="extension-webm"/> <!-- Make sure to use https://github.com/KadeDev/extension-webm/ -->
 
 	<!--In case you want to use the ui package-->
 	<haxelib name="flixel-ui" />
@@ -159,7 +156,7 @@
 	<haxelib name="linc_luajit" if="desktop"/>
 	<haxelib name="hxvm-luajit" if="desktop"/>
 	<haxelib name="hxcpp-debug-server" if="desktop"/>
-	<haxelib name="hxCodec"/>
+	<haxelib name="hxCodec" if="FEATURE_MP4VIDEOS !web"/>
 
 	<!-- <haxelib name="markdown" /> -->
 	<!-- <haxelib name="HtmlParser" /> -->

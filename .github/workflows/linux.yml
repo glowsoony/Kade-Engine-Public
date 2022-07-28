@@ -27,6 +27,7 @@ jobs:
           sudo apt-get install gcc-multilib g++-multilib haxe -y
           sudo apt-get install libvlc-dev
           sudo apt-get install libvlccore-dev
+          sudo apt-get install vlc-bin
           mkdir "%HAXELIB_ROOT%"
           haxelib setup "%HAXELIB_ROOT%"
           haxelib install lime 7.9.0
@@ -44,8 +45,6 @@ jobs:
           haxelib git faxe https://github.com/uhrobots/faxe
           haxelib install polymod
           haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
-          haxelib git extension-webm https://github.com/KadeDev/extension-webm
-          haxelib run lime rebuild extension-webm linux
           haxelib git linc_luajit https://github.com/MasterEric/linc_luajit.git
           haxelib git hxvm-luajit https://github.com/nebulazorua/hxvm-luajit.git
           haxelib install actuate 
