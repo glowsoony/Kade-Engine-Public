@@ -15,6 +15,7 @@ import openfl.Lib;
 import flixel.addons.ui.FlxUI;
 import flixel.FlxSprite;
 import openfl.system.System;
+import flixel.group.FlxGroup.FlxTypedGroup;
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
@@ -51,11 +52,29 @@ class MusicBeatState extends GlobalUIState
 
 	public function destroyObject(Object:Dynamic):Void
 	{
-		Object.kill();
-		Object.alive = false;
-		remove(Object, true);
-		Object.destroy();
-		Object = null;
+		if (Std.isOfType(Object, FlxSprite))
+		{
+			var spr:FlxSprite = cast(Object, FlxSprite);
+			spr.kill();
+			remove(spr, true);
+			spr.destroy();
+			spr = null;
+		}
+		else if (Std.isOfType(Object, FlxTypedGroup))
+		{
+			var grp:FlxTypedGroup<Dynamic> = cast(Object, FlxTypedGroup<Dynamic>);
+			for (ObjectGroup in grp.members)
+			{
+				if (Std.isOfType(ObjectGroup, FlxSprite))
+				{
+					var spr:FlxSprite = cast(ObjectGroup, FlxSprite);
+					spr.kill();
+					remove(spr, true);
+					spr.destroy();
+					spr = null;
+				}
+			}
+		}
 	}
 
 	override function add(Object:FlxBasic):FlxBasic

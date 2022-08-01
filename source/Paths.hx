@@ -116,16 +116,22 @@ class Paths
 		// I hate this so god damn much
 
 		var gottenPath:String = getPath('$path/$key.$SOUND_EXT', SOUND, library);
-		gottenPath = gottenPath.substring(gottenPath.indexOf(':') + 1, gottenPath.length);
+		var folder:String = '';
+
+		if (path == 'songs')
+			folder = 'songs:';
+
 		// trace(gottenPath);
-		if (!currentTrackedSounds.exists(gottenPath))
+		if (OpenFlAssets.exists(folder + gottenPath, SOUND))
 		{
-			var folder:String = '';
-
-			if (path == 'songs')
-				folder = 'songs:';
-
-			currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(folder + getPath('$path/$key.$SOUND_EXT', SOUND, library)));
+			if (!currentTrackedSounds.exists(gottenPath))
+			{
+				currentTrackedSounds.set(gottenPath, OpenFlAssets.getSound(folder + gottenPath));
+			}
+		}
+		else
+		{
+			Debug.logWarn('Could not find sound at ${folder + gottenPath}');
 		}
 
 		localTrackedAssets.push(gottenPath);

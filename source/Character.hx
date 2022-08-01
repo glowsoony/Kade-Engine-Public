@@ -170,20 +170,35 @@ class Character extends FlxSprite
 		{
 			if (!isPlayer)
 			{
-				if (animation.curAnim.name.startsWith('sing'))
+				if (!PlayStateChangeables.opponentMode)
 				{
-					holdTimer += elapsed;
-				}
+					if (animation.curAnim.name.startsWith('sing'))
+					{
+						holdTimer += elapsed;
+					}
 
-				if (holdTimer >= Conductor.stepCrochet * 0.0011 * holdLength * PlayState.songMultiplier)
-				{
-					if (!PlayStateChangeables.opponentMode)
+					if (holdTimer >= Conductor.stepCrochet * 0.0011 * holdLength * PlayState.songMultiplier)
+					{
+						if (animOffsets.exists('danceLeft'))
+							playAnim('danceLeft'); // overridden by dance correctly later
 						dance();
-					holdTimer = 0;
-				}
 
-				if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
-					playAnim('idle', true, false, 10);
+						holdTimer = 0;
+					}
+
+					if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
+						playAnim('idle', true, false, 10);
+				}
+				else
+				{
+					if (animation.curAnim.name.startsWith('sing'))
+						holdTimer += elapsed;
+					else
+						holdTimer = 0;
+
+					if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
+						playAnim('idle', true, false, 10);
+				}
 			}
 
 			if (!debugMode)
@@ -315,7 +330,7 @@ class Character extends FlxSprite
 		{
 			for (songNotes in section.sectionNotes)
 			{
-				var daStrumTime:Float = (songNotes[0] - FlxG.save.data.offset - PlayState.songOffset) / PlayState.songMultiplier;
+				var daStrumTime:Float = (songNotes[0] - FlxG.save.data.offset - PlayState.SONG.offset) / PlayState.songMultiplier;
 				if (daStrumTime < 0)
 					daStrumTime = 0;
 

@@ -396,7 +396,6 @@ class OptionsMenu extends FlxSubState
 		var any = false;
 		var escape = false;
 		var clickedCat = false;
-		var clickedOpt = false;
 
 		changedOption = false;
 

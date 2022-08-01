@@ -4,7 +4,7 @@
 	"flipX": true,
 	"barColor": "#31B0D1",
 	"camPos": [0,0],
-	"holdLength": 4,
+
 	"scale": 1,
 	"startingAnim": "idle",
 	"animations": [

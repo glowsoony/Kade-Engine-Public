@@ -527,13 +527,13 @@ class PlayState extends MusicBeatState
 		detailsPausedText = "Paused - " + detailsText;
 
 		// Updating Discord Rich Presence
-		if (FlxG.save.data.discordMode != 0)
-			DiscordClient.changePresence(SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") " + Ratings.GenerateComboRank(accuracy)
-				+ " " + Ratings.GenerateLetterRank(accuracy),
-				"\nScr: " + songScore + " (" + HelperFunctions.truncateFloat(accuracy, 2) + "%)"
-				+ " | Misses: " + misses, iconRPC);
+		if (FlxG.save.data.discordMode == 1)
+			DiscordClient.changePresence(SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+				+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
+				"\nScr: " + songScore + " ("
+				+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
 		else
-			DiscordClient.changePresence("Playing " + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", "", iconRPC);
+			DiscordClient.changePresence("Playing " + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", "", iconRPC);
 		#end
 
 		camGame = new FlxCamera();
@@ -862,16 +862,6 @@ class PlayState extends MusicBeatState
 			boyfriend.x += boyfriend.charPos[0];
 			boyfriend.y += boyfriend.charPos[1];
 
-			if (dad.replacesGF)
-			{
-				if (!stageTesting)
-					dad.setPosition(gf.x, gf.y);
-				gf.visible = false;
-
-				camPos.x += 600;
-				tweenCamIn();
-			}
-
 			if (dad.hasTrail)
 			{
 				if (FlxG.save.data.distractions)
@@ -914,6 +904,16 @@ class PlayState extends MusicBeatState
 		else
 		{
 			camPos = new FlxPoint(0, 0);
+		}
+
+		if (dad.replacesGF)
+		{
+			if (!stageTesting)
+				dad.setPosition(gf.x, gf.y);
+			gf.visible = false;
+
+			camPos.x += 600;
+			tweenCamIn();
 		}
 
 		if (loadRep)
@@ -1964,8 +1964,7 @@ class PlayState extends MusicBeatState
 
 			if (!PlayStateChangeables.opponentMode)
 				boyfriend.holdTimer = 0;
-			else
-				dad.holdTimer = 0;
+
 			goodNoteHit(coolNote);
 
 			var noteDiff:Float = (coolNote.strumTime - Conductor.songPosition);
@@ -2204,7 +2203,7 @@ class PlayState extends MusicBeatState
 
 			for (songNotes in section.sectionNotes)
 			{
-				var daStrumTime:Float = (songNotes[0] - FlxG.save.data.offset - songOffset) / songMultiplier;
+				var daStrumTime:Float = (songNotes[0] - FlxG.save.data.offset - SONG.offset) / songMultiplier;
 				if (daStrumTime < 0)
 					daStrumTime = 0;
 				var daNoteData:Int = Std.int(songNotes[1] % 4);
@@ -2500,13 +2499,13 @@ class PlayState extends MusicBeatState
 			#if FEATURE_DISCORD
 			if (!endingSong)
 			{
-				if (FlxG.save.data.discordMode != 0)
-					DiscordClient.changePresence("PAUSED on " + "\n" + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+				if (FlxG.save.data.discordMode == 1)
+					DiscordClient.changePresence("PAUSED on " + "\n" + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
 						+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
 						"\nScr: " + songScore + " ("
 						+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
 				else
-					DiscordClient.changePresence("PAUSED on " + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", "", iconRPC);
+					DiscordClient.changePresence("PAUSED on " + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", "", iconRPC);
 			}
 			#end
 			if (!startTimer.finished)
@@ -2559,16 +2558,16 @@ class PlayState extends MusicBeatState
 			paused = false;
 
 			#if FEATURE_DISCORD
-			if (FlxG.save.data.discordMode != 0)
+			if (FlxG.save.data.discordMode == 1)
 			{
-				DiscordClient.changePresence(SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+				DiscordClient.changePresence(SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
 					+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
 					"\nScr: " + songScore + " ("
 					+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
 			}
 			else
 			{
-				DiscordClient.changePresence("Playing " + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", "", iconRPC);
+				DiscordClient.changePresence("Playing " + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", "", iconRPC);
 			}
 			#end
 		}
@@ -3511,17 +3510,17 @@ class PlayState extends MusicBeatState
 				}
 				#if FEATURE_DISCORD
 				// Game Over doesn't get his own variable because it's only used here
-				if (FlxG.save.data.discordMode != 0)
+				if (FlxG.save.data.discordMode == 1)
 				{
-					DiscordClient.changePresence("GAME OVER -- " + "\n" + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+					DiscordClient.changePresence("GAME OVER -- " + "\n" + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
 						+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
 						"\nScr: " + songScore + " ("
 						+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
 				}
 				else
 				{
-					DiscordClient.changePresence("GAME OVER -- " + "\nPlaying " + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ",
-						"", iconRPC);
+					DiscordClient.changePresence("GAME OVER -- " + "\nPlaying " + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x"
+						+ ") ", "", iconRPC);
 				}
 				#end
 				// God I love watching Yosuga No Sora with my sister (From: Bolo)
@@ -3555,17 +3554,17 @@ class PlayState extends MusicBeatState
 				}
 				#if FEATURE_DISCORD
 				// Game Over doesn't get his own variable because it's only used here
-				if (FlxG.save.data.discordMode != 0)
+				if (FlxG.save.data.discordMode == 1)
 				{
-					DiscordClient.changePresence("GAME OVER -- " + "\n" + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+					DiscordClient.changePresence("GAME OVER -- " + "\n" + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
 						+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
 						"\nScr: " + songScore + " ("
 						+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
 				}
 				else
 				{
-					DiscordClient.changePresence("GAME OVER -- " + "\nPlaying " + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ",
-						"", iconRPC);
+					DiscordClient.changePresence("GAME OVER -- " + "\nPlaying " + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x"
+						+ ") ", "", iconRPC);
 				}
 				#end
 				// MusicBeatState.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
@@ -3651,43 +3650,48 @@ class PlayState extends MusicBeatState
 						daNote.y -= daNote.height - (1.5 * stepHeight / SONG.speed * bpmRatio);
 
 						// If not in botplay, only clip sustain notes when properly hit, botplay gets to clip it everytime
-						if (daNote.sustainActive && songStarted)
-							if ((daNote.mustPress || !daNote.mustPress)
-								|| daNote.wasGoodHit
-								|| holdArray[Math.floor(Math.abs(daNote.noteData))])
-							{
-								if (daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= origin)
+						if (songStarted)
+							if (daNote.sustainActive)
+								if (!daNote.mustPress
+									|| (daNote.mustPress
+										&& (daNote.wasGoodHit || daNote.prevNote.wasGoodHit)
+										&& holdArray[Math.floor(Math.abs(daNote.noteData))])
+									|| PlayStateChangeables.botPlay)
 								{
-									// Clip to strumline
-									var swagRect = new FlxRect(0, 0, daNote.frameWidth, daNote.frameHeight);
-									swagRect.height = (origin - daNote.y) / daNote.scale.y;
-									swagRect.y = daNote.frameHeight - swagRect.height;
+									if (daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= origin)
+									{
+										// Clip to strumline
+										var swagRect = new FlxRect(0, 0, daNote.frameWidth * 2, daNote.frameHeight * 2);
+										swagRect.height = (origin - daNote.y) / daNote.scale.y;
+										swagRect.y = daNote.frameHeight - swagRect.height;
 
-									daNote.clipRect = swagRect;
+										daNote.clipRect = swagRect;
+									}
 								}
-							}
 					}
 				}
 				else
 				{
 					if (daNote.isSustainNote)
 					{
-						if (songStarted && daNote.sustainActive)
+						if (songStarted)
 						{
-							if (((daNote.mustPress || !daNote.mustPress)
-								|| daNote.wasGoodHit
-								|| holdArray[Math.floor(Math.abs(daNote.noteData))]))
-							{
-								// Clip to strumline
-								if (daNote.y + daNote.offset.y * daNote.scale.y <= origin)
+							if (daNote.sustainActive)
+								if (((!daNote.mustPress || daNote.wasGoodHit))
+									|| ((daNote.wasGoodHit || daNote.prevNote.wasGoodHit)
+										&& holdArray[Math.floor(Math.abs(daNote.noteData))])
+									|| PlayStateChangeables.botPlay)
 								{
-									var swagRect = new FlxRect(0, 0, daNote.width / daNote.scale.x, daNote.height / daNote.scale.y);
-									swagRect.y = (origin - daNote.y) / daNote.scale.y;
-									swagRect.height -= swagRect.y;
+									// Clip to strumline
+									if (daNote.y + daNote.offset.y * daNote.scale.y <= origin)
+									{
+										var swagRect = new FlxRect(0, 0, daNote.width / daNote.scale.x, daNote.height / daNote.scale.y);
+										swagRect.y = (origin - daNote.y) / daNote.scale.y;
+										swagRect.height -= swagRect.y;
 
-									daNote.clipRect = swagRect;
+										daNote.clipRect = swagRect;
+									}
 								}
-							}
 						}
 					}
 				}
@@ -4002,18 +4006,16 @@ class PlayState extends MusicBeatState
 		}
 		else
 		{
-			#if FEAUTURE_DISCORD
-			if (FlxG.save.data.scoreScreen)
-			{
-				if (FlxG.save.data.discordMode != 0)
-					DiscordClient.changePresence('RESULTS SCREEN -- ' + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
-						+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
-						"\nScr: " + songScore + " ("
-						+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
-				else
-					DiscordClient.changePresence('RESULTS SCREEN -- ' + SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", iconRPC);
-			}
+			#if FEATURE_DISCORD
+			if (FlxG.save.data.discordMode == 1)
+				DiscordClient.changePresence('RESULTS SCREEN -- ' + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+					+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
+					"\nScr: " + songScore + " ("
+					+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
+			else
+				DiscordClient.changePresence('RESULTS SCREEN -- ' + SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") ", iconRPC);
 			#end
+
 			if (isStoryMode)
 			{
 				campaignAccuracy += HelperFunctions.truncateFloat(accuracy, 2) / initStoryLength;
@@ -4034,6 +4036,7 @@ class PlayState extends MusicBeatState
 					if (FlxG.save.data.scoreScreen)
 					{
 						paused = true;
+
 						openSubState(new ResultsScreen());
 						createTimer(1, function(tmr:FlxTimer)
 						{
@@ -4648,8 +4651,6 @@ class PlayState extends MusicBeatState
 			{
 				if (!PlayStateChangeables.opponentMode)
 					boyfriend.holdTimer = 0;
-				else
-					dad.holdTimer = 0;
 
 				var possibleNotes:Array<Note> = []; // notes that can be hit
 				var directionList:Array<Int> = []; // directions that can be hit
@@ -4733,37 +4734,37 @@ class PlayState extends MusicBeatState
 					}
 				};
 
-				if (boyfriend.holdTimer > Conductor.stepCrochet * 4 * 0.001
-					&& (!holdArray.contains(true) || PlayStateChangeables.botPlay)
-					&& !PlayStateChangeables.opponentMode)
-				{
-					if (boyfriend.animation.curAnim.name.startsWith('sing')
-						&& !boyfriend.animation.curAnim.name.endsWith('miss')
-						&& !FlxG.save.data.optimize)
-						boyfriend.dance();
-				}
-
 				if (PlayStateChangeables.opponentMode)
 				{
-					if (!holdArray.contains(true) || PlayStateChangeables.botPlay)
+					if (!FlxG.save.data.optimize)
 					{
-						if (!FlxG.save.data.optimize
-							&& dad.animation.curAnim.name.startsWith('sing')
-							&& dad.animation.curAnim.finished
-							&& !dad.animation.curAnim.name.endsWith('miss'))
+						if (dad.holdTimer > Conductor.stepCrochet * 4 * 0.001 * dad.holdLength * 0.5
+							&& (!holdArray.contains(true) || PlayStateChangeables.botPlay))
 						{
-							dad.dance();
+							if (dad.animation.curAnim.name.startsWith('sing')
+
+								&& !dad.animation.curAnim.name.endsWith('miss')
+								&& (boyfriend.animation.curAnim.curFrame >= 10 || dad.animation.curAnim.finished))
+							{
+								if (dad.animOffsets.exists('danceLeft'))
+									dad.playAnim('danceLeft');
+								dad.dance();
+							}
 						}
 					}
 				}
-				else
+
+				if (!FlxG.save.data.optimize)
 				{
-					if (!FlxG.save.data.optimize
-						&& dad.animation.curAnim.name.startsWith('sing')
-						&& dad.animation.curAnim.finished
-						&& !dad.animation.curAnim.name.endsWith('miss'))
+					if (boyfriend.holdTimer >= Conductor.stepCrochet * 4 * 0.001
+						&& ((!PlayStateChangeables.opponentMode && !holdArray.contains(true))
+							|| PlayStateChangeables.botPlay
+							|| PlayStateChangeables.opponentMode))
 					{
-						dad.dance();
+						if (boyfriend.animation.curAnim.name.startsWith('sing')
+							&& !boyfriend.animation.curAnim.name.endsWith('miss')
+							&& (boyfriend.animation.curAnim.curFrame >= 10 || boyfriend.animation.curAnim.finished))
+							boyfriend.dance();
 					}
 				}
 
@@ -4797,8 +4798,6 @@ class PlayState extends MusicBeatState
 							goodNoteHit(daNote);
 							if (!PlayStateChangeables.opponentMode)
 								boyfriend.holdTimer = 0;
-							else
-								dad.holdTimer = 0;
 						}
 					}
 					else
@@ -4806,44 +4805,42 @@ class PlayState extends MusicBeatState
 						goodNoteHit(daNote);
 						if (!PlayStateChangeables.opponentMode)
 							boyfriend.holdTimer = 0;
-						else
-							dad.holdTimer = 0;
 					}
 				}
 			});
 
-		if (boyfriend.holdTimer > Conductor.stepCrochet * 4 * 0.001 && (!holdArray.contains(true) || PlayStateChangeables.botPlay))
+		if (!FlxG.save.data.optimize)
 		{
-			if (boyfriend.animation.curAnim.name.startsWith('sing')
-				&& !boyfriend.animation.curAnim.name.endsWith('miss')
-				&& (boyfriend.animation.curAnim.curFrame >= 10 || boyfriend.animation.curAnim.finished)
-				&& !FlxG.save.data.optimize)
-				boyfriend.dance();
+			if (boyfriend.holdTimer >= Conductor.stepCrochet * 4 * 0.001
+				&& ((!PlayStateChangeables.opponentMode && !holdArray.contains(true))
+					|| PlayStateChangeables.botPlay
+					|| PlayStateChangeables.opponentMode))
+			{
+				if (boyfriend.animation.curAnim.name.startsWith('sing')
+					&& !boyfriend.animation.curAnim.name.endsWith('miss')
+					&& (boyfriend.animation.curAnim.curFrame >= 10 || boyfriend.animation.curAnim.finished))
+					boyfriend.dance();
+			}
 		}
+		// Debug.logInfo('dadHoldTimer: ' + dad.holdTimer + ", condition:" + Conductor.stepCrochet * 4 * 0.001 * dad.holdLength);
 
 		if (PlayStateChangeables.opponentMode)
 		{
 			if (!FlxG.save.data.optimize)
 			{
-				if (!holdArray.contains(true) || PlayStateChangeables.botPlay)
+				if (dad.holdTimer > Conductor.stepCrochet * 4 * 0.001 * dad.holdLength * 0.5
+					&& (!holdArray.contains(true) || PlayStateChangeables.botPlay))
 				{
 					if (dad.animation.curAnim.name.startsWith('sing')
-						&& dad.animation.curAnim.finished
-						&& !dad.animation.curAnim.name.endsWith('miss'))
+
+						&& !dad.animation.curAnim.name.endsWith('miss')
+						&& (boyfriend.animation.curAnim.curFrame >= 10 || dad.animation.curAnim.finished))
 					{
+						if (dad.animOffsets.exists('danceLeft'))
+							dad.playAnim('danceLeft');
 						dad.dance();
 					}
 				}
-			}
-		}
-		else
-		{
-			if (!FlxG.save.data.optimize
-				&& dad.animation.curAnim.name.startsWith('sing')
-				&& dad.animation.curAnim.finished
-				&& !dad.animation.curAnim.name.endsWith('miss'))
-			{
-				dad.dance();
 			}
 		}
 
@@ -5073,10 +5070,10 @@ class PlayState extends MusicBeatState
 		#if FEATURE_DISCORD
 		// Updating Discord Rich Presence
 		if (FlxG.save.data.discordMode == 1)
-			DiscordClient.changePresence(SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") " + Ratings.GenerateComboRank(accuracy)
-				+ " " + Ratings.GenerateLetterRank(accuracy),
-				"\nScr: " + songScore + " (" + HelperFunctions.truncateFloat(accuracy, 2) + "%)"
-				+ " | Misses: " + misses, iconRPC);
+			DiscordClient.changePresence(SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+				+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
+				"\nScr: " + songScore + " ("
+				+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
 		#end
 	}
 
@@ -5167,11 +5164,12 @@ class PlayState extends MusicBeatState
 		}
 		#if FEATURE_DISCORD
 		if (FlxG.save.data.discordMode == 1)
-			DiscordClient.changePresence(SONG.song + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") " + Ratings.GenerateComboRank(accuracy)
-				+ " " + Ratings.GenerateLetterRank(accuracy),
-				"\nScr: " + songScore + " (" + HelperFunctions.truncateFloat(accuracy, 2) + "%)"
-				+ " | Misses: " + misses, iconRPC);
+			DiscordClient.changePresence(SONG.songName + " (" + storyDifficultyText + " " + songMultiplier + "x" + ") "
+				+ Ratings.GenerateComboRank(accuracy) + " " + Ratings.GenerateLetterRank(accuracy),
+				"\nScr: " + songScore + " ("
+				+ HelperFunctions.truncateFloat(accuracy, 2) + "%)" + " | Misses: " + misses, iconRPC);
 		#end
+
 		if (daNote.isParent)
 			for (i in daNote.children)
 				i.sustainActive = true;

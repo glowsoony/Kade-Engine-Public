@@ -32,6 +32,8 @@ class Note extends FlxSprite
 	public var modifiedByLua:Bool = false;
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
+
+	public var isSustainEnd:Bool = false;
 	public var originColor:Int = 0; // The sustain note's original note's color
 	public var noteSection:Int = 0;
 
@@ -332,6 +334,10 @@ class Note extends FlxSprite
 					wasGoodHit = true;
 			}
 		}
+
+		var bpmRatio = PlayState.SONG.bpm / 100;
+		if (isSustainNote)
+			isSustainEnd = spotInLine == parent.children.length - 1;
 
 		if (tooLate && !wasGoodHit)
 		{

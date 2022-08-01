@@ -131,7 +131,7 @@ class KadeEngineData
 			FlxG.save.data.optimize = false;
 
 		if (FlxG.save.data.discordMode == null)
-			FlxG.save.data.discordMode = 2;
+			FlxG.save.data.discordMode = 1;
 
 		if (FlxG.save.data.roundAccuracy == null)
 			FlxG.save.data.roundAccuracy = false;

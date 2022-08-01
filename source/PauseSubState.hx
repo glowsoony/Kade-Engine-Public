@@ -36,7 +36,7 @@ class PauseSubState extends MusicBeatSubstate
 	var perSongOffset:FlxText;
 
 	var offsetChanged:Bool = false;
-	var startOffset:Float = PlayState.songOffset;
+	var startOffset:Float = PlayState.SONG.offset;
 
 	var bg:FlxSprite;
 
