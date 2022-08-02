@@ -253,7 +253,8 @@ class KadeEngineData
 		PlayerSettings.player1.controls.loadKeyBinds();
 		KeyBinds.keyCheck();
 
-		Main.watermarks = FlxG.save.data.watermark;
+		if (FlxG.save.data.watermark == null)
+			FlxG.save.data.watermark = true;
 
 		(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
 	}

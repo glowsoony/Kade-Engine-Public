@@ -260,8 +260,6 @@ class PlayState extends MusicBeatState
 
 	var newLerp:Float = 0;
 
-	public static var theFunne:Bool = true;
-
 	var funneEffect:FlxSprite;
 
 	public var inCutscene:Bool = false;
@@ -3499,14 +3497,19 @@ class PlayState extends MusicBeatState
 				paused = true;
 				vocals.stop();
 				FlxG.sound.music.stop();
-				if (FlxG.save.data.InstantRespawn || FlxG.save.data.optimize || PlayStateChangeables.opponentMode)
+				if (FlxG.save.data.InstantRespawn
+					|| FlxG.save.data.optimize
+					|| (PlayStateChangeables.opponentMode && !dad.animOffsets.exists('firstDeath')))
 				{
 					PsychTransition.nextCamera = mainCam;
 					MusicBeatState.switchState(new PlayState());
 				}
 				else
 				{
-					openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+					if (!PlayStateChangeables.opponentMode)
+						openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+					else
+						openSubState(new GameOverSubstate(dad.getScreenPosition().x, dad.getScreenPosition().y));
 				}
 				#if FEATURE_DISCORD
 				// Game Over doesn't get his own variable because it's only used here
@@ -3543,14 +3546,19 @@ class PlayState extends MusicBeatState
 				paused = true;
 				vocals.stop();
 				FlxG.sound.music.stop();
-				if (FlxG.save.data.InstantRespawn || FlxG.save.data.optimize || PlayStateChangeables.opponentMode)
+				if (FlxG.save.data.InstantRespawn
+					|| FlxG.save.data.optimize
+					|| (PlayStateChangeables.opponentMode && !dad.animOffsets.exists('firstDeath')))
 				{
 					PsychTransition.nextCamera = mainCam;
 					MusicBeatState.switchState(new PlayState());
 				}
 				else
 				{
-					openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+					if (!PlayStateChangeables.opponentMode)
+						openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+					else
+						openSubState(new GameOverSubstate(dad.getScreenPosition().x, dad.getScreenPosition().y));
 				}
 				#if FEATURE_DISCORD
 				// Game Over doesn't get his own variable because it's only used here
@@ -3647,15 +3655,13 @@ class PlayState extends MusicBeatState
 					{
 						var bpmRatio = (SONG.bpm / 100);
 
-						daNote.y -= daNote.height - (1.5 * stepHeight / SONG.speed * bpmRatio);
+						daNote.y -= daNote.height - (1.85 * stepHeight / SONG.speed * bpmRatio);
 
 						// If not in botplay, only clip sustain notes when properly hit, botplay gets to clip it everytime
 						if (songStarted)
 							if (daNote.sustainActive)
 								if (!daNote.mustPress
-									|| (daNote.mustPress
-										&& (daNote.wasGoodHit || daNote.prevNote.wasGoodHit)
-										&& holdArray[Math.floor(Math.abs(daNote.noteData))])
+									|| (daNote.mustPress && holdArray[Math.floor(Math.abs(daNote.noteData))])
 									|| PlayStateChangeables.botPlay)
 								{
 									if (daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= origin)
@@ -3678,8 +3684,7 @@ class PlayState extends MusicBeatState
 						{
 							if (daNote.sustainActive)
 								if (((!daNote.mustPress || daNote.wasGoodHit))
-									|| ((daNote.wasGoodHit || daNote.prevNote.wasGoodHit)
-										&& holdArray[Math.floor(Math.abs(daNote.noteData))])
+									|| (daNote.mustPress && holdArray[Math.floor(Math.abs(daNote.noteData))])
 									|| PlayStateChangeables.botPlay)
 								{
 									// Clip to strumline
@@ -3736,85 +3741,24 @@ class PlayState extends MusicBeatState
 						}
 						else
 						{
-							if (loadRep && daNote.isSustainNote)
+							if (daNote.isSustainNote && loadRep && findByTime(daNote.strumTime) != null)
 							{
-								// im tired and lazy this sucks I know i'm dumb
-								if (findByTime(daNote.strumTime) != null)
-									totalNotesHit += 1;
-								else
-								{
-									if (daNote.isParent)
-									{
-										// health -= 0.15; // give a health punishment for failing a LN
-										trace("hold fell over at the start");
-										for (i in daNote.children)
-										{
-											i.alpha = 0.3;
-											i.sustainActive = false;
-										}
-										noteMiss(daNote.noteData, daNote);
-									}
-									else
-									{
-										if (!daNote.wasGoodHit
-											&& daNote.isSustainNote
-											&& daNote.sustainActive
-											&& daNote.spotInLine < daNote.parent.children.length)
-										{
-											// health -= 0.15; // give a health punishment for failing a LN
-											trace("hold fell over at " + daNote.spotInLine);
-											for (i in daNote.parent.children)
-											{
-												i.alpha = 0.3;
-												i.sustainActive = false;
-												if (!PlayStateChangeables.opponentMode)
-													health -= (0.04 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
-												else
-													health += (0.04 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
-											}
-											if (daNote.parent.wasGoodHit)
-											{
-												totalNotesHit -= 1;
-											}
-											noteMiss(daNote.noteData, daNote);
-										}
-										else if (!daNote.wasGoodHit && !daNote.isSustainNote)
-										{
-											noteMiss(daNote.noteData, daNote);
-											if (!PlayStateChangeables.opponentMode)
-												health -= 0.04 * PlayStateChangeables.healthLoss;
-											else
-												health += 0.04 * PlayStateChangeables.healthLoss;
-										}
-									}
-								}
+								totalNotesHit += 1;
 							}
 							else
 							{
-								if (theFunne && !daNote.isSustainNote)
-								{
-									if (PlayStateChangeables.botPlay)
-									{
-										daNote.rating = "bad";
-										goodNoteHit(daNote);
-									}
-									else
-									{
-										if (!PlayStateChangeables.opponentMode)
-											health -= 0.04 * PlayStateChangeables.healthLoss;
-										else
-											health += 0.04 * PlayStateChangeables.healthLoss;
-									}
-								}
-
 								if (daNote.isParent && daNote.visible)
 								{
 									// health -= 0.15; // give a health punishment for failing a LN
-									trace("hold fell over at the start");
+									Debug.logTrace("User failed Sustain note at the start of sustain.");
 									for (i in daNote.children)
 									{
 										i.alpha = 0.3;
 										i.sustainActive = false;
+										if (!PlayStateChangeables.opponentMode)
+											health -= (0.04 * PlayStateChangeables.healthLoss) / daNote.children.length;
+										else
+											health += (0.04 * PlayStateChangeables.healthLoss) / daNote.children.length;
 									}
 									noteMiss(daNote.noteData, daNote);
 								}
@@ -3826,15 +3770,15 @@ class PlayState extends MusicBeatState
 										&& daNote.spotInLine < daNote.parent.children.length)
 									{
 										// health -= 0.05; // give a health punishment for failing a LN
-										trace("hold fell over at " + daNote.spotInLine);
+										Debug.logTrace("User released key while at the end of the sustain note at: " + daNote.spotInLine);
 										for (i in daNote.parent.children)
 										{
 											i.alpha = 0.3;
 											i.sustainActive = false;
 											if (!PlayStateChangeables.opponentMode)
-												health -= (0.04 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
+												health -= (0.08 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
 											else
-												health += (0.04 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
+												health += (0.08 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
 										}
 										if (daNote.parent.wasGoodHit)
 										{
@@ -3844,20 +3788,52 @@ class PlayState extends MusicBeatState
 									}
 									else if (!daNote.wasGoodHit && !daNote.isSustainNote)
 									{
+										if (!PlayStateChangeables.opponentMode)
+											health -= (0.04 * PlayStateChangeables.healthLoss);
+										else
+											health += (0.04 * PlayStateChangeables.healthLoss);
+
+										Debug.logTrace("User failed note.");
 										noteMiss(daNote.noteData, daNote);
-										// health -= 0.1; I forgot replay is broken. So it's not necessary to uncommment deez.
 									}
 								}
 							}
+
+							daNote.active = false;
+
+							daNote.visible = false;
+							daNote.kill();
+							notes.remove(daNote, true);
+							daNote.alive = false;
+							daNote.destroy();
 						}
+					}
+				}
 
-						daNote.active = false;
-
-						daNote.visible = false;
-						daNote.kill();
-						notes.remove(daNote, true);
-						daNote.alive = false;
-						daNote.destroy();
+				// HOLD KEY RELEASE SHIT
+				if (daNote.mustPress)
+				{
+					if (!daNote.wasGoodHit
+						&& daNote.isSustainNote
+						&& daNote.sustainActive
+						&& !daNote.isSustainEnd
+						&& !holdArray[Std.int(Math.abs(daNote.noteData))])
+					{
+						Debug.logTrace("User released key while playing a sustain at: " + daNote.spotInLine);
+						for (i in daNote.parent.children)
+						{
+							i.alpha = 0.3;
+							i.sustainActive = false;
+							if (!PlayStateChangeables.opponentMode)
+								health -= (0.08 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
+							else
+								health += (0.08 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
+						}
+						if (daNote.parent.wasGoodHit)
+						{
+							totalNotesHit -= 1;
+						}
+						noteMiss(daNote.noteData, daNote);
 					}
 				}
 			});
@@ -4734,39 +4710,37 @@ class PlayState extends MusicBeatState
 					}
 				};
 
-				if (PlayStateChangeables.opponentMode)
-				{
-					if (!FlxG.save.data.optimize)
+				/*if (PlayStateChangeables.opponentMode)
 					{
-						if (dad.holdTimer > Conductor.stepCrochet * 4 * 0.001 * dad.holdLength * 0.5
-							&& (!holdArray.contains(true) || PlayStateChangeables.botPlay))
+						if (!FlxG.save.data.optimize)
 						{
-							if (dad.animation.curAnim.name.startsWith('sing')
-
-								&& !dad.animation.curAnim.name.endsWith('miss')
-								&& (boyfriend.animation.curAnim.curFrame >= 10 || dad.animation.curAnim.finished))
+							if (dad.holdTimer > Conductor.stepCrochet * 4 * 0.001 * dad.holdLength * 0.5
+								&& (!holdArray.contains(true) || PlayStateChangeables.botPlay))
 							{
-								if (dad.animOffsets.exists('danceLeft'))
-									dad.playAnim('danceLeft');
-								dad.dance();
+								if (dad.animation.curAnim.name.startsWith('sing')
+
+									&& !dad.animation.curAnim.name.endsWith('miss')
+									&& (boyfriend.animation.curAnim.curFrame >= 10 || dad.animation.curAnim.finished))
+								{
+									if (dad.animOffsets.exists('danceLeft'))
+										dad.playAnim('danceLeft');
+									dad.dance();
+								}
 							}
 						}
 					}
-				}
 
-				if (!FlxG.save.data.optimize)
-				{
-					if (boyfriend.holdTimer >= Conductor.stepCrochet * 4 * 0.001
-						&& ((!PlayStateChangeables.opponentMode && !holdArray.contains(true))
-							|| PlayStateChangeables.botPlay
-							|| PlayStateChangeables.opponentMode))
+					if (!FlxG.save.data.optimize)
 					{
-						if (boyfriend.animation.curAnim.name.startsWith('sing')
-							&& !boyfriend.animation.curAnim.name.endsWith('miss')
-							&& (boyfriend.animation.curAnim.curFrame >= 10 || boyfriend.animation.curAnim.finished))
-							boyfriend.dance();
-					}
-				}
+						if (boyfriend.holdTimer >= Conductor.stepCrochet * 4 * 0.001
+							&& (!holdArray.contains(true) || PlayStateChangeables.botPlay))
+						{
+							if (boyfriend.animation.curAnim.name.startsWith('sing')
+								&& !boyfriend.animation.curAnim.name.endsWith('miss')
+								&& (boyfriend.animation.curAnim.curFrame >= 10 || boyfriend.animation.curAnim.finished))
+								boyfriend.dance();
+						}
+				}*/
 
 				if (!FlxG.save.data.ghost)
 				{
@@ -4811,10 +4785,8 @@ class PlayState extends MusicBeatState
 
 		if (!FlxG.save.data.optimize)
 		{
-			if (boyfriend.holdTimer >= Conductor.stepCrochet * 4 * 0.001
-				&& ((!PlayStateChangeables.opponentMode && !holdArray.contains(true))
-					|| PlayStateChangeables.botPlay
-					|| PlayStateChangeables.opponentMode))
+			if (boyfriend.holdTimer >= Conductor.stepCrochet * 4 * 0.001 * boyfriend.holdLength
+				&& (!holdArray.contains(true) || PlayStateChangeables.botPlay))
 			{
 				if (boyfriend.animation.curAnim.name.startsWith('sing')
 					&& !boyfriend.animation.curAnim.name.endsWith('miss')

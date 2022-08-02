@@ -80,6 +80,9 @@ class Note extends FlxSprite
 
 	public var distance:Float = 2000;
 
+	public var lateHitMult:Float = 0.5;
+	public var earlyHitMult:Float = 1.0;
+
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?inCharter:Bool = false, ?isAlt:Bool = false, ?bet:Float = 0)
 	{
 		super();
@@ -93,6 +96,8 @@ class Note extends FlxSprite
 
 		this.prevNote = prevNote;
 		this.isSustainNote = sustainNote;
+
+		lateHitMult = isSustainNote ? 0.5 : 1;
 
 		// MAKE SURE ITS DEFINITELY OFF SCREEN?
 		y -= 2000;
@@ -311,28 +316,29 @@ class Note extends FlxSprite
 			}
 		}
 
-		if (mustPress)
+		if (!mustPress)
 		{
-			if (strumTime > Conductor.songPosition - Conductor.safeZoneOffset
-				&& strumTime < Conductor.songPosition + Conductor.safeZoneOffset)
-			{
-				canBeHit = true;
-			}
-			else
-				canBeHit = false;
-
-			if (strumTime < Conductor.songPosition - Conductor.safeZoneOffset && !wasGoodHit)
-				tooLate = true;
-		}
-		else
-		{
+			// CPU NOTES
 			canBeHit = false;
 
-			if (strumTime < Conductor.songPosition + Conductor.safeZoneOffset)
+			if (strumTime - Conductor.songPosition < (Ratings.timingWindows[0] * Conductor.timeScale) * earlyHitMult)
 			{
 				if ((isSustainNote && prevNote.wasGoodHit) || strumTime <= Conductor.songPosition)
 					wasGoodHit = true;
 			}
+		}
+		else
+		{
+			// PLAYER NOTES
+			if (strumTime
+				- Conductor.songPosition <= (((Ratings.timingWindows[0] * Conductor.timeScale) / (PlayState.songMultiplier < 1 ? PlayState.songMultiplier : 1) * lateHitMult)) && strumTime
+				- Conductor.songPosition >= (((-Ratings.timingWindows[0] * Conductor.timeScale) / (PlayState.songMultiplier < 1 ? PlayState.songMultiplier : 1) * earlyHitMult)))
+				canBeHit = true;
+			else
+				canBeHit = false;
+
+			if (strumTime - Conductor.songPosition < (-Ratings.timingWindows[0] * Conductor.timeScale) && !wasGoodHit)
+				tooLate = true;
 		}
 
 		var bpmRatio = PlayState.SONG.bpm / 100;
