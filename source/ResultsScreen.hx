@@ -100,7 +100,7 @@ class ResultsScreen extends FlxSubState
 		if (!PlayState.isStoryMode)
 		{
 			songText = new FlxText(20, -65, FlxG.width,
-				'Played on ${PlayState.instance.songFixedName} - ${CoolUtil.difficultyFromInt(PlayState.storyDifficulty).toUpperCase()}');
+				'Played on ${PlayState.SONG.songName} - ${CoolUtil.difficultyFromInt(PlayState.storyDifficulty).toUpperCase()}');
 			songText.size = 34;
 			songText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 4, 1);
 			songText.color = FlxColor.WHITE;

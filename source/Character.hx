@@ -179,15 +179,10 @@ class Character extends FlxSprite
 
 					if (holdTimer >= Conductor.stepCrochet * 0.0011 * holdLength * PlayState.songMultiplier)
 					{
-						if (animOffsets.exists('danceLeft'))
-							playAnim('danceLeft'); // overridden by dance correctly later
 						dance();
 
 						holdTimer = 0;
 					}
-
-					if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
-						playAnim('idle', true, false, 10);
 				}
 				else
 				{
@@ -197,7 +192,7 @@ class Character extends FlxSprite
 						holdTimer = 0;
 
 					if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode)
-						playAnim('idle', true, false, 10);
+						dance();
 
 					if (animation.curAnim.name == 'firstDeath' && animation.curAnim.finished)
 						playAnim('deathLoop');

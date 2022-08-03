@@ -62,7 +62,7 @@ class GameplayCustomizeState extends MusicBeatState
 
 	public static var dad:Character;
 	public static var gf:Character;
-	public static var boyfriend:Character;
+	public static var boyfriend:Boyfriend;
 	public static var Stage:Stage;
 	public static var freeplayNoteStyle:String = 'normal';
 	public static var freeplayWeek:Int = 1;
@@ -131,7 +131,7 @@ class GameplayCustomizeState extends MusicBeatState
 
 		gf = new Character(400, 130, 'gf');
 
-		boyfriend = new Character(770, 450, 'bf');
+		boyfriend = new Boyfriend(770, 450, 'bf');
 
 		dad = new Character(100, 100, 'dad');
 

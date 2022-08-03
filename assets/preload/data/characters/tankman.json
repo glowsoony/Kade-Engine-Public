@@ -6,6 +6,7 @@
   "holdLength": 4,
   "camPos":[0,0],
   "charPos":[0,240],
+  "flipX":true,
   "animations": [
     {
       "name": "idle",

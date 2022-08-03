@@ -2,25 +2,20 @@ package;
 
 import Conductor.BPMChangeEvent;
 import flixel.FlxBasic;
-import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.addons.transition.FlxTransitionableState;
-import GlobalUIState;
-import flixel.math.FlxMath;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
 import lime.app.Application;
 import openfl.Lib;
 import flixel.addons.ui.FlxUI;
 import flixel.FlxSprite;
-import openfl.system.System;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.addons.ui.FlxUIState;
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
 
-class MusicBeatState extends GlobalUIState
+class MusicBeatState extends FlxUIState
 {
 	private var lastBeat:Float = 0;
 	private var lastStep:Float = 0;

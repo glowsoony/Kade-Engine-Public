@@ -170,7 +170,7 @@ class FreeplayState extends MusicBeatState
 		isDebug = true;
 		#end
 
-		persistentUpdate = true;
+		persistentUpdate = persistentDraw = true;
 
 		// LOAD CHARACTERS
 		bg.antialiasing = FlxG.save.data.antialiasing;
@@ -478,6 +478,12 @@ class FreeplayState extends MusicBeatState
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, 0.4));
 		lerpaccuracy = FlxMath.lerp(lerpaccuracy, intendedaccuracy, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1) / (openfl.Lib.current.stage.frameRate / 60));
 
+		if (!MainMenuState.freakyPlaying)
+		{
+			bg.scale.x = FlxMath.lerp(bg.scale.x, 1.0, elapsed * 6);
+			bg.scale.y = FlxMath.lerp(bg.scale.y, 1.0, elapsed * 6);
+		}
+
 		if (Math.abs(lerpScore - intendedScore) <= 10)
 			lerpScore = intendedScore;
 
@@ -569,7 +575,6 @@ class FreeplayState extends MusicBeatState
 		{
 			if (FlxG.keys.pressed.SHIFT) // && songs[curSelected].songName.toLowerCase() != "tutorial")
 			{
-				var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
 				if (FlxG.keys.justPressed.LEFT)
 				{
 					rate -= 0.05;
@@ -613,8 +618,12 @@ class FreeplayState extends MusicBeatState
 			{
 				try
 				{
+					var hmm = songData.get(songs[curSelected].songName)[curDifficulty];
 					FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
 					MainMenuState.freakyPlaying = false;
+
+					Conductor.changeBPM(hmm.bpm);
+					Conductor.mapBPMChanges(hmm);
 				}
 				catch (e)
 				{
@@ -701,6 +710,19 @@ class FreeplayState extends MusicBeatState
 			for (item in grpSongs.members)
 				item.alpha = 0;
 		}
+	}
+
+	override function stepHit()
+	{
+		super.stepHit();
+		if (curStep % Math.round(16 * rate) == 0)
+		{
+			bg.scale.x = 1.015;
+			bg.scale.y = 1.015;
+		}
+
+		if (curStep % Math.round(4 * rate) == 0)
+			Debug.logInfo('beat');
 	}
 
 	function loadAnimDebug(dad:Bool = true)
@@ -905,11 +927,7 @@ class FreeplayState extends MusicBeatState
 		{
 			hmm = songData.get(songs[curSelected].songName)[curDifficulty];
 			if (hmm != null)
-			{
-				if (FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
-					Conductor.changeBPM(hmm.bpm);
 				GameplayCustomizeState.freeplayNoteStyle = hmm.noteStyle;
-			}
 		}
 		catch (ex)
 		{
