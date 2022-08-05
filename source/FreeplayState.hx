@@ -634,6 +634,8 @@ class FreeplayState extends MusicBeatState
 
 					Conductor.changeBPM(hmm.bpm);
 					Conductor.mapBPMChanges(hmm);
+
+					Paths.clearUnusedMemory();
 				}
 				catch (e)
 				{
@@ -736,7 +738,7 @@ class FreeplayState extends MusicBeatState
 			{
 				if (FlxG.save.data.camzoom && FlxG.camera.zoom < 1.35 && curStep % 16 == 0)
 				{
-					FlxG.camera.zoom += 0.015 / rate;
+					FlxG.camera.zoom += 0.03 / rate;
 				}
 			}
 
