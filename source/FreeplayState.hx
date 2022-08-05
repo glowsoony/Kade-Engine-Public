@@ -470,6 +470,8 @@ class FreeplayState extends MusicBeatState
 	{
 		super.update(elapsed);
 
+		Conductor.songPosition = FlxG.sound.music.time;
+
 		if (FlxG.sound.music.volume < 0.7)
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
@@ -477,12 +479,6 @@ class FreeplayState extends MusicBeatState
 
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, 0.4));
 		lerpaccuracy = FlxMath.lerp(lerpaccuracy, intendedaccuracy, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1) / (openfl.Lib.current.stage.frameRate / 60));
-
-		if (!MainMenuState.freakyPlaying)
-		{
-			bg.scale.x = FlxMath.lerp(bg.scale.x, 1.0, elapsed * 6);
-			bg.scale.y = FlxMath.lerp(bg.scale.y, 1.0, elapsed * 6);
-		}
 
 		if (Math.abs(lerpScore - intendedScore) <= 10)
 			lerpScore = intendedScore;
@@ -561,6 +557,20 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 		previewtext.text = "Rate: " + FlxMath.roundDecimal(rate, 2) + "x";
+
+		if (!MainMenuState.freakyPlaying)
+		{
+			var bpmRatio = Conductor.bpm / 100;
+			if (FlxG.save.data.camzoom)
+			{
+				FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio * rate), 0, 1));
+			}
+
+			var mult:Float = FlxMath.lerp(1, iconArray[curSelected].scale.x, CoolUtil.boundTo(1 - (elapsed * 35 * rate), 0, 1));
+			iconArray[curSelected].scale.set(mult, mult);
+
+			iconArray[curSelected].updateHitbox();
+		}
 
 		previewtext.alpha = 1;
 
@@ -711,17 +721,32 @@ class FreeplayState extends MusicBeatState
 		}
 	}
 
+	override function beatHit()
+	{
+		super.beatHit();
+	}
+
 	override function stepHit()
 	{
 		super.stepHit();
-		if (curStep % Math.round(16 * rate) == 0)
-		{
-			bg.scale.x = 1.015;
-			bg.scale.y = 1.015;
-		}
 
-		if (curStep % Math.round(4 * rate) == 0)
-			Debug.logInfo('beat');
+		if (!MainMenuState.freakyPlaying)
+		{
+			if (curStep % Math.round(1 * rate) == 0)
+			{
+				if (FlxG.save.data.camzoom && FlxG.camera.zoom < 1.35 && curStep % 16 == 0)
+				{
+					FlxG.camera.zoom += 0.015 / rate;
+				}
+			}
+
+			if (curStep % Math.round(4 * rate) == 0)
+			{
+				iconArray[curSelected].scale.set(1.2, 1.2);
+
+				iconArray[curSelected].updateHitbox();
+			}
+		}
 	}
 
 	function loadAnimDebug(dad:Bool = true)
