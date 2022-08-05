@@ -375,6 +375,11 @@ class PlayState extends MusicBeatState
 		add(object);
 	}
 
+	public function destroyObj(object:FlxBasic)
+	{
+		object.destroy();
+	}
+
 	public function removeObject(object:FlxBasic)
 	{
 		remove(object);
@@ -1334,7 +1339,7 @@ class PlayState extends MusicBeatState
 		if (!FlxG.save.data.optimize)
 		{
 			if (boyfriend.curCharacter == 'bf-holding-gf')
-				precacheThing('characters/bfHoldingGF-DEAD', 'frame', 'shared');
+				precacheThing('characters/bfHoldingGF-DEAD', 'image', 'shared');
 		}
 
 		if (!loadRep)
@@ -1378,7 +1383,7 @@ class PlayState extends MusicBeatState
 		if (!isStoryMode)
 			tankIntroEnd = true;
 
-		precacheThing('alphabet', 'frame', 'shared');
+		precacheThing('alphabet', 'image', null);
 
 		precacheThing('breakfast', 'music', 'shared');
 
@@ -1650,16 +1655,16 @@ class PlayState extends MusicBeatState
 
 				if (swagCounter % Math.floor(idleBeat * songMultiplier) == 0)
 				{
-					if (idleToBeat && !boyfriend.animation.curAnim.name.endsWith("miss"))
+					if (boyfriend != null && idleToBeat && !boyfriend.animation.curAnim.name.endsWith("miss"))
 						boyfriend.dance(forcedToIdle);
-					if (idleToBeat)
+					if (dad != null && idleToBeat)
 						dad.dance(forcedToIdle);
 				}
 				else if (swagCounter % Math.floor(idleBeat * songMultiplier) != 0)
 				{
-					if (boyfriend.isDancing && !boyfriend.animation.curAnim.name.endsWith("miss"))
+					if (boyfriend != null && boyfriend.isDancing && !boyfriend.animation.curAnim.name.endsWith("miss"))
 						boyfriend.dance();
-					if (dad.isDancing)
+					if (dad != null && dad.isDancing)
 						dad.dance();
 				}
 			}
@@ -2876,7 +2881,6 @@ class PlayState extends MusicBeatState
 				trace('GITAROO MAN EASTER EGG');
 				PsychTransition.nextCamera = mainCam;
 				MusicBeatState.switchState(new GitarooPause());
-				clean();
 			}
 			else
 				openSubState(new PauseSubState());
@@ -2886,7 +2890,6 @@ class PlayState extends MusicBeatState
 			cannotDie = true;
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new WaveformTestState());
-			clean();
 			PlayState.stageTesting = false;
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
@@ -2908,7 +2911,6 @@ class PlayState extends MusicBeatState
 			cannotDie = true;
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new ChartingState());
-			clean();
 			PlayState.stageTesting = false;
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
@@ -2966,7 +2968,6 @@ class PlayState extends MusicBeatState
 		{
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new AnimationDebug(dad.curCharacter));
-			clean();
 			PlayState.stageTesting = false;
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
@@ -3004,7 +3005,6 @@ class PlayState extends MusicBeatState
 
 				PsychTransition.nextCamera = mainCam;
 				MusicBeatState.switchState(new StageDebugState(Stage.curStage, gf.curCharacter, boyfriend.curCharacter, dad.curCharacter));
-				clean();
 				FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 				FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
 				#if FEATURE_LUAMODCHART
@@ -3019,7 +3019,6 @@ class PlayState extends MusicBeatState
 		{
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new AnimationDebug(boyfriend.curCharacter));
-			clean();
 			PlayState.stageTesting = false;
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
@@ -3035,7 +3034,6 @@ class PlayState extends MusicBeatState
 		{
 			PsychTransition.nextCamera = mainCam;
 			MusicBeatState.switchState(new AnimationDebug(gf.curCharacter));
-			clean();
 			PlayState.stageTesting = false;
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleInput);
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
@@ -3902,7 +3900,6 @@ class PlayState extends MusicBeatState
 			offsetTesting = false;
 			PsychTransition.nextCamera = mainCam;
 			LoadingState.loadAndSwitchState(new OptionsMenu());
-			clean();
 			FlxG.save.data.offset = offsetTest;
 		}
 		else if (stageTesting)
@@ -3972,7 +3969,6 @@ class PlayState extends MusicBeatState
 						Conductor.changeBPM(102);
 						PsychTransition.nextCamera = mainCam;
 						MusicBeatState.switchState(new StoryMenuState());
-						clean();
 					}
 
 					#if FEATURE_LUAMODCHART
@@ -4009,8 +4005,6 @@ class PlayState extends MusicBeatState
 					FlxG.sound.music.stop();
 
 					LoadingState.loadAndSwitchState(new PlayState());
-
-					clean();
 				}
 			}
 			else
@@ -4037,7 +4031,6 @@ class PlayState extends MusicBeatState
 					PsychTransition.nextCamera = mainCam;
 					Conductor.changeBPM(102);
 					MusicBeatState.switchState(new FreeplayState());
-					clean();
 				}
 			}
 		}
@@ -4737,7 +4730,7 @@ class PlayState extends MusicBeatState
 		if (!FlxG.save.data.optimize)
 		{
 			if (boyfriend.holdTimer >= Conductor.stepCrochet * 4 * 0.001 * boyfriend.holdLength
-				&& (!holdArray.contains(true) || PlayStateChangeables.botPlay))
+				&& (!holdArray.contains(true) || PlayStateChangeables.botPlay || PlayStateChangeables.opponentMode))
 			{
 				if (boyfriend.animation.curAnim.name.startsWith('sing')
 					&& !boyfriend.animation.curAnim.name.endsWith('miss')
@@ -6286,7 +6279,7 @@ class PlayState extends MusicBeatState
 
 	// Precache List for some stuff (Like frames, sounds and that kinda of shit)
 
-	public function precacheThing(target:String, type:String, ?library:String)
+	public function precacheThing(target:String, type:String, ?library:String = null)
 	{
 		switch (type)
 		{

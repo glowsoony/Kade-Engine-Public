@@ -293,7 +293,6 @@ class ResultsScreen extends FlxSubState
 				Conductor.changeBPM(102);
 				MusicBeatState.switchState(new FreeplayState());
 			}
-			PlayState.instance.clean();
 		}
 
 		if (FlxG.keys.justPressed.F1 && !PlayState.loadRep)
@@ -309,7 +308,6 @@ class ResultsScreen extends FlxSubState
 			PlayState.isStoryMode = false;
 			PlayState.storyDifficulty = PlayState.storyDifficulty;
 			LoadingState.loadAndSwitchState(new PlayState());
-			PlayState.instance.clean();
 		}
 
 		super.update(elapsed);

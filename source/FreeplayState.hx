@@ -669,7 +669,6 @@ class FreeplayState extends MusicBeatState
 			if (controls.BACK)
 			{
 				MusicBeatState.switchState(new MainMenuState());
-				clean();
 				if (colorTween != null)
 				{
 					colorTween.cancel();

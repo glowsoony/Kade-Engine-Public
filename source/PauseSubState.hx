@@ -255,8 +255,6 @@ class PauseSubState extends MusicBeatSubstate
 					if (FlxG.save.data.fpsCap > 300)
 						(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
 
-					PlayState.instance.clean();
-
 					if (PlayState.isStoryMode)
 					{
 						GameplayCustomizeState.freeplayNoteStyle = 'normal';

@@ -103,20 +103,17 @@ class MusicBeatState extends FlxUIState
 
 	public function clean()
 	{
-		if (FlxG.save.data.optimize)
+		#if FEATURE_MULTITHREADING
+		for (i in MasterObjectLoader.Objects)
 		{
-			#if FEATURE_MULTITHREADING
-			for (i in MasterObjectLoader.Objects)
-			{
-				destroyObject(i);
-			}
-			#else
-			for (i in assets)
-			{
-				remove(i);
-			}
-			#end
+			destroyObject(i);
 		}
+		#else
+		for (i in assets)
+		{
+			remove(i);
+		}
+		#end
 	}
 
 	override function create()
