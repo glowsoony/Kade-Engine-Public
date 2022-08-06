@@ -3966,6 +3966,7 @@ class PlayState extends MusicBeatState
 						GameplayCustomizeState.freeplayNoteStyle = 'normal';
 						GameplayCustomizeState.freeplayWeek = 1;
 						FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
+						MainMenuState.freakyPlaying = true;
 						Conductor.changeBPM(102);
 						PsychTransition.nextCamera = mainCam;
 						MusicBeatState.switchState(new StoryMenuState());
