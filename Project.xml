@@ -59,6 +59,8 @@
 	<define name="FEATURE_MP4VIDEOS" unless="32bits"/>
 	<!-- Defines whether the Mods menu will display before launching. -->
 	<define name="FEATURE_MODCORE" if="desktop" />
+	<!-- Defines if webm videos are enabled. Doesn't work in browser -->
+	<define name="FEATURE_WEBM" if="desktop" />
 
 	<define name="PRELOAD_ALL" unless="web"/>
 	<define name="NO_PRELOAD_ALL" if="web"/>
@@ -134,6 +136,7 @@
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxedev set='webgl' if="html5" />
+	<haxelib name="extension-webm" if="FEATURE_WEBM"/>
 
 	<haxelib name="flixel" />
 	<haxelib name="flixel-addons" />

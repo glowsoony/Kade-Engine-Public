@@ -693,7 +693,7 @@ class FreeplayState extends MusicBeatState
 
 					var endBeat:Float = Math.POSITIVE_INFINITY;
 
-					var bpm = i.value * rate;
+					var bpm = Std.parseInt(i.value) * rate;
 
 					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
 					if (currentIndex != 0)

@@ -207,6 +207,8 @@ class PlayState extends MusicBeatState
 
 	public var shaderUpdates:Array<Float->Void> = [];
 
+	public var camVideo:FlxCamera;
+
 	public var cannotDie = false;
 
 	public static var offsetTesting:Bool = false;
@@ -345,6 +347,18 @@ class PlayState extends MusicBeatState
 	public var initStoryLength:Int = 0;
 
 	public var arrowsGenerated:Bool = false;
+
+	// MP4 vids var
+	#if (FEATURE_MP4VIDEOS && !html5)
+	var reserveVids:Array<VideoSprite> = [];
+
+	public var daVideoGroup:FlxTypedGroup<VideoSprite>;
+	#end
+
+	// Webm vids var
+	var reserveWebmVids:Array<WebmSprite> = [];
+
+	public var daWebmGroup:FlxTypedGroup<WebmSprite>;
 
 	var camLerp = #if !html5 0.04 * (30 / (cast(Lib.current.getChildAt(0), Main))
 		.getFPS()) * songMultiplier; #else 0.09 * (30 / (cast(Lib.current.getChildAt(0), Main)).getFPS()) * songMultiplier; #end
@@ -542,6 +556,8 @@ class PlayState extends MusicBeatState
 		camHUD.bgColor.alpha = 0;
 		mainCam = new FlxCamera();
 		mainCam.bgColor.alpha = 0;
+		camVideo = new FlxCamera();
+		camVideo.bgColor.alpha = 0;
 		camSustains = new FlxCamera();
 		camSustains.height = 1300;
 		camSustains.bgColor.alpha = 0;
@@ -554,6 +570,9 @@ class PlayState extends MusicBeatState
 
 		// Game Camera (where stage and characters are)
 		FlxG.cameras.reset(camGame);
+
+		// Video Camera if you put funni videos or smth
+		FlxG.cameras.add(camVideo);
 
 		// HUD Camera (Health Bar, scoreTxt, etc)
 		FlxG.cameras.add(camHUD);
@@ -615,7 +634,7 @@ class PlayState extends MusicBeatState
 
 				var endBeat:Float = Math.POSITIVE_INFINITY;
 
-				var bpm = i.value * songMultiplier;
+				var bpm = Std.parseInt(i.value) * songMultiplier;
 
 				TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
 
@@ -1943,6 +1962,27 @@ class PlayState extends MusicBeatState
 	{
 		startingSong = false;
 		songStarted = true;
+
+		#if FEATURE_WEBM
+		if (daWebmGroup != null)
+		{
+			for (vid in daWebmGroup)
+			{
+				vid.webmHandler.resume();
+			}
+		}
+		#end
+
+		#if (FEATURE_MP4VIDEOS && !html5)
+		if (daVideoGroup != null)
+		{
+			for (vid in daVideoGroup)
+			{
+				vid.bitmap.resume();
+			}
+		}
+		#end
+
 		previousFrameTime = FlxG.game.ticks;
 		lastReportedPlayheadPosition = 0;
 
@@ -2052,10 +2092,13 @@ class PlayState extends MusicBeatState
 		}
 
 		#if (FEATURE_MP4VIDEOS && !html5)
-		if (videoHandler != null)
+		if (daVideoGroup != null)
 		{
-			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-			videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+			for (vid in daVideoGroup)
+			{
+				var perecentSupposed = (vid.bitmap.getTime() / songMultiplier) / (vid.bitmap.getDuration() / songMultiplier);
+				vid.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+			}
 		}
 		#end
 	}
@@ -2423,10 +2466,25 @@ class PlayState extends MusicBeatState
 		#end
 		if (paused)
 		{
-			#if (FEATURE_MP4VIDEOS && !html5)
-			if (videoHandler != null)
+			#if FEATURE_WEBM
+			if (daWebmGroup != null)
 			{
-				videoHandler.bitmap.pause();
+				for (vid in daWebmGroup)
+				{
+					if (vid.webmHandler.initialized && !vid.webmHandler.ended)
+						vid.webmHandler.pause();
+				}
+			}
+			#end
+
+			#if (FEATURE_MP4VIDEOS && !html5)
+			if (daVideoGroup != null)
+			{
+				for (vid in daVideoGroup.members)
+				{
+					if (vid.alive)
+						vid.bitmap.pause();
+				}
 			}
 			#end
 
@@ -2481,12 +2539,29 @@ class PlayState extends MusicBeatState
 		}
 		else if (paused)
 		{
-			#if (FEATURE_MP4VIDEOS && !html5)
-			if (videoHandler != null)
+			#if FEATURE_WEBM
+			if (daWebmGroup != null)
 			{
-				var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-				videoHandler.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
-				videoHandler.bitmap.resume();
+				for (vid in daWebmGroup)
+				{
+					if (vid.webmHandler.initialized && !vid.webmHandler.ended)
+						vid.webmHandler.resume();
+				}
+			}
+			#end
+
+			#if (FEATURE_MP4VIDEOS && !html5)
+			if (daVideoGroup != null)
+			{
+				for (vid in daVideoGroup.members)
+				{
+					if (vid.alive && vid.visible)
+					{
+						var perecentSupposed = (vid.bitmap.getTime() / songMultiplier) / (vid.bitmap.getDuration() / songMultiplier);
+						vid.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+						vid.bitmap.resume();
+					}
+				}
 			}
 			#end
 
@@ -2571,6 +2646,112 @@ class PlayState extends MusicBeatState
 	function percentageOfSong():Float
 	{
 		return (Conductor.songPosition / songLength) * 100;
+	}
+
+	var vidIndex:Int = 0;
+
+	public function backgroundOverlayVideo(vidSource:String, type:String, layInFront:Bool = false)
+	{
+		switch (type)
+		{
+			case 'webm':
+				#if FEATURE_WEBM
+				var vid = new WebmSprite();
+
+				vid.antialiasing = true;
+				if (!layInFront)
+				{
+					vid.scrollFactor.set(0, 0);
+					vid.scale.set(1 + (Stage.camZoom / 8), 1 + (Stage.camZoom / 8));
+				}
+				else
+					vid.scrollFactor.set();
+
+				vid.updateHitbox();
+				vid.visible = false;
+				reserveWebmVids.push(vid);
+				if (!layInFront)
+				{
+					remove(gf);
+					remove(dad);
+					remove(boyfriend);
+					daWebmGroup = new FlxTypedGroup<WebmSprite>();
+					add(daWebmGroup);
+					for (vid in reserveWebmVids)
+						daWebmGroup.add(vid);
+					add(gf);
+					add(boyfriend);
+					add(dad);
+				}
+				else
+				{
+					daWebmGroup = new FlxTypedGroup<WebmSprite>();
+					add(daWebmGroup);
+					for (vid in reserveWebmVids)
+					{
+						vid.camera = camGame;
+						daWebmGroup.add(vid);
+					}
+				}
+
+				reserveWebmVids = [];
+				daWebmGroup.members[vidIndex].loadVideo(Paths.webmVideo('${PlayState.SONG.songId}/${vidSource}'));
+				daWebmGroup.members[vidIndex].visible = true;
+				vidIndex++;
+				#end
+			case 'mp4':
+				#if (FEATURE_MP4VIDEOS && !html5)
+				var vid = new VideoSprite(-320, -180);
+
+				vid.antialiasing = true;
+				if (!layInFront)
+				{
+					vid.scrollFactor.set(0, 0);
+					vid.scale.set((2 / 3) + (Stage.camZoom / 8), (2 / 3) + (Stage.camZoom / 8));
+				}
+				else
+				{
+					vid.scale.set(2 / 3, 2 / 3);
+					vid.scrollFactor.set();
+				}
+				vid.updateHitbox();
+				vid.visible = false;
+				vid.bitmap.canSkip = false;
+				reserveVids.push(vid);
+				if (!layInFront)
+				{
+					remove(gf);
+					remove(dad);
+					remove(boyfriend);
+					daVideoGroup = new FlxTypedGroup<VideoSprite>();
+					add(daVideoGroup);
+					for (vid in reserveVids)
+						daVideoGroup.add(vid);
+					add(gf);
+					add(boyfriend);
+					add(dad);
+				}
+				else
+				{
+					daVideoGroup = new FlxTypedGroup<VideoSprite>();
+					add(daWebmGroup);
+					for (vid in reserveVids)
+					{
+						vid.camera = camGame;
+						daVideoGroup.add(vid);
+					}
+				}
+
+				reserveVids = [];
+				daVideoGroup.members[vidIndex].playVideo(Paths.video('${PlayState.SONG.songId}/${vidSource}'));
+				var perecentSupposed = (daVideoGroup.members[vidIndex].bitmap.getTime() / songMultiplier) / (daVideoGroup.members[vidIndex].bitmap.getDuration() / songMultiplier);
+
+				daVideoGroup.members[vidIndex].bitmap.seek(perecentSupposed);
+				daVideoGroup.members[vidIndex].bitmap.resume();
+				daVideoGroup.members[vidIndex].visible = true;
+				vidIndex++;
+				#end
+		}
 	}
 
 	public var paused:Bool = false;
@@ -2736,7 +2917,7 @@ class PlayState extends MusicBeatState
 
 					var endBeat:Float = Math.POSITIVE_INFINITY;
 
-					var bpm = i.value * songMultiplier;
+					var bpm = Std.parseInt(i.value) * songMultiplier;
 
 					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
 					if (currentIndex != 0)
@@ -3521,6 +3702,25 @@ class PlayState extends MusicBeatState
 				// MusicBeatState.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
 			}
 		}
+
+		#if FEATURE_WEBM
+		if (daWebmGroup != null)
+		{
+			daWebmGroup.forEachAlive(function(vid:WebmSprite)
+			{
+				if (vid != null && vid.webmHandler != null && vid.webmHandler.initialized && vid.webmHandler.ended)
+				{
+					vid.visible = false;
+					vid.active = false;
+					daWebmGroup.remove(vid, false);
+					vid.alive = false;
+					vid.kill();
+					vid.destroy();
+				}
+			});
+		}
+		#end
+
 		if (generatedMusic && !(inCutscene || inCinematic))
 		{
 			var holdArray:Array<Bool> = [controls.LEFT, controls.DOWN, controls.UP, controls.RIGHT];
@@ -4813,60 +5013,60 @@ class PlayState extends MusicBeatState
 	#end
 
 	// This function is broken until I figure out what's happening.
-	public function backgroundVideo(source:String, layInFront:Int = 2, screenCenter:Bool = true, camera:FlxCamera, looped:Bool, ?width:Int = 1280,
-			?height:Int = 720, ?x:Float, ?y:Float)
-	{
-		#if (FEATURE_MP4VIDEOS && !html5)
-		useVideo = true;
-		var daSource = Paths.video(source);
 
-		videoSprite = new FlxSprite();
-		videoSprite.antialiasing = true;
-		videoSprite.scrollFactor.set(0, 0);
-
-		videoSprite.screenCenter();
-		videoSprite.cameras = [camera];
-
-		videoHandler = new VideoSprite();
-		videoHandler.playVideo(daSource, looped, true, false);
-
-		videoSprite.loadGraphic(videoHandler.bitmap.bitmapData);
-
-		videoSprite.setGraphicSize(width, height);
-
-		var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
-		videoHandler.bitmap.seek(perecentSupposed);
-		videoHandler.bitmap.resume();
-
-		if (camera == camGame)
+	/*public function backgroundVideo(source:String, layInFront:Int = 2, screenCenter:Bool = true, camera:FlxCamera, looped:Bool, ?width:Int = 1280,
+				?height:Int = 720, ?x:Float, ?y:Float)
 		{
-			switch (layInFront)
+			#if (FEATURE_MP4VIDEOS && !html5)
+			useVideo = true;
+			var daSource = Paths.video(source);
+
+			videoSprite = new FlxSprite();
+			videoSprite.antialiasing = true;
+			videoSprite.scrollFactor.set(0, 0);
+
+			videoSprite.screenCenter();
+			videoSprite.cameras = [camera];
+
+			videoHandler = new VideoSprite();
+			videoHandler.playVideo(daSource, looped, true, false);
+
+			videoSprite.loadGraphic(videoHandler.bitmap.bitmapData);
+
+			videoSprite.setGraphicSize(width, height);
+
+			var perecentSupposed = (FlxG.sound.music.time / songMultiplier) / (FlxG.sound.music.length / songMultiplier);
+			videoHandler.bitmap.seek(perecentSupposed);
+			videoHandler.bitmap.resume();
+
+			if (camera == camGame)
 			{
-				case 0:
-					remove(gf);
-					add(videoSprite);
-					add(gf);
-				case 1:
-					remove(dad);
-					remove(gf);
-					add(videoSprite);
-					add(gf);
-					add(dad);
-				case 2:
-					remove(dad);
-					remove(gf);
-					remove(boyfriend);
-					add(videoSprite);
-					add(gf);
-					add(dad);
-					add(boyfriend);
+				switch (layInFront)
+				{
+					case 0:
+						remove(gf);
+						add(videoSprite);
+						add(gf);
+					case 1:
+						remove(dad);
+						remove(gf);
+						add(videoSprite);
+						add(gf);
+						add(dad);
+					case 2:
+						remove(dad);
+						remove(gf);
+						remove(boyfriend);
+						add(videoSprite);
+						add(gf);
+						add(dad);
+						add(boyfriend);
+				}
 			}
-		}
 
-		Debug.logInfo(videoSprite.graphic == null ? 'MP4 background video sprite is broken for now :C' : 'Playing MP4 background video sprite!: $daSource');
-		#end
-	}
-
+			Debug.logInfo(videoSprite.graphic == null ? 'MP4 background video sprite is broken for now :C' : 'Playing MP4 background video sprite!: $daSource');
+			#end
+	}*/
 	function noteMiss(direction:Int = 1, daNote:Note):Void
 	{
 		if (!boyfriend.stunned)

@@ -348,6 +348,11 @@ class Paths
 		return 'assets/videos/$key.$VIDEO_EXT';
 	}
 
+	static public function webmVideo(key:String)
+	{
+		return 'assets/videos/$key.webm';
+	}
+
 	inline static public function image(key:String, ?library:String, ?gpuRender:Bool):FlxGraphic
 	{
 		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
