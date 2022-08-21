@@ -15,6 +15,8 @@ class KadeEngineData
 		if (FlxG.save.data.downscroll == null)
 			FlxG.save.data.downscroll = false;
 
+		if (FlxG.save.data.autoSaveChart == null)
+			FlxG.save.data.autoSaveChart = false;
 		if (FlxG.save.data.hitSound == null)
 			FlxG.save.data.hitSound = 0;
 
