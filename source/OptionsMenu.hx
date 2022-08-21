@@ -193,6 +193,7 @@ class OptionsMenu extends FlxSubState
 			new OptionCata(50, 104, "Saves", [
 				#if desktop // new ReplayOption("View saved song replays."),
 				#end
+				new AutoSaveChart("toggle if in 5mins within chart it autosaves"),
 				new ResetModifiersOption("Reset your Gameplay modifiers. This is irreversible!"),
 				new ResetScoreOption("Reset your score on all songs and weeks. This is irreversible!"),
 				new LockWeeksOption("Reset your story mode progress. This is irreversible!"),
