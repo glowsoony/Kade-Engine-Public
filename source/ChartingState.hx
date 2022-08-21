@@ -41,17 +41,30 @@ import flixel.util.FlxColor;
 import haxe.Json;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
-import openfl.events.IOErrorEvent;
-import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
+import flixel.util.FlxSort;
+import flixel.addons.ui.FlxUI9SliceSprite;
+import flixel.addons.transition.FlxTransitionableState;
 import openfl.Lib;
+#if FEATURE_DISCORD
+import Discord.DiscordClient;
+#end
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
+import flixel.util.FlxTimer;
+import lime.media.AudioBuffer;
+import haxe.io.Bytes;
+import flash.geom.Rectangle;
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
 
 using StringTools;
+
+@:access(flixel.system.FlxSound._sound)
+@:access(openfl.media.Sound.__buffer)
 
 class ChartingState extends MusicBeatState
 {
@@ -154,6 +167,13 @@ class ChartingState extends MusicBeatState
 
 	override function create()
 	{
+		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		bg.scrollFactor.set();
+		bg.color = 0xFF222222;
+		add(bg);
+
+		ignoreWarnings = FlxG.save.data.ignoreWarnings;
+		
 		#if FEATURE_DISCORD
 		DiscordClient.changePresence("Chart Editor", null, null, true);
 		#end
@@ -393,7 +413,8 @@ class ChartingState extends MusicBeatState
 			{name: "Song", label: 'Song Data'},
 			{name: "Section", label: 'Section Data'},
 			{name: "Note", label: 'Note Data'},
-			{name: "Assets", label: 'Assets'}
+			{name: "Assets", label: 'Assets'},
+			{name: "Charting", label: 'Charting'}
 		];
 
 		UI_box = new FlxUITabMenu(null, tabs, true);
@@ -418,7 +439,7 @@ class ChartingState extends MusicBeatState
 		addSongUI();
 		addSectionUI();
 		addNoteUI();
-
+		addChartingUI();
 		addOptionsUI();
 		addEventsUI();
 
@@ -972,6 +993,10 @@ class ChartingState extends MusicBeatState
 		UI_options.addGroup(tab_options);
 	}
 
+	var metronome:FlxUICheckBox;
+	var metronomeStepper:FlxUINumericStepper;
+	var metronomeOffsetStepper:FlxUINumericStepper;
+	var check_warnings:FlxUICheckBox = null;
 	function addSongUI():Void
 	{
 		var UI_songTitle = new FlxUIInputText(10, 10, 70, _song.songId, 8);
@@ -1152,6 +1177,59 @@ class ChartingState extends MusicBeatState
 		add(camFollow);
 
 		FlxG.camera.follow(camFollow);
+	}
+	
+	function addChartingUI() {
+		var tab_group_chart = new FlxUI(null, UI_box);
+		tab_group_chart.name = 'Charting';
+
+		metronome = new FlxUICheckBox(10, 15, null, null, "Metronome Enabled", 100,
+			function() {
+				FlxG.save.data.chart_metronome = metronome.checked;
+			}
+		);
+		if (FlxG.save.data.chart_metronome == null) FlxG.save.data.chart_metronome = false;
+		metronome.checked = FlxG.save.data.chart_metronome;
+
+		metronomeStepper = new FlxUINumericStepper(15, 55, 5, _song.bpm, 1, 1500, 1);
+		metronomeOffsetStepper = new FlxUINumericStepper(metronomeStepper.x + 100, metronomeStepper.y, 25, 0, 0, 1000, 1);
+		blockPressWhileTypingOnStepper.push(metronomeStepper);
+		blockPressWhileTypingOnStepper.push(metronomeOffsetStepper);
+
+		check_warnings = new FlxUICheckBox(10, 120, null, null, "Ignore Progress Warnings", 100);
+		if (FlxG.save.data.ignoreWarnings == null) FlxG.save.data.ignoreWarnings = false;
+		check_warnings.checked = FlxG.save.data.ignoreWarnings;
+
+		check_warnings.callback = function()
+		{
+			FlxG.save.data.ignoreWarnings = check_warnings.checked;
+			ignoreWarnings = FlxG.save.data.ignoreWarnings;
+		};
+
+		var randomizeNotes:FlxButton = new FlxButton(metronomeOffsetStepper.x+100, metronomeOffsetStepper.y, "Randomize Notes", function () {
+			for (i in _song.notes) {
+				for (e in i.sectionNotes) {
+					if (e[1] >= 4 && e[1] <= 7) {
+						e[1] = FlxG.random.int(4,7);
+					} else {
+						e[1] = FlxG.random.int(0,3);
+					}
+				}
+			}
+			updateGrid();
+			updateNoteUI();
+		});
+		//random was added because (I glowsoony liked it)
+
+		tab_group_chart.add(new FlxText(metronomeStepper.x, metronomeStepper.y - 15, 0, 'BPM:'));
+		tab_group_chart.add(new FlxText(metronomeOffsetStepper.x, metronomeOffsetStepper.y - 15, 0, 'Offset (ms):'));
+		tab_group_chart.add(metronome);
+		tab_group_chart.add(randomizeNotes);
+		tab_group_chart.add(metronomeStepper);
+		tab_group_chart.add(metronomeOffsetStepper);
+		tab_group_chart.add(check_warnings);
+		
+		UI_box.addGroup(tab_group_chart);
 	}
 
 	var stepperLength:FlxUINumericStepper;
@@ -1370,6 +1448,7 @@ class ChartingState extends MusicBeatState
 
 	public var check_naltAnim:FlxUICheckBox;
 
+	var strumTimeInputText:FlxUIInputText;
 	function addNoteUI():Void
 	{
 		tab_group_note = new FlxUI(null, UI_box);
@@ -1400,12 +1479,16 @@ class ChartingState extends MusicBeatState
 				}
 			}
 		}
+			
+		strumTimeInputText = new FlxUIInputText(10, 65, 180, "0");
 
 		var stepperSusLengthLabel = new FlxText(74, 10, 'Note Sustain Length');
 
 		var applyLength:FlxButton = new FlxButton(10, 100, 'Apply Data');
-
+		
+		tab_group_note.add(new FlxText(10, 50, 0, 'Strum time (in miliseconds):'));
 		tab_group_note.add(stepperSusLength);
+		tab_group_note.add(strumTimeInputText);
 		tab_group_note.add(stepperSusLengthLabel);
 		tab_group_note.add(applyLength);
 		tab_group_note.add(check_naltAnim);
@@ -1759,6 +1842,17 @@ class ChartingState extends MusicBeatState
 				case 'divisions':
 					subDivisions = nums.value;
 					updateGrid();
+			}
+		}
+		else if(id == FlxUIInputText.CHANGE_EVENT && (sender is FlxUIInputText)) {
+			if(curSelectedNote != null)
+			{
+				if(sender == strumTimeInputText) {
+					var value:Float = Std.parseFloat(strumTimeInputText.text);
+					if(Math.isNaN(value)) value = 0;
+					curSelectedNote[0] = value;
+					updateGrid();
+				}
 			}
 		}
 
@@ -3059,6 +3153,8 @@ class ChartingState extends MusicBeatState
 				curSelectedNote[3] = false;
 				check_naltAnim.checked = false;
 			}
+			
+			strumTimeInputText.text = '' + curSelectedNote[0];
 		}
 	}
 
