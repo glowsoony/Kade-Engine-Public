@@ -625,6 +625,41 @@ class NoteCocks extends Option
 	}
 }
 
+class AutoSaveChart extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+			description = "This option cannot be toggled in the pause menu.";
+		else
+			description = desc;
+	}
+
+	public override function left():Bool
+	{
+		if (OptionsMenu.isInPause)
+			return false;
+
+		FlxG.save.data.autoSaveChart = !FlxG.save.data.autoSaveChart;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		if (OptionsMenu.isInPause)
+			return false;
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Auto Saving Chart: < " + (!FlxG.save.data.autoSaveChart ? "off" : "on") + " >";
+	}
+}
+
 class GPURendering extends Option
 {
 	public function new(desc:String)

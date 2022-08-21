@@ -84,7 +84,7 @@ This game was made with love to Newgrounds and its community. Extra love to Tom 
 - [Poco](https://github.com/poco0317) - math degree (aka most of the fucking math in this project)
 - [Fox](https://twitter.com/FoxeruKun) - circle noteskins
 - [Orbyy](https://twitter.com/orbyynew) - pixel circle noteskins
-- [Glowsoony](https://github.com/glowsoony) - Note Splashes code.
+- [Glowsoony](https://github.com/glowsoony) - Note Splashes code, Mirror and Duet for chart, 1.5 update (working or finished?, Crash Handler (from psych)).
 - [Awoofle](https://twitter.com/awoofle) - Tween Manager and Assets Cache.
 - [MAJigsaw77](https://twitter.com/jigsaw1_ma) - Shaders, MP4, and future polymod hscript support.
 - [Bolo](https://github.com/BoloVEVO/Kade-Engine) - Engine fixes and some features.
