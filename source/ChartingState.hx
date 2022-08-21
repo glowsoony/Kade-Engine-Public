@@ -165,6 +165,7 @@ class ChartingState extends MusicBeatState
 
 	var reloadOnInit = false;
 	public var ignoreWarnings = false;
+	var autosaveIndicator:FlxSprite;
 
 	override function create()
 	{
@@ -174,6 +175,8 @@ class ChartingState extends MusicBeatState
 		add(bg);
 
 		ignoreWarnings = FlxG.save.data.ignoreWarnings;
+		if (FlxG.save.data.autoSaveChart)
+			Lib.setInterval(autosaveSong2, 5 * 60 * 1000); // <arubz> * 60 * 1000
 		
 		#if FEATURE_DISCORD
 		DiscordClient.changePresence("Chart Editor", null, null, true);
@@ -436,6 +439,14 @@ class ChartingState extends MusicBeatState
 		UI_options.y = FlxG.height - 300;
 		add(UI_options);
 		add(UI_box);
+		
+		autosaveIndicator = new FlxSprite(-30, FlxG.height - 90).loadGraphic(Paths.image('autosaveIndicator'));
+		autosaveIndicator.setGraphicSize(200, 70);
+		autosaveIndicator.alpha = 0;
+		autosaveIndicator.scrollFactor.set();
+		autosaveIndicator.antialiasing = FlxG.save.data.antialiasing;
+		if (FlxG.save.data.autoSaveChart)
+			add(autosaveIndicator);
 
 		addSongUI();
 		addSectionUI();
@@ -2796,6 +2807,8 @@ class ChartingState extends MusicBeatState
 			{
 				if (FlxG.keys.justPressed.ENTER)
 				{
+					if (FlxG.save.data.autoSaveChart)
+						autosaveSong2();
 					lastSection = curSection;
 
 					PlayState.SONG = _song;
@@ -3750,6 +3763,24 @@ class ChartingState extends MusicBeatState
 
 		toRemove = []; // clear memory
 		LoadingState.loadAndSwitchState(new ChartingState());
+	}
+
+        function autosaveSong2():Void
+	{
+		FlxG.save.data.autosave = Json.stringify({
+			"song": _song,
+			"songMeta": {
+				"name": _song.songId,
+				"offset": 0,
+			}
+		});
+		trace('Chart saved!');
+		FlxTween.tween(autosaveIndicator, {alpha: 1}, 1, {ease: FlxEase.backInOut, type: ONESHOT});
+		
+		new FlxTimer().start(3, function(tmr:FlxTimer) {
+			FlxTween.tween(autosaveIndicator, {alpha: 0}, 1, {ease: FlxEase.backInOut, type: ONESHOT});
+		});
+		FlxG.save.flush();
 	}
 
 	function autosaveSong():Void
