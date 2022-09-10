@@ -509,6 +509,16 @@ class Paths
 		return FlxAtlasFrames.fromSpriteSheetPacker(image(key, library, gpuRender), file('images/$key.txt', library));
 	}
 
+	inline static public function getXmlAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?gpuRender:Bool)
+	{
+		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
+		if (isCharacter)
+		{
+			return FlxAtlasFrames.fromTexturePackerXml(image('characters/$key', library, gpuRender), file('images/characters/$key.xml', library));
+		}
+		return FlxAtlasFrames.fromTexturePackerXml(image(key, library, gpuRender), file('images/$key.xml', library));
+	}
+
 	inline static public function getTextureAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?excludeArray:Array<String>):FlxFramesCollection
 	{
 		if (isCharacter)
@@ -516,8 +526,8 @@ class Paths
 
 		return AtlasFrameMaker.construct(key, library, excludeArray);
 	}
-				
-	inline static public function getJSONAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?gpuRender:Bool)
+
+	inline static public function getJsonAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?gpuRender:Bool)
 	{
 		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
 		if (isCharacter)
