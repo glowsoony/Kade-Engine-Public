@@ -220,6 +220,11 @@ class Paths
 	{
 		return getPath('$key.txt', TEXT, library);
 	}
+	
+	inline static public function hscript(key:String, ?library:String)
+	{
+		return getPath('data/$key.hx', TEXT, library);
+	}
 
 	inline static public function xml(key:String, ?library:String)
 	{
