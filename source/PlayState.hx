@@ -6610,19 +6610,29 @@ class PlayState extends MusicBeatState
 		notes.clear();
 	}
 
-	override function switchTo(nextState:FlxState)
+	override function destroy()
 	{
 		funniKill();
-		
+
+		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
 			script.executeFunc("destroy");
-
+	
 			script.destroy();
 		}
+		#end
+
+		super.destroy();
+	}
+		
+	override function switchTo(nextState:FlxState)
+	{
+		funniKill();
 
 		return super.switchTo(nextState);
 	}
+
 
 	// Precache List for some stuff (Like frames, sounds and that kinda of shit)
 
