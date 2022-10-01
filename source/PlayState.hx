@@ -5974,7 +5974,8 @@ class PlayState extends MusicBeatState
 
 			// PRESET CLASSES
 			script.setVariable("PlayState", instance);
-			script.setVariable("FlxTween", FlxTween);
+			script.setVariable("FlxTween", FlxTween); //I personally would not remove flxtween.
+			script.setVariable("TweenManager", PlayState.tweenManager);
 			script.setVariable("FlxEase", FlxEase);
 			script.setVariable("FlxSprite", FlxSprite);
 			script.setVariable("Math", Math);
