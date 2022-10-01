@@ -58,7 +58,9 @@ import smTools.SMFile;
 import sys.io.File;
 import sys.FileSystem;
 #end
+#if FEATURE_HSCRIPT
 import Script;
+#end
 
 using StringTools;
 
@@ -118,8 +120,10 @@ class PlayState extends MusicBeatState
 	var detailsPausedText:String = "";
 	#end
 		
+	#if FEATURE_HSCRIPT
 	// Hscript
 	public var script:Script;
+	#end
 	
 	public var vocals:FlxSound;
 
@@ -1037,7 +1041,9 @@ class PlayState extends MusicBeatState
 
 		generateSong(SONG.songId);
 			
+		#if FEATURE_HSCRIPT
 		startScript();
+		#end
 
 		if (SONG.songId == 'test')
 			storyDifficulty = 1;
@@ -1426,10 +1432,12 @@ class PlayState extends MusicBeatState
 
 		PsychTransition.nextCamera = mainCam;
 			
+		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
 			script.executeFunc("onCreate");
 		}
+		#end
 	}
 
 	function removeStaticArrows(?destroy:Bool = false)
@@ -1661,10 +1669,12 @@ class PlayState extends MusicBeatState
 		inCinematic = false;
 		inCutscene = false;
 		
+		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
 			script.executeFunc("onStartCountdown");
 		}
+		#end
 
 		// appearStaticArrows();
 
@@ -2093,10 +2103,12 @@ class PlayState extends MusicBeatState
 			createTween(bar, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
 		}
 		
+		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
 			script.executeFunc("onSongStart");
 		}
+		#end
 
 		if (needSkip)
 		{
@@ -4028,10 +4040,12 @@ class PlayState extends MusicBeatState
 		for (i in shaderUpdates)
 			i(elapsed);
 			
+		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
 			script.executeFunc("onUpdate");
 		}
+		#end
 	}
 
 	public function getSectionByTime(ms:Float):SwagSection
@@ -5603,11 +5617,13 @@ class PlayState extends MusicBeatState
 	{
 		super.stepHit();
 		
+		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
 			script.setVariable("curStep", curStep);
 			script.executeFunc("onStepHit");
 		}
+		#end
 
 		if (!paused)
 		{
@@ -5768,11 +5784,13 @@ class PlayState extends MusicBeatState
 	{
 		super.beatHit();
 		
+		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
 			script.setVariable("curBeat", curBeat);
 			script.executeFunc("onBeatHit");
 		}
+		#end
 
 		if (generatedMusic)
 		{
@@ -5918,6 +5936,7 @@ class PlayState extends MusicBeatState
 		
 	public function startScript()
 	{
+		#if FEATURE_HSCRIPT
 		/*var formattedFolder:String = Paths.formatToSongPath(SONG.songId);*/
 
 		var path:String = Paths.hscript('songs/${PlayState.SONG.songId}/script');
@@ -5993,6 +6012,7 @@ class PlayState extends MusicBeatState
 
 			script.runScript(hxdata);
 		}
+		#end
 	}
 
 	public function updateSettings():Void
