@@ -58,6 +58,7 @@ import smTools.SMFile;
 import sys.io.File;
 import sys.FileSystem;
 #end
+import Script;
 
 using StringTools;
 
@@ -116,7 +117,10 @@ class PlayState extends MusicBeatState
 	var detailsText:String = "";
 	var detailsPausedText:String = "";
 	#end
-
+		
+	// Hscript
+	public var script:Script;
+	
 	public var vocals:FlxSound;
 
 	public static var isSM:Bool = false;
@@ -1032,6 +1036,8 @@ class PlayState extends MusicBeatState
 			trace('song looks gucci');
 
 		generateSong(SONG.songId);
+			
+		startScript();
 
 		if (SONG.songId == 'test')
 			storyDifficulty = 1;
@@ -1419,6 +1425,11 @@ class PlayState extends MusicBeatState
 		Paths.clearUnusedMemory();
 
 		PsychTransition.nextCamera = mainCam;
+			
+		if (script != null)
+		{
+			script.executeFunc("onCreate");
+		}
 	}
 
 	function removeStaticArrows(?destroy:Bool = false)
@@ -1649,6 +1660,11 @@ class PlayState extends MusicBeatState
 		}
 		inCinematic = false;
 		inCutscene = false;
+		
+		if (script != null)
+		{
+			script.executeFunc("onStartCountdown");
+		}
 
 		// appearStaticArrows();
 
@@ -2075,6 +2091,11 @@ class PlayState extends MusicBeatState
 			createTween(songName, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
 			createTween(songPosBar, {alpha: 0.85}, 0.5, {ease: FlxEase.circOut});
 			createTween(bar, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
+		}
+		
+		if (script != null)
+		{
+			script.executeFunc("onSongStart");
 		}
 
 		if (needSkip)
@@ -4005,6 +4026,11 @@ class PlayState extends MusicBeatState
 		super.update(elapsed);
 		for (i in shaderUpdates)
 			i(elapsed);
+			
+		if (script != null)
+		{
+			script.executeFunc("onUpdate");
+		}
 	}
 
 	public function getSectionByTime(ms:Float):SwagSection
@@ -5575,6 +5601,12 @@ class PlayState extends MusicBeatState
 	override function stepHit()
 	{
 		super.stepHit();
+		
+		if (script != null)
+		{
+			script.setVariable("curStep", curStep);
+			script.executeFunc("onStepHit");
+		}
 
 		if (!paused)
 		{
@@ -5734,6 +5766,12 @@ class PlayState extends MusicBeatState
 	override function beatHit()
 	{
 		super.beatHit();
+		
+		if (script != null)
+		{
+			script.setVariable("curBeat", curBeat);
+			script.executeFunc("onBeatHit");
+		}
 
 		if (generatedMusic)
 		{
@@ -5874,6 +5912,84 @@ class PlayState extends MusicBeatState
 			trace("FUCK YOU BITCH FUCKER CUCK SUCK BITCH " + cleanedSong.notes.length);
 
 			SONG = cleanedSong;
+		}
+	}
+		
+	public function startScript()
+	{
+		/*var formattedFolder:String = Paths.formatToSongPath(SONG.songId);*/
+
+		var path:String = Paths.hscript('songs/${PlayState.SONG.songId}/script');
+
+		var hxdata:String = "";
+
+		if (FileSystem.exists(path))
+			hxdata = File.getContent(path);
+
+		if (hxdata != "")
+		{
+			script = new Script();
+
+			script.setVariable("onSongStart", function()
+			{
+			});
+
+			script.setVariable("destroy", function()
+			{
+			});
+
+			script.setVariable("onCreate", function()
+			{
+			});
+
+			script.setVariable("onStartCountdown", function()
+			{
+			});
+
+			script.setVariable("onStepHit", function()
+			{
+			});
+
+			script.setVariable("onUpdate", function()
+			{
+			});
+
+			script.setVariable("import", function(lib:String, ?as:Null<String>) // Does this even work?
+			{
+				if (lib != null && Type.resolveClass(lib) != null)
+				{
+					script.setVariable(as != null ? as : lib, Type.resolveClass(lib));
+				}
+			});
+
+			script.setVariable("fromRGB", function(Red:Int, Green:Int, Blue:Int, Alpha:Int = 255)
+			{
+				return FlxColor.fromRGB(Red, Green, Blue, Alpha);
+			});
+
+			script.setVariable("curStep", curStep);
+			script.setVariable("curBeat", curBeat);
+			script.setVariable("bpm", SONG.bpm);
+
+			// PRESET CLASSES
+			script.setVariable("PlayState", instance);
+			script.setVariable("FlxTween", FlxTween);
+			script.setVariable("FlxEase", FlxEase);
+			script.setVariable("FlxSprite", FlxSprite);
+			script.setVariable("Math", Math);
+			script.setVariable("FlxG", FlxG);
+			script.setVariable("FlxTimer", FlxTimer);
+			script.setVariable("Main", Main);
+			script.setVariable("Event", Event);
+			script.setVariable("Conductor", Conductor);
+			script.setVariable("Std", Std);
+			script.setVariable("FlxTextBorderStyle", FlxTextBorderStyle);
+			script.setVariable("Paths", Paths);
+			script.setVariable("CENTER", FlxTextAlign.CENTER);
+			script.setVariable("FlxTextFormat", FlxTextFormat);
+			script.setVariable("FlxTextFormatMarkerPair", FlxTextFormatMarkerPair);
+
+			script.runScript(hxdata);
 		}
 	}
 
@@ -6478,6 +6594,13 @@ class PlayState extends MusicBeatState
 	override function switchTo(nextState:FlxState)
 	{
 		funniKill();
+		
+		if (script != null)
+		{
+			script.executeFunc("destroy");
+
+			script.destroy();
+		}
 
 		return super.switchTo(nextState);
 	}
