@@ -6004,6 +6004,9 @@ class PlayState extends MusicBeatState
 			script.setVariable("Event", Event);
 			script.setVariable("Conductor", Conductor);
 			script.setVariable("Std", Std);
+			script.setVariable("Stage", Stage);
+			script.setVariable("FlxG", FlxG);
+			script.setVariable("KadeEngineData", KadeEngineData); //this is because of somethings I think would be easier to use without being hardcoded.
 			script.setVariable("FlxTextBorderStyle", FlxTextBorderStyle);
 			script.setVariable("Paths", Paths);
 			script.setVariable("CENTER", FlxTextAlign.CENTER);
