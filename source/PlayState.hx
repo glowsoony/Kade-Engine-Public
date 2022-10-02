@@ -1791,6 +1791,10 @@ class PlayState extends MusicBeatState
 					});
 					FlxG.sound.play(Paths.sound('introGo' + altSuffix), 0.6);
 			}
+			
+			#if FEATURE_HSCRIPT
+			script.setVariable('onCountdownTick', [swagCounter]);
+			#end
 
 			swagCounter += 1;
 		}, 4);
@@ -5792,7 +5796,7 @@ class PlayState extends MusicBeatState
 		#if FEATURE_LUAMODCHART
 		if (executeModchart && luaModchart != null)
 		{
-			luaModChart.setVar('curBeat', curBeat);
+			luaModchart.setVar('curBeat', curBeat);
 			luaModchart.executeState('beatHit', [curBeat]);
 		}
 		#end
@@ -5964,6 +5968,10 @@ class PlayState extends MusicBeatState
 			});
 
 			script.setVariable("onStartCountdown", function()
+			{
+			});
+			
+			script.setVariable('onCountdownTick', function(swagCounter:Int)
 			{
 			});
 
