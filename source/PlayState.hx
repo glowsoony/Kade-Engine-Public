@@ -4043,7 +4043,7 @@ class PlayState extends MusicBeatState
 		#if FEATURE_HSCRIPT
 		if (script != null)
 		{
-			script.executeFunc("onUpdate");
+			script.executeFunc("onUpdate", [elapsed]);
 		}
 		#end
 	}
@@ -5616,14 +5616,6 @@ class PlayState extends MusicBeatState
 	override function stepHit()
 	{
 		super.stepHit();
-		
-		#if FEATURE_HSCRIPT
-		if (script != null)
-		{
-			script.setVariable("curStep", curStep);
-			script.executeFunc("onStepHit");
-		}
-		#end
 
 		if (!paused)
 		{
@@ -5654,6 +5646,14 @@ class PlayState extends MusicBeatState
 		{
 			luaModchart.setVar('curStep', curStep);
 			luaModchart.executeState('stepHit', [curStep]);
+		}
+		#end
+			
+		#if FEATURE_HSCRIPT
+		if (script != null)
+		{
+			script.setVariable("curStep", curStep);
+			script.executeFunc("onStepHit", [curStep]);
 		}
 		#end
 
@@ -5783,14 +5783,6 @@ class PlayState extends MusicBeatState
 	override function beatHit()
 	{
 		super.beatHit();
-		
-		#if FEATURE_HSCRIPT
-		if (script != null)
-		{
-			script.setVariable("curBeat", curBeat);
-			script.executeFunc("onBeatHit");
-		}
-		#end
 
 		if (generatedMusic)
 		{
@@ -5800,7 +5792,16 @@ class PlayState extends MusicBeatState
 		#if FEATURE_LUAMODCHART
 		if (executeModchart && luaModchart != null)
 		{
+			luaModChart.setVar('curBeat', curBeat);
 			luaModchart.executeState('beatHit', [curBeat]);
+		}
+		#end
+			
+		#if FEATURE_HSCRIPT
+		if (script != null)
+		{
+			script.setVariable("curBeat", curBeat);
+			script.executeFunc("onBeatHit", [curBeat]);
 		}
 		#end
 
@@ -5969,6 +5970,10 @@ class PlayState extends MusicBeatState
 			script.setVariable("onStepHit", function()
 			{
 			});
+			
+			script.setVariable("onBeatHit", function() 
+			{
+			});
 
 			script.setVariable("onUpdate", function()
 			{
@@ -5980,6 +5985,19 @@ class PlayState extends MusicBeatState
 				{
 					script.setVariable(as != null ? as : lib, Type.resolveClass(lib));
 				}
+			});
+			
+			script.setVariable("curStageZoom", function(camZoom:Float)
+			{
+				Stage.camZoom = camZoom;
+			});
+
+			script.setVariable("goodNoteHit", function(note:Note) {
+				goodNoteHit(note);
+			});
+
+			script.setVariable("opponentNoteHit", function(daNote:Note){
+				opponentNoteHit(daNote);
 			});
 
 			script.setVariable("fromRGB", function(Red:Int, Green:Int, Blue:Int, Alpha:Int = 255)
