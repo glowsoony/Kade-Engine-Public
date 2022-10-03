@@ -5657,7 +5657,7 @@ class PlayState extends MusicBeatState
 		if (script != null)
 		{
 			script.setVariable("curStep", curStep);
-			script.executeFunc("onStepHit", [curStep]);
+			script.executeFunc("stepHit", [curStep]);
 		}
 		#end
 
@@ -5805,7 +5805,7 @@ class PlayState extends MusicBeatState
 		if (script != null)
 		{
 			script.setVariable("curBeat", curBeat);
-			script.executeFunc("onBeatHit", [curBeat]);
+			script.executeFunc("beatHit", [curBeat]);
 		}
 		#end
 
@@ -5975,11 +5975,11 @@ class PlayState extends MusicBeatState
 			{
 			});
 
-			script.setVariable("onStepHit", function()
+			script.setVariable("stepHit", function()
 			{
 			});
 			
-			script.setVariable("onBeatHit", function() 
+			script.setVariable("beatHit", function() 
 			{
 			});
 
