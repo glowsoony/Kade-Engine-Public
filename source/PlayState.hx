@@ -306,7 +306,7 @@ class PlayState extends MusicBeatState
 	public static var highestCombo:Int = 0;
 
 	public var executeModchart = false;
-
+        public var executeHScript = false;
 	public var sourceModchart = false;
 
 	// Animation common suffixes
@@ -507,8 +507,19 @@ class PlayState extends MusicBeatState
 			executeModchart = FileSystem.exists(pathToSm + "/modchart.lua") && PlayStateChangeables.modchart;
 		#end
 		#end
+		#if FEATURE_HSCRIPT
+		if (!isStoryMode)
+			executeHScript = FileSystem.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
+		else
+			executeHScript = FileSystem.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
+		#if FEATURE_STEPMANIA
+		if (isSM)
+			executeHScript = FileSystem.exists(pathToSm + "/script.hx");
+		#end
+		#end
 
 		Debug.logInfo('Searching for mod chart? ($executeModchart) at ' + Paths.lua('songs/${PlayState.SONG.songId}/modchart'));
+		Debug.logInfo('Searching for hscript? ($executeHScript) at ' + Paths.hscript('songs/${PlayState.SONG.songId}/script'));
 
 		/*if (executeModchart)
 			songMultiplier = 1; */
@@ -1042,7 +1053,10 @@ class PlayState extends MusicBeatState
 		generateSong(SONG.songId);
 			
 		#if FEATURE_HSCRIPT
-		startScript();
+		if (executeHScript)
+		{
+			startScript();
+		}
 		#end
 
 		if (SONG.songId == 'test')
@@ -1433,7 +1447,7 @@ class PlayState extends MusicBeatState
 		PsychTransition.nextCamera = mainCam;
 			
 		#if FEATURE_HSCRIPT
-		if (script != null)
+		if (executeHScript && script != null)
 		{
 			script.executeFunc("onCreate");
 		}
@@ -1670,7 +1684,7 @@ class PlayState extends MusicBeatState
 		inCutscene = false;
 		
 		#if FEATURE_HSCRIPT
-		if (script != null)
+		if (executeHScript && script != null)
 		{
 			script.executeFunc("onStartCountdown");
 		}
@@ -2104,9 +2118,9 @@ class PlayState extends MusicBeatState
 		}
 		
 		#if FEATURE_HSCRIPT
-		if (script != null)
+		if (executeHScript && script != null)
 		{
-			script.executeFunc("onSongStart");
+			script.executeFunc("onSongStart", [null]);
 		}
 		#end
 
@@ -3058,6 +3072,13 @@ class PlayState extends MusicBeatState
 			}
 		}
 		#end
+		#if FEATURE_HSCRIPT
+		if (executeHScript && script != null && songStarted)
+		{
+			script.setVariable('curBeat', HelperFunctions.truncateFloat(curDecimalBeat, 3));
+			script.executeFunc('update', [elapsed]);	
+		}
+		#end
 		// reverse iterate to remove oldest notes first and not invalidate the iteration
 		// stop iteration as soon as a note is not removed
 		// all notes should be kept in the correct order and this is optimal, safe to do every frame/update
@@ -3121,6 +3142,7 @@ class PlayState extends MusicBeatState
 			if (PlayStateChangeables.mirrorMode)
 				PlayStateChangeables.mirrorMode = !PlayStateChangeables.mirrorMode;
 			executeModchart = false;
+			executeHScript = false;
 
 			cannotDie = true;
 			PsychTransition.nextCamera = mainCam;
@@ -4039,13 +4061,6 @@ class PlayState extends MusicBeatState
 		super.update(elapsed);
 		for (i in shaderUpdates)
 			i(elapsed);
-			
-		#if FEATURE_HSCRIPT
-		if (script != null)
-		{
-			script.executeFunc("onUpdate", [elapsed]);
-		}
-		#end
 	}
 
 	public function getSectionByTime(ms:Float):SwagSection
@@ -5650,7 +5665,7 @@ class PlayState extends MusicBeatState
 		#end
 			
 		#if FEATURE_HSCRIPT
-		if (script != null)
+		if (executeHScript && script != null)
 		{
 			script.setVariable("curStep", curStep);
 			script.executeFunc("stepHit", [curStep]);
@@ -5792,15 +5807,13 @@ class PlayState extends MusicBeatState
 		#if FEATURE_LUAMODCHART
 		if (executeModchart && luaModchart != null)
 		{
-			luaModchart.setVar('curBeat', curBeat);
 			luaModchart.executeState('beatHit', [curBeat]);
 		}
 		#end
 			
 		#if FEATURE_HSCRIPT
-		if (script != null)
+		if (executeHScript && script != null)
 		{
-			script.setVariable("curBeat", curBeat);
 			script.executeFunc("beatHit", [curBeat]);
 		}
 		#end
@@ -6636,10 +6649,9 @@ class PlayState extends MusicBeatState
 		funniKill();
 
 		#if FEATURE_HSCRIPT
-		if (script != null)
+		if (executeHScript && script != null)
 		{
 			script.executeFunc("destroy");
-	
 			script.destroy();
 		}
 		#end
