@@ -3075,8 +3075,12 @@ class PlayState extends MusicBeatState
 		#if FEATURE_HSCRIPT
 		if (executeHScript && script != null && songStarted)
 		{
+			script.setVariable('zoomAllowed', FlxG.save.data.camzoom);
+			script.setVariable('songPos', Conductor.songPosition);
+			script.setVariable('hudZoom', camHUD.zoom);
 			script.setVariable('curBeat', HelperFunctions.truncateFloat(curDecimalBeat, 3));
-			script.executeFunc('onUpdate', [elapsed]);	
+			script.setVariable('cameraZoom', FlxG.camera.zoom);
+			script.executeFunc('onUpdate', [elapsed]);
 		}
 		#end
 		// reverse iterate to remove oldest notes first and not invalidate the iteration
