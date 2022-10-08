@@ -509,9 +509,9 @@ class PlayState extends MusicBeatState
 		#end
 		#if FEATURE_HSCRIPT
 		if (!isStoryMode)
-			executeHScript = FileSystem.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
+			executeHScript = OpenFlAssets.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
 		else
-			executeHScript = FileSystem.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
+			executeHScript = OpenFlAssets.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
 		#if FEATURE_STEPMANIA
 		if (isSM)
 			executeHScript = FileSystem.exists(pathToSm + "/script.hx");
