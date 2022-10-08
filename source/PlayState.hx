@@ -3076,7 +3076,7 @@ class PlayState extends MusicBeatState
 		if (executeHScript && script != null && songStarted)
 		{
 			script.setVariable('curBeat', HelperFunctions.truncateFloat(curDecimalBeat, 3));
-			script.executeFunc('update', [elapsed]);	
+			script.executeFunc('onUpdate', [elapsed]);	
 		}
 		#end
 		// reverse iterate to remove oldest notes first and not invalidate the iteration
