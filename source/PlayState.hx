@@ -162,6 +162,8 @@ class PlayState extends MusicBeatState
 	private var gfSpeed:Int = 1;
 
 	public var health:Float = 1; // making public because sethealth doesnt work without it
+	public var healthGain:Float = 1;
+	public var healthLoss:Float = 1;
 
 	private var combo:Int = 0;
 
@@ -1986,9 +1988,9 @@ class PlayState extends MusicBeatState
 			ana.hitJudge = "shit";
 			ana.nearestNote = [];
 			if (!PlayStateChangeables.opponentMode)
-				health -= 0.04 * PlayStateChangeables.healthLoss;
+				health -= 0.04 * PlayStateChangeables.healthLoss * healthLoss;
 			else
-				health += 0.04 * PlayStateChangeables.healthLoss;
+				health += 0.04 * PlayStateChangeables.healthLoss * healthLoss;
 		}
 	}
 
@@ -3961,9 +3963,9 @@ class PlayState extends MusicBeatState
 										i.alpha = 0.3;
 										i.sustainActive = false;
 										if (!PlayStateChangeables.opponentMode)
-											health -= (0.04 * PlayStateChangeables.healthLoss) / daNote.children.length;
+											health -= (0.04 * PlayStateChangeables.healthLoss * healthLoss) / daNote.children.length;
 										else
-											health += (0.04 * PlayStateChangeables.healthLoss) / daNote.children.length;
+											health += (0.04 * PlayStateChangeables.healthLoss * healthLoss) / daNote.children.length;
 									}
 									noteMiss(daNote.noteData, daNote);
 								}
@@ -3995,9 +3997,9 @@ class PlayState extends MusicBeatState
 									if (!daNote.wasGoodHit && !daNote.isSustainNote)
 									{
 										if (!PlayStateChangeables.opponentMode)
-											health -= (0.04 * PlayStateChangeables.healthLoss);
+											health -= (0.04 * PlayStateChangeables.healthLoss * healthLoss);
 										else
-											health += (0.04 * PlayStateChangeables.healthLoss);
+											health += (0.04 * PlayStateChangeables.healthLoss * healthLoss);
 
 										Debug.logTrace("User failed note.");
 										noteMiss(daNote.noteData, daNote);
@@ -4032,9 +4034,9 @@ class PlayState extends MusicBeatState
 								i.alpha = 0.3;
 								i.sustainActive = false;
 								if (!PlayStateChangeables.opponentMode)
-									health -= (0.08 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
+									health -= (0.08 * PlayStateChangeables.healthLoss * healthLoss) / daNote.parent.children.length;
 								else
-									health += (0.08 * PlayStateChangeables.healthLoss) / daNote.parent.children.length;
+									health += (0.08 * PlayStateChangeables.healthLoss * healthLoss) / daNote.parent.children.length;
 							}
 							if (daNote.parent.wasGoodHit)
 							{
@@ -4429,13 +4431,13 @@ class PlayState extends MusicBeatState
 				misses++;
 				if (!PlayStateChangeables.opponentMode)
 				{
-					health -= 0.2 * PlayStateChangeables.healthLoss;
+					health -= 0.2 * PlayStateChangeables.healthLoss * healthLoss;
 					if (PlayStateChangeables.skillIssue)
 						health = 0;
 				}
 				else
 				{
-					health += 0.2 * PlayStateChangeables.healthLoss;
+					health += 0.2 * PlayStateChangeables.healthLoss * healthLoss;
 					if (PlayStateChangeables.skillIssue)
 						health = 2.1;
 				}
@@ -4447,9 +4449,9 @@ class PlayState extends MusicBeatState
 				daRating = 'bad';
 				score = 0;
 				if (!PlayStateChangeables.opponentMode)
-					health -= 0.06 * PlayStateChangeables.healthLoss;
+					health -= 0.06 * PlayStateChangeables.healthLoss * healthLoss;
 				else
-					health += 0.06 * PlayStateChangeables.healthLoss;
+					health += 0.06 * PlayStateChangeables.healthLoss * healthLoss;
 				ss = false;
 				bads++;
 				if (FlxG.save.data.accuracyMod == 0)
@@ -4465,11 +4467,11 @@ class PlayState extends MusicBeatState
 				score = 350;
 				if (!PlayStateChangeables.opponentMode && health < 2)
 				{
-					health += 0.04 * PlayStateChangeables.healthGain;
+					health += 0.04 * PlayStateChangeables.healthGain * healthGain;
 				}
 				else if (PlayStateChangeables.opponentMode && health > 0)
 				{
-					health -= 0.04 * PlayStateChangeables.healthGain;
+					health -= 0.04 * PlayStateChangeables.healthGain * healthGain;
 				}
 
 				if (FlxG.save.data.accuracyMod == 0)
@@ -5366,7 +5368,7 @@ class PlayState extends MusicBeatState
 			{
 				if (!PlayStateChangeables.opponentMode)
 				{
-					health -= .04 * PlayStateChangeables.healthLoss;
+					health -= .04 * PlayStateChangeables.healthLoss * healthLoss;
 					if (health <= 0.01)
 					{
 						health = 0.01;
@@ -5374,7 +5376,7 @@ class PlayState extends MusicBeatState
 				}
 				else
 				{
-					health += .04 * PlayStateChangeables.healthLoss;
+					health += .04 * PlayStateChangeables.healthLoss * healthLoss;
 					if (health >= 2)
 						health = 2;
 				}
@@ -5383,7 +5385,7 @@ class PlayState extends MusicBeatState
 			{
 				if (!PlayStateChangeables.opponentMode)
 				{
-					health -= .02 * PlayStateChangeables.healthLoss;
+					health -= .02 * PlayStateChangeables.healthLoss * healthLoss;
 					if (health <= 0.01)
 					{
 						health = 0.01;
@@ -5391,7 +5393,7 @@ class PlayState extends MusicBeatState
 				}
 				else
 				{
-					health += .02 * PlayStateChangeables.healthLoss;
+					health += .02 * PlayStateChangeables.healthLoss * healthLoss;
 					if (health >= 2)
 						health = 2;
 				}
@@ -5566,9 +5568,9 @@ class PlayState extends MusicBeatState
 			 */
 			if (note.isSustainNote)
 				if (!PlayStateChangeables.opponentMode && health <= 2)
-					health += 0.02 * PlayStateChangeables.healthGain;
+					health += 0.02 * PlayStateChangeables.healthGain * healthGain;
 				else if (health > 0)
-					health -= 0.02 * PlayStateChangeables.healthGain;
+					health -= 0.02 * PlayStateChangeables.healthGain * healthGain;
 			#if FEATURE_LUAMODCHART
 			if (luaModchart != null)
 				if (!PlayStateChangeables.opponentMode)
