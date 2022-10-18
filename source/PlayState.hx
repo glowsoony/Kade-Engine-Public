@@ -5960,9 +5960,12 @@ class PlayState extends MusicBeatState
 	public function startScript()
 	{
 		#if FEATURE_HSCRIPT
-		/*var formattedFolder:String = Paths.formatToSongPath(SONG.songId);*/
-
-		var path:String = Paths.hscript('songs/${PlayState.SONG.songId}/script');
+		var path:String;
+		
+		if (Script.scriptName == null || Script.scriptName == '' || Script.scriptName == 'script')
+			path = Paths.hscript('songs/${PlayState.SONG.songId}/script');
+		else
+			path = Paths.hscript('songs/${PlayState.SONG.songId}/${Script.scriptName}');
 
 		var hxdata:String = "";
 
@@ -5971,7 +5974,7 @@ class PlayState extends MusicBeatState
 
 		if (hxdata != "")
 		{
-			script = new Script();
+			script = new Script(Script.scriptName);
 			
 			script.variables.set('setVar', function(name:String, value:Dynamic)
 			{
