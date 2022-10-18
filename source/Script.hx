@@ -16,7 +16,7 @@ class Script extends FlxBasic
 
 	public static var scriptName:String = '';
 
-	public override function new()
+	public override function new(script:String)
 	{
 		super();
 		scriptName = script;
