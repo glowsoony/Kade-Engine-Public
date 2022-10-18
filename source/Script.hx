@@ -1,8 +1,10 @@
 package;
 
 import flixel.FlxBasic;
-import hscript.Interp;
 import openfl.Lib;
+import hscript.Parser;
+import hscript.Interp;
+import hscript.Expr;
 
 class Script extends FlxBasic
 {
