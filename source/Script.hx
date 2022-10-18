@@ -7,12 +7,20 @@ import openfl.Lib;
 class Script extends FlxBasic
 {
 	public var hscript:Interp;
+	
+	public static var hscriptreal:Script = null;
+
+	public static var parser:Parser = new Parser();
+
+	public var scriptName:String = '';
 
 	public override function new()
 	{
 		super();
 		hscript = new Interp();
 	}
+	
+	public var variables(get, never):Map<String, Dynamic>;
 
 	public function runScript(script:String)
 	{
@@ -28,6 +36,19 @@ class Script extends FlxBasic
 		{
 			Lib.application.window.alert(e.message, "HSCRIPT ERROR!1111");
 		}
+	}
+	
+	public function get_variables()
+	{
+		return hscript.variables;
+	}
+
+	public function execute(codeToRun:String):Dynamic
+	{
+		@:privateAccess
+		Script.parser.line = 1;
+		Script.parser.allowTypes = true;
+		return hscript.execute(Script.parser.parseString(codeToRun));
 	}
 
 	public function setVariable(name:String, val:Dynamic)
@@ -76,6 +97,15 @@ class Script extends FlxBasic
 			}
 		}
 		return null;
+	}
+	
+	public function initHaxeModule()
+	{
+		if(hscriptreal == null)
+		{
+			trace('initializing haxe interp for: $scriptName');
+			hscriptreal = new Script(); //TO DO: Fix issue with 2 scripts not being able to use the same variable names
+		}
 	}
 
 	public override function destroy()
