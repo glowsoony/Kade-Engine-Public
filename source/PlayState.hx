@@ -218,6 +218,9 @@ class PlayState extends MusicBeatState
 	public var shaderUpdates:Array<Float->Void> = [];
 
 	public var camVideo:FlxCamera;
+	
+	// well Hscript
+	public static var variables:Map<String, Dynamic> = new Map<String, Dynamic>();
 
 	public var cannotDie = false;
 
@@ -5969,6 +5972,28 @@ class PlayState extends MusicBeatState
 		if (hxdata != "")
 		{
 			script = new Script();
+			
+			script.variables.set('setVar', function(name:String, value:Dynamic)
+			{
+				PlayState.variables.set(name, value);
+			});
+
+			script.variables.set('getVar', function(name:String)
+			{
+				var result:Dynamic = null;
+				if(PlayState.variables.exists(name)) result = PlayState.variables.get(name);
+				return result;
+			});
+
+			script.variables.set('removeVar', function(name:String)
+			{
+				if(PlayState.variables.exists(name))
+				{
+					PlayState.variables.remove(name);
+					return true;
+				}
+				return false;
+			});
 
 			script.setVariable("onSongStart", function()
 			{
@@ -6049,6 +6074,10 @@ class PlayState extends MusicBeatState
 			script.setVariable("CENTER", FlxTextAlign.CENTER);
 			script.setVariable("FlxTextFormat", FlxTextFormat);
 			script.setVariable("FlxTextFormatMarkerPair", FlxTextFormatMarkerPair);
+			script.setVariable("Character", Character);
+			script.setVariable("StringTools", StringTools);
+			
+			script.variables.set('ShaderFilter', openfl.filters.ShaderFilter);
 
 			script.runScript(hxdata);
 		}
