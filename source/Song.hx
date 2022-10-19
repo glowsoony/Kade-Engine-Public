@@ -11,7 +11,7 @@ class Event
 {
 	public var name:String;
 	public var position:Float;
-	public var value:Any;
+	public var value:Float;
 	public var type:String;
 
 	public function new(name:String, pos:Float, value:Any, type:String)
@@ -207,6 +207,8 @@ class Song
 		}
 
 		songData.offset = songMetaData.offset != null ? songMetaData.offset : 0;
+		if (songMetaData.name != null)
+			songData.songName = songMetaData.name;
 
 		return Song.conversionChecks(songData);
 	}
