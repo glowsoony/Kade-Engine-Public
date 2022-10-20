@@ -87,7 +87,7 @@ class FreeplayState extends MusicBeatState
 	public static var instance:FreeplayState;
 
 	public static function loadDiff(diff:Int, songId:String, array:Array<SongData>)
-		array.push(Song.conversionChecks(Song.loadFromJson(songId, CoolUtil.suffixDiffsArray[diff])));
+		array.push(Song.loadFromJson(songId, CoolUtil.suffixDiffsArray[diff]));
 
 	public static var list:Array<String> = [];
 

@@ -562,43 +562,38 @@ class PlayState extends MusicBeatState
 		camVideo = new FlxCamera();
 		camVideo.bgColor.alpha = 0;
 		camSustains = new FlxCamera();
-		camSustains.height = 1300;
 		camSustains.bgColor.alpha = 0;
 		camStrums = new FlxCamera();
-		camStrums.height = 1300;
 		camStrums.bgColor.alpha = 0;
 		camNotes = new FlxCamera();
-		camNotes.height = 1300;
 		camNotes.bgColor.alpha = 0;
 
 		// Game Camera (where stage and characters are)
 		FlxG.cameras.reset(camGame);
 
 		// Video Camera if you put funni videos or smth
-		FlxG.cameras.add(camVideo);
+		FlxG.cameras.add(camVideo, false);
 
 		// HUD Camera (Health Bar, scoreTxt, etc)
-		FlxG.cameras.add(camHUD);
+		FlxG.cameras.add(camHUD, false);
 
 		// StrumLine Camera
-		FlxG.cameras.add(camStrums);
+		FlxG.cameras.add(camStrums, false);
 
 		// Long Notes camera
-		FlxG.cameras.add(camSustains);
+		FlxG.cameras.add(camSustains, false);
 
 		// Single Notes camera
-		FlxG.cameras.add(camNotes);
+		FlxG.cameras.add(camNotes, false);
 
 		// Main Camera
-		FlxG.cameras.add(mainCam);
+		FlxG.cameras.add(mainCam, false);
 
 		camHUD.zoom = PlayStateChangeables.zoom;
 
 		camNotes.zoom = camHUD.zoom;
 		camSustains.zoom = camHUD.zoom;
 		camStrums.zoom = camHUD.zoom;
-
-		FlxCamera.defaultCameras = [camGame];
 
 		PsychTransition.nextCamera = mainCam;
 
@@ -616,7 +611,7 @@ class PlayState extends MusicBeatState
 				sourceModchart = false;
 		}
 
-		// Conductor.mapBPMChanges(SONG);
+		Conductor.mapBPMChanges(SONG);
 		Conductor.changeBPM(SONG.bpm);
 
 		Conductor.bpm = SONG.bpm;
@@ -986,9 +981,9 @@ class PlayState extends MusicBeatState
 		strumLine.scrollFactor.set();
 
 		if (PlayStateChangeables.useDownscroll)
-			strumLine.y = FlxG.height - (165 * Math.pow(FlxG.save.data.zoom, 0.75));
+			strumLine.y = FlxG.height - 165;
 		else
-			strumLine.y = FlxG.height - (647.5 / Math.pow(FlxG.save.data.zoom, 1.05));
+			strumLine.y = FlxG.height - 670;
 
 		laneunderlayOpponent = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height * 2);
 		laneunderlayOpponent.alpha = FlxG.save.data.laneTransparency;
@@ -1142,10 +1137,10 @@ class PlayState extends MusicBeatState
 
 		FlxG.fixedTimestep = false;
 
-		healthBarBG = new FlxSprite(0, 648 / Math.pow(FlxG.save.data.zoom, 0.5)).loadGraphic(Paths.image('healthBar', 'shared'));
+		healthBarBG = new FlxSprite(0, FlxG.height - 72).loadGraphic(Paths.image('healthBar', 'shared'));
 		if (PlayStateChangeables.useDownscroll)
 		{
-			healthBarBG.y = -FlxG.height + (770 * Math.pow(FlxG.save.data.zoom, 0.4));
+			healthBarBG.y = FlxG.height - 670;
 		}
 		healthBarBG.screenCenter(X);
 		healthBarBG.scrollFactor.set();
@@ -1161,10 +1156,9 @@ class PlayState extends MusicBeatState
 			accMode = "Complex";
 
 		// Add Kade Engine watermark
-		kadeEngineWatermark = new FlxText(-FlxG.width
-			+ (1284 * Math.pow(FlxG.save.data.zoom, 0.475)),
-			-FlxG.height
-			+ (1415 / Math.pow(FlxG.save.data.zoom, 0.25)), 0,
+		kadeEngineWatermark = new FlxText(FlxG.width
+			- 1276, FlxG.height
+			- 27, 0,
 			SONG.songName
 			+ (FlxMath.roundDecimal(songMultiplier, 2) != 1.00 ? " (" + FlxMath.roundDecimal(songMultiplier, 2) + "x)" : "")
 			+ " - "
@@ -1176,12 +1170,7 @@ class PlayState extends MusicBeatState
 		add(kadeEngineWatermark);
 
 		// ACCURACY WATERMARK
-		accText = new FlxText(-FlxG.width
-			+ (1284 * Math.pow(FlxG.save.data.zoom, 0.475)),
-			-FlxG.height
-			+ (1395 / Math.pow(FlxG.save.data.zoom, 0.25)), 0,
-			"Accuracy Mode: "
-			+ accMode, 16);
+		accText = new FlxText(kadeEngineWatermark.x, kadeEngineWatermark.y - 20, 0, "Accuracy Mode: " + accMode, 16);
 		accText.scrollFactor.set();
 		accText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 
@@ -1201,7 +1190,7 @@ class PlayState extends MusicBeatState
 		#end
 		add(scoreTxt);
 
-		judgementCounter = new FlxText(-FlxG.width + (1300 * Math.pow(FlxG.save.data.zoom, 0.5)), 0, FlxG.width, "", 20);
+		judgementCounter = new FlxText(FlxG.width - 1260, 0, FlxG.width, "", 20);
 		judgementCounter.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, FlxTextAlign.LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		judgementCounter.borderSize = 2;
 		judgementCounter.borderQuality = 2;
@@ -2033,10 +2022,10 @@ class PlayState extends MusicBeatState
 		Conductor.songPosition = startTime;
 		startTime = 0;
 
-		songPosBG = new FlxSprite(0, FlxG.height - (710 / Math.pow(FlxG.save.data.zoom, 0.45))).loadGraphic(Paths.image('healthBar', 'shared'));
+		songPosBG = new FlxSprite(0, FlxG.height - 710).loadGraphic(Paths.image('healthBar', 'shared'));
 
 		if (PlayStateChangeables.useDownscroll)
-			songPosBG.y = -FlxG.height + (1403 / Math.pow(FlxG.save.data.zoom, 0.25));
+			songPosBG.y = FlxG.height - 37;
 
 		songPosBG.screenCenter(X);
 		songPosBG.scrollFactor.set();
@@ -2615,10 +2604,10 @@ class PlayState extends MusicBeatState
 		vocals.pause();
 		inst.pause();
 
-		inst.play();
+		inst.resume();
 		inst.time = Conductor.songPosition * songMultiplier;
 		vocals.time = inst.time;
-		vocals.play();
+		vocals.resume();
 
 		#if cpp
 		if (inst.playing)
@@ -3258,9 +3247,9 @@ class PlayState extends MusicBeatState
 				});
 
 				inst.time = Conductor.songPosition;
-				inst.play();
+				inst.resume();
 				vocals.time = Conductor.songPosition;
-				vocals.play();
+				vocals.resume();
 				createTimer(0.5, function(tmr:FlxTimer)
 				{
 					usedTimeTravel = false;
@@ -3285,9 +3274,9 @@ class PlayState extends MusicBeatState
 			Conductor.songPosition = skipTo;
 			Conductor.rawPosition = skipTo;
 			inst.time = Conductor.songPosition;
-			inst.play();
+			inst.resume();
 			vocals.time = Conductor.songPosition;
-			vocals.play();
+			vocals.resume();
 			createTween(skipText, {alpha: 0}, 0.2, {
 				onComplete: function(tw)
 				{
@@ -3590,7 +3579,7 @@ class PlayState extends MusicBeatState
 				FlxG.save.data.zoom = 0.8;
 			if (FlxG.save.data.zoom > 1.2)
 				FlxG.save.data.zoom = 1.2;
-			var bpmRatio = SONG.bpm / 100;
+			var bpmRatio = Conductor.bpm / 100;
 
 			FlxG.camera.zoom = FlxMath.lerp(Stage.camZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio * songMultiplier), 0, 1));
 			camHUD.zoom = FlxMath.lerp(FlxG.save.data.zoom, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125 * bpmRatio * songMultiplier), 0, 1));
