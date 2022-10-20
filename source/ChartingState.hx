@@ -285,8 +285,8 @@ class ChartingState extends MusicBeatState
 		if (_song.eventObjects == null)
 			_song.eventObjects = [new Song.Event("Init BPM", 0, _song.bpm, "BPM Change")];
 
-		if (_song.eventObjects.length == 0)
-			_song.eventObjects = [new Song.Event("Init BPM", 0, _song.bpm, "BPM Change")];
+		/*if (_song.eventObjects.length == 0)
+			_song.eventObjects = [new Song.Event("Init BPM", 0, _song.bpm, "BPM Change")]; */
 
 		Debug.logTrace("goin");
 
@@ -1787,11 +1787,18 @@ class ChartingState extends MusicBeatState
 						nums.value = 1;
 					_song.bpm = nums.value;
 
+					tempBpm = nums.value;
+
+					Conductor.mapBPMChanges(_song);
+					Conductor.changeBPM(nums.value);
+
 					if (_song.eventObjects[0].type != "BPM Change")
 						Application.current.window.alert("i'm crying, first event isn't a bpm change. fuck you");
 					else
 					{
-						_song.eventObjects[0].value = nums.value;
+						_song.eventObjects.remove(_song.eventObjects[0]);
+						_song.eventObjects.insert(0, new Song.Event("Init BPM", 0, nums.value, "BPM Change"));
+
 						regenerateLines();
 					}
 
@@ -1828,14 +1835,23 @@ class ChartingState extends MusicBeatState
 						}
 					}
 
-					tempBpm = nums.value;
-					Conductor.mapBPMChanges(_song);
-					Conductor.changeBPM(nums.value);
+					var listofnames = [];
+
+					for (key => value in _song.eventObjects)
+					{
+						listofnames.push(value.name);
+					}
+
+					listOfEvents.setData(FlxUIDropDownMenu.makeStrIdLabelArray(listofnames, true));
+
+					listOfEvents.selectedLabel = _song.eventObjects[0].name;
 
 					Debug.logTrace("BPM CHANGES:");
 
 					for (i in TimingStruct.AllTimings)
 						Debug.logTrace(i.bpm + " - START: " + i.startBeat + " - END: " + i.endBeat + " - START-TIME: " + i.startTime);
+
+					addSection();
 
 					recalculateAllSectionTimes();
 
@@ -2999,7 +3015,7 @@ class ChartingState extends MusicBeatState
 					}
 				}
 			}
-			_song.bpm = tempBpm;
+			// _song.bpm = tempBpm;
 		}
 		catch (e)
 		{
