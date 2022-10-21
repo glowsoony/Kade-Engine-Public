@@ -666,8 +666,8 @@ class PlayState extends MusicBeatState
 					data.endBeat = beat;
 					data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
 					var step = ((60 / data.bpm) * 1000) / 4;
-					TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step) / songMultiplier);
-					TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length / songMultiplier;
+					TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+					TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
 				}
 
 				currentIndex++;
@@ -942,7 +942,7 @@ class PlayState extends MusicBeatState
 		{
 			if (section.sectionNotes.length > 0 && !isSM)
 			{
-				if (section.startTime / songMultiplier > 5000 / songMultiplier)
+				if (section.startTime > 5000)
 				{
 					needSkip = true;
 					skipTo = (section.startTime - 1000);
@@ -972,8 +972,8 @@ class PlayState extends MusicBeatState
 				if (index + 1 == SONG.notes.length)
 				{
 					var timing = ((!playerTurn && !FlxG.save.data.optimize) ? firstNoteTime : TimingStruct.getTimeFromBeat(TimingStruct.getBeatFromTime(firstNoteTime)
-						- 4)) / Math.pow(songMultiplier, 2);
-					if (timing > 5000 / songMultiplier)
+						- 4));
+					if (timing > 5000)
 					{
 						needSkip = true;
 						skipTo = (timing - 1000);
@@ -2955,42 +2955,45 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
-		if (updateFrame == 4)
-		{
-			TimingStruct.clearTimings();
-			var currentIndex = 0;
-			for (i in SONG.eventObjects)
-			{
-				if (i.type == "BPM Change")
-				{
-					var beat:Float = i.position * songMultiplier;
 
-					var endBeat:Float = Math.POSITIVE_INFINITY;
-
-					var bpm = i.value * songMultiplier;
-
-					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
-					if (currentIndex != 0)
-					{
-						var data = TimingStruct.AllTimings[currentIndex - 1];
-						data.endBeat = beat;
-						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
-						var step = (((60 / data.bpm) * 1000) / songMultiplier) / 4;
-
-						TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step) / songMultiplier);
-						TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length / songMultiplier;
-					}
-					currentIndex++;
-				}
-			}
-			updateFrame++;
-		}
-		else if (updateFrame != 5)
-			updateFrame++;
 		var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
 
 		if (inst.playing)
 		{
+			if (updateFrame == 4)
+			{
+				TimingStruct.clearTimings();
+				var currentIndex = 0;
+				for (i in SONG.eventObjects)
+				{
+					if (i.type == "BPM Change")
+					{
+						var beat:Float = i.position * songMultiplier;
+
+						var endBeat:Float = Math.POSITIVE_INFINITY;
+
+						var bpm = i.value * songMultiplier;
+
+						TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
+						if (currentIndex != 0)
+						{
+							var data = TimingStruct.AllTimings[currentIndex - 1];
+							data.endBeat = beat;
+							data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
+							var step = (((60 / data.bpm) * 1000) / songMultiplier) / 4;
+
+							TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+							TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
+						}
+						currentIndex++;
+					}
+				}
+				recalculateAllSectionTimes();
+				updateFrame++;
+			}
+			else if (updateFrame != 5)
+				updateFrame++;
+
 			if (timingSeg != null)
 			{
 				var timingSegBpm = timingSeg.bpm;
@@ -2999,9 +3002,12 @@ class PlayState extends MusicBeatState
 				{
 					Debug.logInfo("BPM CHANGE to " + timingSegBpm);
 					Conductor.changeBPM(timingSegBpm, false);
+					Conductor.mapBPMChanges(SONG);
 					Conductor.crochet = ((60 / (timingSegBpm) * 1000)) / songMultiplier;
 					Conductor.stepCrochet = Conductor.crochet / 4;
 				}
+
+				recalculateAllSectionTimes();
 			}
 			var newScroll = 1.0;
 
@@ -3380,7 +3386,7 @@ class PlayState extends MusicBeatState
 					FlxG.sound.music._channel.
 			}*/
 			songPositionBar = (Conductor.songPosition - songLength) / 1000;
-			currentSection = getSectionByTime(Conductor.songPosition);
+			currentSection = getSectionByTime(Conductor.songPosition / songMultiplier);
 			if (!paused)
 			{
 				songTime += FlxG.game.ticks - previousFrameTime;
@@ -3436,7 +3442,7 @@ class PlayState extends MusicBeatState
 			{
 				var currentBeat = Conductor.songPosition / Conductor.crochet;
 
-				if (curStep >= Math.round(400 * songMultiplier))
+				if (curStep >= 400)
 				{
 					for (i in 0...playerStrums.length)
 					{
@@ -3468,12 +3474,12 @@ class PlayState extends MusicBeatState
 						case 'philly':
 							{
 								// General duration of the song
-								if (curStep < Math.round(1000 * songMultiplier))
+								if (curStep < 1000)
 								{
 									// Beats to skip or to stop GF from cheering
-									if (curStep != Math.round(736 * songMultiplier) && curStep != Math.round(864 * songMultiplier))
+									if (curStep != 736 && curStep != 864)
 									{
-										if (curStep % Math.round(64 * songMultiplier) == Math.round(32 * songMultiplier))
+										if (curStep % 64 == 32)
 										{
 											// Just a garantee that it'll trigger just once
 											if (!triggeredAlready)
@@ -3490,9 +3496,9 @@ class PlayState extends MusicBeatState
 						case 'bopeebo':
 							{
 								// Where it starts || where it ends
-								if (curStep > Math.round(20 * songMultiplier) && curStep < Math.round(520 * songMultiplier))
+								if (curStep > 20 && curStep < 520)
 								{
-									if (curStep % Math.round(32 * songMultiplier) == Math.round(28 * songMultiplier))
+									if (curStep % 32 == 28)
 									{
 										if (!triggeredAlready)
 										{
@@ -3506,11 +3512,11 @@ class PlayState extends MusicBeatState
 							}
 						case 'blammed':
 							{
-								if (curStep > Math.round(120 * songMultiplier) && curStep < Math.round(760 * songMultiplier))
+								if (curStep > 120 && curStep < 760)
 								{
-									if (curStep < Math.round(360 * songMultiplier) || curStep > Math.round(512 * songMultiplier))
+									if (curStep < 360 || curStep > 512)
 									{
-										if (curStep % Math.round(16 * songMultiplier) == Math.round(8 * songMultiplier))
+										if (curStep % 16 == 8)
 										{
 											if (!triggeredAlready)
 											{
@@ -3525,13 +3531,11 @@ class PlayState extends MusicBeatState
 							}
 						case 'cocoa':
 							{
-								if (curStep < Math.round(680 * songMultiplier))
+								if (curStep < 680)
 								{
-									if (curStep < Math.round(260 * songMultiplier)
-										|| curStep > Math.round(520 * songMultiplier)
-										&& curStep < Math.round(580 * songMultiplier))
+									if (curStep < 260 || curStep > 520 && curStep < 580)
 									{
-										if (curStep % Math.round(64 * songMultiplier) == Math.round(60 * songMultiplier))
+										if (curStep % 64 == 60)
 										{
 											if (!triggeredAlready)
 											{
@@ -3546,9 +3550,7 @@ class PlayState extends MusicBeatState
 							}
 						case 'eggnog':
 							{
-								if (curStep > Math.round(40 * songMultiplier)
-									&& curStep != Math.round(444 * songMultiplier)
-									&& curStep < Math.round(880 * songMultiplier))
+								if (curStep > 40 && curStep != 444 && curStep < 880)
 								{
 									if (curStep % Math.round(32 * songMultiplier) == Math.round(28 * songMultiplier))
 									{
@@ -3569,72 +3571,79 @@ class PlayState extends MusicBeatState
 			if (luaModchart != null)
 				luaModchart.setVar("mustHit", currentSection.mustHitSection);
 			#end
-			if (camFollow.x != dad.getMidpoint().x + 150 && !currentSection.mustHitSection)
+			try
 			{
-				var offsetX = 0;
-				var offsetY = 0;
-
-				#if FEATURE_LUAMODCHART
-				if (luaModchart != null)
+				if (!currentSection.mustHitSection)
 				{
-					offsetX = luaModchart.getVar("followXOffset", "float");
-					offsetY = luaModchart.getVar("followYOffset", "float");
+					var offsetX = 0;
+					var offsetY = 0;
+
+					#if FEATURE_LUAMODCHART
+					if (luaModchart != null)
+					{
+						offsetX = luaModchart.getVar("followXOffset", "float");
+						offsetY = luaModchart.getVar("followYOffset", "float");
+					}
+					#end
+					camFollow.setPosition(dad.getMidpoint().x + 150 + offsetX, dad.getMidpoint().y - 100 + offsetY);
+					#if FEATURE_LUAMODCHART
+					if (luaModchart != null)
+						luaModchart.executeState('playerTwoTurn', []);
+					#end
+
+					// camFollow.setPosition(lucky.getMidpoint().x - 120, lucky.getMidpoint().y + 210);
+					#if !FEATURE_LUAMODCHART
+					if (SONG.songId == 'tutorial')
+						tweenCamZoom(true);
+					#end
+					if (!FlxG.save.data.optimize)
+					{
+						camFollow.x += dad.camFollow[0];
+						camFollow.y += dad.camFollow[1];
+					}
 				}
-				#end
-				camFollow.setPosition(dad.getMidpoint().x + 150 + offsetX, dad.getMidpoint().y - 100 + offsetY);
-				#if FEATURE_LUAMODCHART
-				if (luaModchart != null)
-					luaModchart.executeState('playerTwoTurn', []);
-				#end
 
-				// camFollow.setPosition(lucky.getMidpoint().x - 120, lucky.getMidpoint().y + 210);
-				#if !FEATURE_LUAMODCHART
-				if (SONG.songId == 'tutorial')
-					tweenCamZoom(true);
-				#end
-				if (!FlxG.save.data.optimize)
+				if (currentSection.mustHitSection)
 				{
-					camFollow.x += dad.camFollow[0];
-					camFollow.y += dad.camFollow[1];
+					var offsetX = 0;
+					var offsetY = 0;
+
+					#if FEATURE_LUAMODCHART
+					if (luaModchart != null)
+					{
+						offsetX = luaModchart.getVar("followXOffset", "float");
+						offsetY = luaModchart.getVar("followYOffset", "float");
+					}
+					#end
+					camFollow.setPosition(boyfriend.getMidpoint().x - 100 + offsetX, boyfriend.getMidpoint().y - 100 + offsetY);
+					#if FEATURE_LUAMODCHART
+					if (luaModchart != null)
+						luaModchart.executeState('playerOneTurn', []);
+					#end
+					#if !FEATURE_LUAMODCHART
+					if (SONG.songId == 'tutorial')
+						tweenCamZoom(false);
+					#end
+					if (!FlxG.save.data.optimize)
+						switch (Stage.curStage)
+						{
+							case 'limo':
+								camFollow.x = boyfriend.getMidpoint().x - 300;
+							case 'mall':
+								camFollow.y = boyfriend.getMidpoint().y - 200;
+							case 'school' | 'schoolEvil':
+								camFollow.x = boyfriend.getMidpoint().x - 300;
+								camFollow.y = boyfriend.getMidpoint().y - 300;
+						}
+					if (!FlxG.save.data.optimize)
+					{
+						camFollow.x += boyfriend.camFollow[0];
+						camFollow.y += boyfriend.camFollow[1];
+					}
 				}
 			}
-			if (currentSection.mustHitSection && camFollow.x != boyfriend.getMidpoint().x - 100)
+			catch (e)
 			{
-				var offsetX = 0;
-				var offsetY = 0;
-
-				#if FEATURE_LUAMODCHART
-				if (luaModchart != null)
-				{
-					offsetX = luaModchart.getVar("followXOffset", "float");
-					offsetY = luaModchart.getVar("followYOffset", "float");
-				}
-				#end
-				camFollow.setPosition(boyfriend.getMidpoint().x - 100 + offsetX, boyfriend.getMidpoint().y - 100 + offsetY);
-				#if FEATURE_LUAMODCHART
-				if (luaModchart != null)
-					luaModchart.executeState('playerOneTurn', []);
-				#end
-				#if !FEATURE_LUAMODCHART
-				if (SONG.songId == 'tutorial')
-					tweenCamZoom(false);
-				#end
-				if (!FlxG.save.data.optimize)
-					switch (Stage.curStage)
-					{
-						case 'limo':
-							camFollow.x = boyfriend.getMidpoint().x - 300;
-						case 'mall':
-							camFollow.y = boyfriend.getMidpoint().y - 200;
-						case 'school' | 'schoolEvil':
-							camFollow.x = boyfriend.getMidpoint().x - 300;
-							camFollow.y = boyfriend.getMidpoint().y - 300;
-					}
-				if (!FlxG.save.data.optimize)
-				{
-					camFollow.x += boyfriend.camFollow[0];
-					camFollow.y += boyfriend.camFollow[1];
-				}
 			}
 		}
 		if (camZooming)
@@ -4101,9 +4110,9 @@ class PlayState extends MusicBeatState
 			if (currentSeg == null)
 				return;
 
-			var start:Float = (currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60);
+			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60)) / songMultiplier;
 
-			section.startTime = (currentSeg.startTime + start) * 1000;
+			section.startTime = (((currentSeg.startTime + start)) * 1000);
 
 			if (i != 0)
 				SONG.notes[i - 1].endTime = section.startTime;
@@ -4142,7 +4151,7 @@ class PlayState extends MusicBeatState
 			&& Ratings.timingWindows[2] == 90
 			&& Ratings.timingWindows[1] == 135
 			&& Ratings.timingWindows[0] == 160
-			&& (!PlayStateChangeables.botPlay || !PlayState.usedBot)
+			&& (!PlayStateChangeables.botPlay && !PlayState.usedBot && !FlxG.save.data.botplay)
 			&& !FlxG.save.data.practice
 			&& PlayStateChangeables.holds
 			&& !PlayState.wentToChartEditor
@@ -5643,6 +5652,14 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		/*if (SONG.notes[Math.floor(curStep / 16)] != null)
+			{
+				if (SONG.notes[Math.floor(curStep / 16)].changeBPM)
+				{
+					Conductor.changeBPM(SONG.notes[Math.floor(curStep / 16)].bpm);
+				}
+		}*/
+
 		// INTERLOPE SCROLL SPEED PULSE EFFECT SHIT (TESTING PURPOSES) --Credits to Hazard
 		// Also check out tutorial modchart.lua that has this same tween but better :3
 		/*if (curStep % Math.floor(4 * songMultiplier) == 0)
@@ -5678,17 +5695,13 @@ class PlayState extends MusicBeatState
 		{
 			if (!FlxG.save.data.optimize)
 			{
-				if (allowedToHeadbang && curStep % Math.floor(4 * songMultiplier) == 0)
+				if (allowedToHeadbang && curStep % 4 == 0)
 				{
 					if (gf.curCharacter != 'pico-speaker')
 						gf.dance();
 				}
 
-				if (curStep % Math.floor(64 * songMultiplier) == Math.floor(60 * songMultiplier)
-					&& SONG.songId == 'tutorial'
-					&& dad.curCharacter == 'gf'
-					&& curStep > 64 * songMultiplier
-					&& curStep < 192 * songMultiplier)
+				if (curStep % 64 == 60 && SONG.songId == 'tutorial' && dad.curCharacter == 'gf' && curStep > 64 && curStep < 192)
 				{
 					if (vocals.volume != 0)
 					{
@@ -5709,30 +5722,25 @@ class PlayState extends MusicBeatState
 		}
 
 		// HARDCODING FOR MILF ZOOMS!
-		if (PlayState.SONG.songId == 'milf'
-			&& curStep >= Math.round(672 * songMultiplier)
-			&& curStep < Math.round(800 * songMultiplier)
-			&& camZooming)
+		if (PlayState.SONG.songId == 'milf' && curStep >= 672 && curStep < 800 && camZooming)
 		{
-			if (curStep % Math.round(4 * songMultiplier) == 0)
+			if (curStep % 4 == 0)
 			{
 				FlxG.camera.zoom += 0.015;
 				camHUD.zoom += 0.03;
 			}
 		}
-		if (camZooming && FlxG.camera.zoom < 1.35 && curStep % Math.round(16 * songMultiplier) == 0)
+		if (camZooming && FlxG.camera.zoom < 1.35 && curStep % 16 == 0)
 		{
 			FlxG.camera.zoom += 0.015;
 			camHUD.zoom += 0.03;
 		}
 
-		if (curStep % Math.round(32 * songMultiplier) == Math.round(28 * songMultiplier) #if cpp
-			&& curStep != Math.round(316 * songMultiplier) #end
-			&& SONG.songId == 'bopeebo')
+		if (curStep % 32 == 28 #if cpp && curStep != 316 #end && SONG.songId == 'bopeebo')
 		{
 			boyfriend.playAnim('hey', true);
 		}
-		if ((curStep == Math.round(190 * songMultiplier) || curStep == Math.round(446 * songMultiplier)) && SONG.songId == 'bopeebo')
+		if ((curStep == 190 || curStep == 446) && SONG.songId == 'bopeebo')
 		{
 			boyfriend.playAnim('hey', true);
 		}
@@ -5742,10 +5750,9 @@ class PlayState extends MusicBeatState
 		{
 			if (SONG.songId == 'tutorial')
 			{
-				if (curStep < Math.round(413 * songMultiplier))
+				if (curStep < 413)
 				{
-					if ((curStep % Math.round(8 * songMultiplier) == Math.round(4 * songMultiplier))
-						&& (curStep < Math.round(254 * songMultiplier) || curStep > Math.round(323 * songMultiplier)))
+					if ((curStep % 8 == 4) && (curStep < 254 || curStep > 323))
 					{
 						receptorTween();
 						elasticCamZoom();
@@ -5753,8 +5760,7 @@ class PlayState extends MusicBeatState
 					}
 					else
 					{
-						if (curStep % Math.round(16 * songMultiplier) == Math.round(8 * songMultiplier)
-							&& (curStep >= Math.round(254 * songMultiplier) && curStep < Math.round(323 * songMultiplier)))
+						if (curStep % 16 == 8 && (curStep >= 254 && curStep < 323))
 						{
 							receptorTween();
 							elasticCamZoom();
@@ -5768,7 +5774,7 @@ class PlayState extends MusicBeatState
 
 		if (!paused)
 		{
-			if (curStep % Math.round(4 * songMultiplier) == 0)
+			if (curStep % 4 == 0)
 			{
 				iconP1.setGraphicSize(Std.int(iconP1.width + 45 / songMultiplier));
 				iconP2.setGraphicSize(Std.int(iconP2.width + 45 / songMultiplier));
@@ -5820,24 +5826,16 @@ class PlayState extends MusicBeatState
 		}
 		#end
 
-		if (SONG.notes[Math.floor((curStep * songMultiplier) / 16)] != null)
-		{
-			if (SONG.notes[Math.floor((curStep * songMultiplier) / 16)].changeBPM)
-			{
-				Conductor.changeBPM(SONG.notes[Math.floor((curStep * songMultiplier) / 16)].bpm);
-			}
-		}
-
 		if (currentSection != null && !FlxG.save.data.optimize)
 		{
-			if (curBeat % Math.floor(idleBeat * songMultiplier) == 0)
+			if (curBeat % idleBeat == 0)
 			{
 				if (idleToBeat && !dad.animation.curAnim.name.startsWith('sing'))
 					dad.dance(forcedToIdle, currentSection.CPUAltAnim);
 				if (idleToBeat && !boyfriend.animation.curAnim.name.startsWith('sing'))
 					boyfriend.dance(forcedToIdle, currentSection.playerAltAnim);
 			}
-			else if (curBeat % Math.floor(idleBeat * songMultiplier) != 0)
+			else if (curBeat % idleBeat != 0)
 			{
 				if (boyfriend.isDancing && !boyfriend.animation.curAnim.name.startsWith('sing'))
 					boyfriend.dance(forcedToIdle, currentSection.CPUAltAnim);

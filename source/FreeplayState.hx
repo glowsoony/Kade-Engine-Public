@@ -170,6 +170,35 @@ class FreeplayState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
+		TimingStruct.clearTimings();
+
+		/*var currentIndex = 0;
+			for (i in hmm.eventObjects)
+			{
+				if (i.type == "BPM Change")
+				{
+					var beat:Float = i.position * rate;
+
+					var endBeat:Float = Math.POSITIVE_INFINITY;
+
+					var bpm = i.value * rate;
+
+					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
+
+					if (currentIndex != 0)
+					{
+						var data = TimingStruct.AllTimings[currentIndex - 1];
+						data.endBeat = beat;
+						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
+						var step = ((60 / data.bpm) * 1000) / 4;
+						TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+						TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
+					}
+
+					currentIndex++;
+				}
+		}*/
+
 		// LOAD CHARACTERS
 		bg.antialiasing = FlxG.save.data.antialiasing;
 		add(bg);
@@ -296,7 +325,6 @@ class FreeplayState extends MusicBeatState
 		{
 			try
 			{
-				rate = 1;
 				var hmm = songData.get(songs[curSelected].songName)[curDifficulty];
 				FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
 				curPlayed = curSelected;
@@ -498,7 +526,7 @@ class FreeplayState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		Conductor.songPosition = FlxG.sound.music.time * rate;
+		Conductor.songPosition = FlxG.sound.music.time;
 
 		if (FlxG.sound.music.volume < 0.7)
 		{
@@ -678,39 +706,44 @@ class FreeplayState extends MusicBeatState
 
 		var hmm = songData.get(songs[curPlayed].songName)[curDifficulty];
 
-		TimingStruct.clearTimings();
-		var currentIndex = 0;
-		if (hmm != null && hmm.eventObjects != null)
-		{
-			for (i in hmm.eventObjects)
-			{
-				if (i.type == "BPM Change")
-				{
-					var beat:Float = i.position * rate;
-
-					var endBeat:Float = Math.POSITIVE_INFINITY;
-
-					var bpm = i.value * rate;
-
-					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
-					if (currentIndex != 0)
-					{
-						var data = TimingStruct.AllTimings[currentIndex - 1];
-						data.endBeat = beat;
-						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
-						var step = (((60 / data.bpm) * 1000) / rate) / 4;
-
-						TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step) / rate);
-						TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length / rate;
-					}
-					currentIndex++;
-				}
-			}
-		}
-
 		if (FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
 		{
 			var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
+
+			if (hmm != null)
+				if (updateFrame == 4)
+				{
+					TimingStruct.clearTimings();
+					var currentIndex = 0;
+					for (i in hmm.eventObjects)
+					{
+						if (i.type == "BPM Change")
+						{
+							var beat:Float = i.position * rate;
+
+							var endBeat:Float = Math.POSITIVE_INFINITY;
+
+							var bpm = i.value * rate;
+
+							TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
+							if (currentIndex != 0)
+							{
+								var data = TimingStruct.AllTimings[currentIndex - 1];
+								data.endBeat = beat;
+								data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
+								var step = (((60 / data.bpm) * 1000) / rate) / 4;
+
+								TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+								TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
+							}
+							currentIndex++;
+						}
+					}
+
+					updateFrame++;
+				}
+				else if (updateFrame != 5)
+					updateFrame++;
 
 			if (timingSeg != null)
 			{
@@ -813,12 +846,12 @@ class FreeplayState extends MusicBeatState
 
 		if (!MainMenuState.freakyPlaying)
 		{
-			if (FlxG.save.data.camzoom && FlxG.camera.zoom < 1.35 && curStep % Math.round(16 * rate) == 0)
+			if (FlxG.save.data.camzoom && FlxG.camera.zoom < 1.35 && curStep % 16 == 0)
 			{
 				FlxG.camera.zoom += 0.03 / rate;
 			}
 
-			if (curStep % Math.round(4 * rate) == 0)
+			if (curStep % 4 == 0)
 			{
 				iconArray[curSelected].scale.set(1.2, 1.2);
 
