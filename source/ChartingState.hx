@@ -285,8 +285,8 @@ class ChartingState extends MusicBeatState
 		if (_song.eventObjects == null)
 			_song.eventObjects = [new Song.Event("Init BPM", 0, _song.bpm, "BPM Change")];
 
-		/*if (_song.eventObjects.length == 0)
-			_song.eventObjects = [new Song.Event("Init BPM", 0, _song.bpm, "BPM Change")]; */
+		if (_song.eventObjects.length == 0)
+			_song.eventObjects = [new Song.Event("Init BPM", 0, _song.bpm, "BPM Change")];
 
 		Debug.logTrace("goin");
 
