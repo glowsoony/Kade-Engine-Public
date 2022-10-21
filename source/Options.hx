@@ -2394,6 +2394,8 @@ class ResetSettings extends Option
 		FlxG.save.data.mute = null;
 		FlxG.save.data.showCombo = null;
 		FlxG.save.data.showComboNum = null;
+		FlxG.save.data.changedHitX = null;
+		FlxG.save.data.changedHitY = null;
 
 		KadeEngineData.initSave();
 		confirm = false;

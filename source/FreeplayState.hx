@@ -87,7 +87,7 @@ class FreeplayState extends MusicBeatState
 	public static var instance:FreeplayState;
 
 	public static function loadDiff(diff:Int, songId:String, array:Array<SongData>)
-		array.push(Song.conversionChecks(Song.loadFromJson(songId, CoolUtil.suffixDiffsArray[diff])));
+		array.push(Song.loadFromJson(songId, CoolUtil.suffixDiffsArray[diff]));
 
 	public static var list:Array<String> = [];
 
@@ -690,7 +690,7 @@ class FreeplayState extends MusicBeatState
 
 					var endBeat:Float = Math.POSITIVE_INFINITY;
 
-					var bpm = Std.parseInt(i.value) * rate;
+					var bpm = i.value * rate;
 
 					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
 					if (currentIndex != 0)
