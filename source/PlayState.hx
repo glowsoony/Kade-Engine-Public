@@ -4046,7 +4046,7 @@ class PlayState extends MusicBeatState
 			if (currentSeg == null)
 				return;
 
-			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60)) * songMultiplier;
+			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60)) / songMultiplier;
 
 			section.startTime = (((currentSeg.startTime + start)) * 1000);
 
@@ -4087,7 +4087,7 @@ class PlayState extends MusicBeatState
 			&& Ratings.timingWindows[2] == 90
 			&& Ratings.timingWindows[1] == 135
 			&& Ratings.timingWindows[0] == 160
-			&& (!PlayStateChangeables.botPlay || !PlayState.usedBot)
+			&& (!PlayStateChangeables.botPlay && !PlayState.usedBot && !FlxG.save.data.botplay)
 			&& !FlxG.save.data.practice
 			&& PlayStateChangeables.holds
 			&& !PlayState.wentToChartEditor

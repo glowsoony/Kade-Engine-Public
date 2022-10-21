@@ -325,7 +325,6 @@ class FreeplayState extends MusicBeatState
 		{
 			try
 			{
-				rate = 1;
 				var hmm = songData.get(songs[curSelected].songName)[curDifficulty];
 				FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
 				curPlayed = curSelected;
