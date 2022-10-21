@@ -642,8 +642,8 @@ class PlayState extends MusicBeatState
 					data.endBeat = beat;
 					data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
 					var step = ((60 / data.bpm) * 1000) / 4;
-					TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step) / songMultiplier);
-					TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length / songMultiplier;
+					TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+					TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
 				}
 
 				currentIndex++;
@@ -2930,8 +2930,8 @@ class PlayState extends MusicBeatState
 							data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
 							var step = (((60 / data.bpm) * 1000) / songMultiplier) / 4;
 
-							TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step) / songMultiplier);
-							TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length / songMultiplier;
+							TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+							TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
 						}
 						currentIndex++;
 					}
@@ -2954,6 +2954,8 @@ class PlayState extends MusicBeatState
 					Conductor.crochet = ((60 / (timingSegBpm) * 1000)) / songMultiplier;
 					Conductor.stepCrochet = Conductor.crochet / 4;
 				}
+
+				recalculateAllSectionTimes();
 			}
 			var newScroll = 1.0;
 
@@ -3507,7 +3509,7 @@ class PlayState extends MusicBeatState
 			#end
 			try
 			{
-				if (!PlayState.SONG.notes[Std.int((curStep / 16))].mustHitSection)
+				if (!currentSection.mustHitSection)
 				{
 					var offsetX = 0;
 					var offsetY = 0;
@@ -3537,7 +3539,7 @@ class PlayState extends MusicBeatState
 					}
 				}
 
-				if (PlayState.SONG.notes[Std.int((curStep / 16))].mustHitSection)
+				if (currentSection.mustHitSection)
 				{
 					var offsetX = 0;
 					var offsetY = 0;
@@ -4044,9 +4046,9 @@ class PlayState extends MusicBeatState
 			if (currentSeg == null)
 				return;
 
-			var start:Float = (currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60);
+			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60)) * songMultiplier;
 
-			section.startTime = (currentSeg.startTime + start) * 1000;
+			section.startTime = (((currentSeg.startTime + start)) * 1000);
 
 			if (i != 0)
 				SONG.notes[i - 1].endTime = section.startTime;
