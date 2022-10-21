@@ -5678,7 +5678,7 @@ class PlayState extends MusicBeatState
 			{
 				if (curStep < 413)
 				{
-					if ((curStep % 8 * == 4) && (curStep < 254 || curStep > 323))
+					if ((curStep % 8 == 4) && (curStep < 254 || curStep > 323))
 					{
 						receptorTween();
 						elasticCamZoom();
