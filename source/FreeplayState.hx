@@ -43,6 +43,8 @@ class FreeplayState extends MusicBeatState
 
 	public static var rate:Float = 1.0;
 
+	public static var lastRate:Float = 1.0;
+
 	public static var curSelected:Int = 0;
 
 	public static var curPlayed:Int = 0;
@@ -94,7 +96,7 @@ class FreeplayState extends MusicBeatState
 	override function create()
 	{FlxG.mouse.visible = true;
 		instance = this;
-
+		rate = 1;
 		Main.dumpCache();
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
@@ -326,12 +328,46 @@ class FreeplayState extends MusicBeatState
 			try
 			{
 				var hmm = songData.get(songs[curSelected].songName)[curDifficulty];
+
 				FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
 				curPlayed = curSelected;
 				FlxG.sound.music.fadeIn(0.75, 0, 0.8);
 				MainMenuState.freakyPlaying = false;
 
-				Paths.clearUnusedMemory();
+				Conductor.changeBPM(hmm.bpm);
+				Conductor.mapBPMChanges(hmm);
+				Conductor.bpm = hmm.bpm;
+
+				TimingStruct.clearTimings();
+
+				var currentIndex = 0;
+				for (i in hmm.eventObjects)
+				{
+					if (i.type == "BPM Change")
+					{
+						var beat:Float = i.position * rate;
+
+						var endBeat:Float = Math.POSITIVE_INFINITY;
+
+						var bpm = i.value * rate;
+
+						TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
+
+						if (currentIndex != 0)
+						{
+							var data = TimingStruct.AllTimings[currentIndex - 1];
+							data.endBeat = beat;
+							data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
+							var step = ((60 / data.bpm) * 1000) / 4;
+							TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+							TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
+						}
+
+						currentIndex++;
+					}
+				}
+
+				rate = lastRate;
 			}
 			catch (e)
 			{
@@ -644,28 +680,33 @@ class FreeplayState extends MusicBeatState
 				if (FlxG.keys.justPressed.LEFT)
 				{
 					rate -= 0.05;
+					lastRate = rate;
 					updateDiffCalc();
 				}
 				if (FlxG.keys.justPressed.RIGHT)
 				{
 					rate += 0.05;
+					lastRate = rate;
 					updateDiffCalc();
 				}
 
 				if (FlxG.keys.justPressed.R)
 				{
 					rate = 1;
+					lastRate = rate;
 					updateDiffCalc();
 				}
 
 				if (rate > 3)
 				{
 					rate = 3;
+					lastRate = rate;
 					updateDiffCalc();
 				}
 				else if (rate < 0.5)
 				{
 					rate = 0.5;
+					lastRate = rate;
 					updateDiffCalc();
 				}
 
@@ -684,7 +725,9 @@ class FreeplayState extends MusicBeatState
 			{
 				try
 				{
+					rate = 1;
 					var hmm = songData.get(songs[curSelected].songName)[curDifficulty];
+
 					FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
 					curPlayed = curSelected;
 					FlxG.sound.music.fadeIn(0.75, 0, 0.8);
@@ -694,6 +737,36 @@ class FreeplayState extends MusicBeatState
 					Conductor.mapBPMChanges(hmm);
 					Conductor.bpm = hmm.bpm;
 
+					TimingStruct.clearTimings();
+
+					var currentIndex = 0;
+					for (i in hmm.eventObjects)
+					{
+						if (i.type == "BPM Change")
+						{
+							var beat:Float = i.position * rate;
+
+							var endBeat:Float = Math.POSITIVE_INFINITY;
+
+							var bpm = i.value * rate;
+
+							TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
+
+							if (currentIndex != 0)
+							{
+								var data = TimingStruct.AllTimings[currentIndex - 1];
+								data.endBeat = beat;
+								data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
+								var step = ((60 / data.bpm) * 1000) / 4;
+								TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
+								TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
+							}
+
+							currentIndex++;
+						}
+					}
+
+					rate = lastRate;
 					Paths.clearUnusedMemory();
 				}
 				catch (e)
@@ -945,6 +1018,8 @@ class FreeplayState extends MusicBeatState
 		#end
 
 		PlayState.songMultiplier = rate;
+
+		lastRate = rate;
 
 		if (isCharting)
 			LoadingState.loadAndSwitchState(new ChartingState(reloadSong));
