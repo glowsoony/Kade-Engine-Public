@@ -1670,14 +1670,14 @@ class PlayState extends MusicBeatState
 				if (allowedToHeadbang && swagCounter % gfSpeed == 0 && gf.curCharacter != 'pico-speaker')
 					gf.dance();
 
-				if (swagCounter % Math.floor(idleBeat * songMultiplier) == 0)
+				if (swagCounter % idleBeat == 0)
 				{
 					if (boyfriend != null && idleToBeat && !boyfriend.animation.curAnim.name.endsWith("miss"))
 						boyfriend.dance(forcedToIdle);
 					if (dad != null && idleToBeat)
 						dad.dance(forcedToIdle);
 				}
-				else if (swagCounter % Math.floor(idleBeat * songMultiplier) != 0)
+				else if (swagCounter % idleBeat != 0)
 				{
 					if (boyfriend != null && boyfriend.isDancing && !boyfriend.animation.curAnim.name.endsWith("miss"))
 						boyfriend.dance();
@@ -3488,7 +3488,7 @@ class PlayState extends MusicBeatState
 							{
 								if (curStep > 40 && curStep != 444 && curStep < 880)
 								{
-									if (curStep % Math.round(32 * songMultiplier) == Math.round(28 * songMultiplier))
+									if (curStep % 32 == 28)
 									{
 										if (!triggeredAlready)
 										{
@@ -5154,6 +5154,7 @@ class PlayState extends MusicBeatState
 			#end
 
 			updateAccuracy();
+			updateScoreText();
 		}
 	}
 
@@ -5186,9 +5187,6 @@ class PlayState extends MusicBeatState
 		scoreTxt.visible = true;
 		judgementCounter.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nShits: ${shits}\nMisses: ${misses}';
 
-		if (!FlxG.save.data.lerpScore)
-			scoreTxt.text = Ratings.CalculateRanking(songScore, songScoreDef, nps, maxNPS,
-				(FlxG.save.data.roundAccuracy ? FlxMath.roundDecimal(accuracy, 0) : accuracy));
 		#if FEATURE_DISCORD
 		// Updating Discord Rich Presence
 		if (FlxG.save.data.discordMode == 1)
@@ -5201,8 +5199,14 @@ class PlayState extends MusicBeatState
 
 	function updateScoreText()
 	{
-		scoreTxt.text = Ratings.CalculateRanking(shownSongScore, songScoreDef, nps, maxNPS,
-			(FlxG.save.data.roundAccuracy ? FlxMath.roundDecimal(shownAccuracy, 0) : shownAccuracy));
+		if (FlxG.save.data.lerpScore)
+			scoreTxt.text = Ratings.CalculateRanking(shownSongScore, songScoreDef, nps, maxNPS,
+				(FlxG.save.data.roundAccuracy ? FlxMath.roundDecimal(shownAccuracy, 0) : shownAccuracy));
+		else
+		{
+			scoreTxt.text = Ratings.CalculateRanking(songScore, songScoreDef, nps, maxNPS,
+				(FlxG.save.data.roundAccuracy ? FlxMath.roundDecimal(accuracy, 0) : accuracy));
+		}
 	}
 
 	function getKeyPresses(note:Note):Int
@@ -5304,7 +5308,10 @@ class PlayState extends MusicBeatState
 		if (PlayStateChangeables.healthDrain)
 		{
 			if (!daNote.isSustainNote)
+			{
 				updateScoreText();
+			}
+
 			if (!daNote.isSustainNote)
 			{
 				if (!PlayStateChangeables.opponentMode)
@@ -5551,8 +5558,8 @@ class PlayState extends MusicBeatState
 			}
 			if (!note.isSustainNote)
 			{
-				updateScoreText();
 				updateAccuracy();
+				updateScoreText();
 			}
 		}
 	}
