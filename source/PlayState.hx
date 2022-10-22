@@ -6077,7 +6077,6 @@ class PlayState extends MusicBeatState
 			script.setVariable("Std", Std);
 			script.setVariable("Stage", Stage);
 			script.setVariable("FlxG", FlxG);
-			script.setVariable("KadeEngineData", KadeEngineData); //this is because of somethings I think would be easier to use without being hardcoded.
 			script.setVariable("FlxTextBorderStyle", FlxTextBorderStyle);
 			script.setVariable("Paths", Paths);
 			script.setVariable("CENTER", FlxTextAlign.CENTER);
@@ -6085,6 +6084,18 @@ class PlayState extends MusicBeatState
 			script.setVariable("FlxTextFormatMarkerPair", FlxTextFormatMarkerPair);
 			script.setVariable("Character", Character);
 			script.setVariable("StringTools", StringTools);
+			
+			//this is because of somethings I think would be easier to use without being hardcoded. -Thank you TheRealJake12 from glowsoony
+			script.setVariable("Debug", Debug);
+			script.setVariable("Note", Note);
+			script.setVariable("StaticArrow", StaticArrow); //Except you, you are mine.
+			script.setVariable("KadeEngineData", KadeEngineData);
+
+			//Da Characters -Thank you TheRealJake12 from glowsoony
+			script.setVariable("dad", PlayState.dad);
+			script.setVariable("gf", PlayState.gf);
+			script.setVariable("bf", PlayState.boyfriend);
+			//not really needed cuz you can do PlayState.charactershit but it makes it cleaner imo -TheRealJake12;
 			
 			script.variables.set('ShaderFilter', openfl.filters.ShaderFilter);
 
