@@ -2776,12 +2776,12 @@ class PlayState extends MusicBeatState
 		#if !debug
 		perfectMode = false;
 		#end
-		var shit:Float = 14000;
+		var shit:Float = 2500;
 		if (SONG.speed < 1 || scrollSpeed < 1)
 			shit /= scrollSpeed == 1 ? SONG.speed : scrollSpeed;
 		if (unspawnNotes[0] != null)
 		{
-			while (unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < shit)
+			if (unspawnNotes[0].strumTime - Conductor.songPosition < shit)
 			{
 				var dunceNote:Note = unspawnNotes[0];
 				notes.add(dunceNote);
@@ -4237,6 +4237,7 @@ class PlayState extends MusicBeatState
 				else
 				{
 					PsychTransition.nextCamera = mainCam;
+					MainMenuState.freakyPlaying = true;
 					Conductor.changeBPM(102);
 					MusicBeatState.switchState(new FreeplayState());
 				}
