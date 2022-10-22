@@ -2928,7 +2928,7 @@ class PlayState extends MusicBeatState
 							var data = TimingStruct.AllTimings[currentIndex - 1];
 							data.endBeat = beat;
 							data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
-							var step = (((60 / data.bpm) * 1000) / songMultiplier) / 4;
+							var step = (((60 / data.bpm) * 1000)) / 4;
 
 							TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
 							TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
@@ -2951,11 +2951,11 @@ class PlayState extends MusicBeatState
 					Debug.logInfo("BPM CHANGE to " + timingSegBpm);
 					Conductor.changeBPM(timingSegBpm, false);
 					Conductor.mapBPMChanges(SONG);
+
 					Conductor.crochet = ((60 / (timingSegBpm) * 1000)) / songMultiplier;
 					Conductor.stepCrochet = Conductor.crochet / 4;
+					recalculateAllSectionTimes();
 				}
-
-				recalculateAllSectionTimes();
 			}
 			var newScroll = 1.0;
 
@@ -4046,9 +4046,9 @@ class PlayState extends MusicBeatState
 			if (currentSeg == null)
 				return;
 
-			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60)) / songMultiplier;
+			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60));
 
-			section.startTime = (((currentSeg.startTime + start)) * 1000);
+			section.startTime = (((currentSeg.startTime + start)) * 1000) / songMultiplier;
 
 			if (i != 0)
 				SONG.notes[i - 1].endTime = section.startTime;
