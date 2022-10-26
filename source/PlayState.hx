@@ -628,7 +628,7 @@ class PlayState extends MusicBeatState
 		{
 			if (i.type == "BPM Change")
 			{
-				var beat:Float = i.position * songMultiplier;
+				var beat:Float = i.position;
 
 				var endBeat:Float = Math.POSITIVE_INFINITY;
 
@@ -640,8 +640,8 @@ class PlayState extends MusicBeatState
 				{
 					var data = TimingStruct.AllTimings[currentIndex - 1];
 					data.endBeat = beat;
-					data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
-					var step = ((60 / data.bpm) * 1000) / 4;
+					data.length = ((data.endBeat - (data.startBeat)) / (data.bpm / 60));
+					var step = ((60 / (data.bpm)) * 1000) / 4;
 					TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
 					TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
 				}
@@ -2776,7 +2776,7 @@ class PlayState extends MusicBeatState
 		#if !debug
 		perfectMode = false;
 		#end
-		var shit:Float = 2500;
+		var shit:Float = 3500;
 		if (SONG.speed < 1 || scrollSpeed < 1)
 			shit /= scrollSpeed == 1 ? SONG.speed : scrollSpeed;
 		if (unspawnNotes[0] != null)
@@ -2799,8 +2799,7 @@ class PlayState extends MusicBeatState
 				else
 					dunceNote.cameras = [camSustains];
 
-				var index:Int = unspawnNotes.indexOf(dunceNote);
-				unspawnNotes.splice(index, 1);
+				unspawnNotes.remove(unspawnNotes[0]);
 				currentLuaIndex++;
 			}
 		}
@@ -2827,7 +2826,7 @@ class PlayState extends MusicBeatState
 			shownAccuracy = accuracy;
 		if (Math.abs(shownSongScore - songScore) <= 100)
 			shownSongScore = songScore;
-		if (FlxG.save.data.lerpScore)
+		if (FlxG.save.data.lerpScore || nps >= 0)
 			updateScoreText();
 		if (generatedMusic && !paused && songStarted && songMultiplier < 1)
 		{
@@ -2904,8 +2903,6 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
-
 		if (inst.playing)
 		{
 			if (updateFrame == 4)
@@ -2916,22 +2913,23 @@ class PlayState extends MusicBeatState
 				{
 					if (i.type == "BPM Change")
 					{
-						var beat:Float = i.position * songMultiplier;
+						var beat:Float = i.position;
 
 						var endBeat:Float = Math.POSITIVE_INFINITY;
 
 						var bpm = i.value * songMultiplier;
 
 						TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
+
 						if (currentIndex != 0)
 						{
 							var data = TimingStruct.AllTimings[currentIndex - 1];
 							data.endBeat = beat;
-							data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / songMultiplier;
+							data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60));
 							var step = (((60 / data.bpm) * 1000)) / 4;
 
 							TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
-							TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
+							TimingStruct.AllTimings[currentIndex].startTime = (data.startTime + data.length);
 						}
 						currentIndex++;
 					}
@@ -2942,6 +2940,8 @@ class PlayState extends MusicBeatState
 			else if (updateFrame != 5)
 				updateFrame++;
 
+			var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
+
 			if (timingSeg != null)
 			{
 				var timingSegBpm = timingSeg.bpm;
@@ -2949,8 +2949,7 @@ class PlayState extends MusicBeatState
 				if (timingSegBpm != Conductor.bpm)
 				{
 					Debug.logInfo("BPM CHANGE to " + timingSegBpm);
-					Conductor.changeBPM(timingSegBpm, false);
-					Conductor.mapBPMChanges(SONG);
+					Conductor.changeBPM(timingSegBpm);
 
 					Conductor.crochet = ((60 / (timingSegBpm) * 1000)) / songMultiplier;
 					Conductor.stepCrochet = Conductor.crochet / 4;
@@ -3109,10 +3108,10 @@ class PlayState extends MusicBeatState
 		}
 		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
 		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
-		var iconLerp = CoolUtil.boundTo(1 - (elapsed * 35 * songMultiplier), 0, 1);
+		var iconLerp = CoolUtil.boundTo(1 - (elapsed * 70), 0, 1);
 
-		iconP1.setGraphicSize(Std.int(FlxMath.lerp(150, iconP1.width, iconLerp)));
-		iconP2.setGraphicSize(Std.int(FlxMath.lerp(150, iconP2.width, iconLerp)));
+		iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.initialWidth, iconP1.width, iconLerp)));
+		iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.initialWidth, iconP2.width, iconLerp)));
 		iconP1.updateHitbox();
 		iconP2.updateHitbox();
 		var iconOffset:Int = 26;
@@ -4046,9 +4045,9 @@ class PlayState extends MusicBeatState
 			if (currentSeg == null)
 				return;
 
-			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60));
+			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60)) / songMultiplier;
 
-			section.startTime = (((currentSeg.startTime + start)) * 1000) / songMultiplier;
+			section.startTime = (((currentSeg.startTime + start)) * 1000);
 
 			if (i != 0)
 				SONG.notes[i - 1].endTime = section.startTime;
@@ -5589,8 +5588,9 @@ class PlayState extends MusicBeatState
 
 		if (!paused)
 		{
-			if (Math.abs(Conductor.songPosition * songMultiplier) > Math.abs(inst.time + 25)
-				|| Math.abs(Conductor.songPosition * songMultiplier) < Math.abs(inst.time - 25))
+			var bpmRatio:Float = Conductor.bpm / 100;
+			if (Math.abs(Conductor.songPosition * songMultiplier) > Math.abs(inst.time + (25 * bpmRatio))
+				|| Math.abs(Conductor.songPosition * songMultiplier) < Math.abs(inst.time - (25 * bpmRatio)))
 			{
 				resyncVocals();
 			}

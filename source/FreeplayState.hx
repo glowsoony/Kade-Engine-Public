@@ -172,33 +172,6 @@ class FreeplayState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		/*var currentIndex = 0;
-			for (i in hmm.eventObjects)
-			{
-				if (i.type == "BPM Change")
-				{
-					var beat:Float = i.position * rate;
-
-					var endBeat:Float = Math.POSITIVE_INFINITY;
-
-					var bpm = i.value * rate;
-
-					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
-
-					if (currentIndex != 0)
-					{
-						var data = TimingStruct.AllTimings[currentIndex - 1];
-						data.endBeat = beat;
-						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
-						var step = ((60 / data.bpm) * 1000) / 4;
-						TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
-						TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
-					}
-
-					currentIndex++;
-				}
-		}*/
-
 		// LOAD CHARACTERS
 		bg.antialiasing = FlxG.save.data.antialiasing;
 		add(bg);
@@ -317,7 +290,6 @@ class FreeplayState extends MusicBeatState
 		{
 			if (!FlxG.sound.music.playing)
 				FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
-			Conductor.changeBPM(102);
 		}
 
 		super.create();
@@ -502,25 +474,24 @@ class FreeplayState extends MusicBeatState
 
 	public var updateFrame = 0;
 
+	var playinSong:SongData;
+
 	override function update(elapsed:Float)
 	{
 		Conductor.songPosition = FlxG.sound.music.time;
-		var hmm = songData.get(songs[curPlayed].songName)[curDifficulty];
 
 		if (FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
 		{
-			var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
-
-			if (hmm != null)
+			/*if (playinSong != null)
 				if (updateFrame == 4)
 				{
 					TimingStruct.clearTimings();
 					var currentIndex = 0;
-					for (i in hmm.eventObjects)
+					for (i in playinSong.eventObjects)
 					{
 						if (i.type == "BPM Change")
 						{
-							var beat:Float = i.position * rate;
+							var beat:Float = i.position;
 
 							var endBeat:Float = Math.POSITIVE_INFINITY;
 
@@ -531,8 +502,8 @@ class FreeplayState extends MusicBeatState
 							{
 								var data = TimingStruct.AllTimings[currentIndex - 1];
 								data.endBeat = beat;
-								data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
-								var step = (((60 / data.bpm) * 1000) / rate) / 4;
+								data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60));
+								var step = (((60 / data.bpm) * 1000)) / 4;
 
 								TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
 								TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
@@ -543,7 +514,9 @@ class FreeplayState extends MusicBeatState
 					updateFrame++;
 				}
 				else if (updateFrame != 5)
-					updateFrame++;
+					updateFrame++; */
+
+			var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
 			if (timingSeg != null)
 			{
 				var timingSegBpm = timingSeg.bpm;
@@ -556,10 +529,10 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		/*if (!FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
-			{
-				dotheMusicThing();
-		}*/
+		if (!FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
+		{
+			dotheMusicThing();
+		}
 
 		super.update(elapsed);
 
@@ -1074,28 +1047,28 @@ class FreeplayState extends MusicBeatState
 		#if desktop
 		try
 		{
-			rate = 1;
-			var hmm = songData.get(songs[curSelected].songName)[curDifficulty];
+			playinSong = songData.get(songs[curSelected].songName)[curDifficulty];
 
 			FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
-			curPlayed = curSelected;
+
 			FlxG.sound.music.fadeIn(0.75, 0, 0.8);
 			MainMenuState.freakyPlaying = false;
 
-			Conductor.changeBPM(hmm.bpm);
+			Conductor.changeBPM(playinSong.bpm);
 
 			TimingStruct.clearTimings();
 
 			var currentIndex = 0;
-			for (i in hmm.eventObjects)
+
+			for (i in playinSong.eventObjects)
 			{
 				if (i.type == "BPM Change")
 				{
-					var beat:Float = i.position * rate;
+					var beat:Float = i.position;
 
 					var endBeat:Float = Math.POSITIVE_INFINITY;
 
-					var bpm = i.value * rate;
+					var bpm = i.value;
 
 					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
 
@@ -1103,7 +1076,7 @@ class FreeplayState extends MusicBeatState
 					{
 						var data = TimingStruct.AllTimings[currentIndex - 1];
 						data.endBeat = beat;
-						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
+						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60));
 						var step = ((60 / data.bpm) * 1000) / 4;
 						TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
 						TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
