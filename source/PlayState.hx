@@ -422,8 +422,8 @@ class PlayState extends MusicBeatState
 		if (previousRate < 1.00)
 			previousRate = 1;
 
-		if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
+		if (FlxG.save.data.fpsCap > 800)
+			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(800);
 
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -1592,15 +1592,6 @@ class PlayState extends MusicBeatState
 						note.updateHitbox();
 					}
 			}
-			for (note in unspawnNotes)
-			{
-				if (note.animation.curAnim != null)
-					if (note.isSustainNote && !note.animation.curAnim.name.endsWith('end'))
-					{
-						note.scale.y *= ratio;
-						note.updateHitbox();
-					}
-			}
 		}
 		scrollSpeed = value;
 		return value;
@@ -2220,8 +2211,10 @@ class PlayState extends MusicBeatState
 				var floorSus:Int = Math.floor(susLength);
 				if (floorSus > 0)
 				{
-					for (susNote in 0...floorSus + 1)
+					for (susNote in 0...floorSus)
 					{
+						if (floorSus == 1)
+							floorSus++;
 						oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
 						var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, oldNote, true);
@@ -2750,14 +2743,16 @@ class PlayState extends MusicBeatState
 		if (FlxG.save.data.background)
 			Stage.update(elapsed);
 
-		var shit:Float = 14000;
+		var shit:Float = 3500;
 		if (SONG.speed < 1 || scrollSpeed < 1)
 			shit /= scrollSpeed == 1 ? SONG.speed : scrollSpeed;
 		if (unspawnNotes[0] != null)
 		{
-			if (unspawnNotes[0].strumTime - Conductor.songPosition < 14000 * songMultiplier)
+			while (unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < shit)
 			{
 				var dunceNote:Note = unspawnNotes[0];
+				if (FlxG.save.data.postProcessNotes)
+					dunceNote.loadNote();
 				notes.add(dunceNote);
 
 				#if FEATURE_LUAMODCHART
@@ -3996,8 +3991,8 @@ class PlayState extends MusicBeatState
 		PlayStateChangeables.botPlay = false;
 		scrollSpeed = 1 / songMultiplier;
 
-		if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
+		if (FlxG.save.data.fpsCap > 800)
+			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(800);
 
 		#if FEATURE_LUAMODCHART
 		if (luaModchart != null)
