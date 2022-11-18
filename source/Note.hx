@@ -245,8 +245,8 @@ class Note extends FlxSprite
 			originColor = col;
 		}
 
-		stepHeight = (((0.45 * Conductor.stepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
-			2)) / PlayState.songMultiplier;
+		stepHeight = (((0.45 * PlayState.fakeNoteStepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
+			2)) * PlayState.songMultiplier;
 
 		if (isSustainNote && prevNote != null)
 		{
