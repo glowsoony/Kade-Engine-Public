@@ -71,6 +71,7 @@ class PlayState extends MusicBeatState
 	public static var tweenManager:FlxTweenManager;
 	public static var timerManager:FlxTimerManager;
 
+	public static var isPixel:Bool = false;
 	public static var SONG:SongData;
 	public static var isStoryMode:Bool = false;
 	public static var storyWeek:Int = 0;
@@ -1054,6 +1055,14 @@ class PlayState extends MusicBeatState
 					precacheThing('noteSplashes', 'image', 'shared');
 			}
 		}
+		
+		switch (SONG.noteStyle)
+		{
+			case 'pixel':
+				isPixel = true;
+			default:
+				isPixel = false;
+		}
 
 		// Update lane underlay positions AFTER static arrows :)
 		if (arrowsGenerated)
@@ -1720,7 +1729,7 @@ class PlayState extends MusicBeatState
 					ready.cameras = [camHUD];
 					ready.updateHitbox();
 
-					if (SONG.noteStyle == 'pixel')
+					if (isPixel)
 						ready.setGraphicSize(Std.int(ready.width * CoolUtil.daPixelZoom));
 
 					ready.screenCenter();
@@ -1737,7 +1746,7 @@ class PlayState extends MusicBeatState
 					var set:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[1], week6Bullshit));
 					set.scrollFactor.set();
 					set.scale.set(0.7, 0.7);
-					if (SONG.noteStyle == 'pixel')
+					if (isPixel)
 						set.setGraphicSize(Std.int(set.width * CoolUtil.daPixelZoom));
 					set.cameras = [camHUD];
 					set.screenCenter();
@@ -1755,7 +1764,7 @@ class PlayState extends MusicBeatState
 					go.scrollFactor.set();
 					go.scale.set(0.7, 0.7);
 					go.cameras = [camHUD];
-					if (SONG.noteStyle == 'pixel')
+					if (isPixel)
 						go.setGraphicSize(Std.int(go.width * CoolUtil.daPixelZoom));
 
 					go.updateHitbox();
@@ -4447,7 +4456,7 @@ class PlayState extends MusicBeatState
 			currentTimingShown.screenCenter();
 			currentTimingShown.x = comboSpr.x + 225;
 
-			if (SONG.noteStyle == 'pixel')
+			if (isPixel)
 			{
 				currentTimingShown.x -= 15;
 				currentTimingShown.y -= 15;
@@ -4463,7 +4472,7 @@ class PlayState extends MusicBeatState
 			if (!PlayStateChangeables.botPlay || loadRep)
 				add(rating);
 
-			if (SONG.noteStyle != 'pixel')
+			if (!isPixel)
 			{
 				rating.setGraphicSize(Std.int(rating.width * 0.7));
 				rating.antialiasing = FlxG.save.data.antialiasing;
@@ -4515,7 +4524,7 @@ class PlayState extends MusicBeatState
 				numScore.y = rating.y + 100;
 				numScore.cameras = [camHUD];
 
-				if (SONG.noteStyle != 'pixel')
+				if (!isPixel)
 				{
 					numScore.antialiasing = FlxG.save.data.antialiasing;
 					numScore.setGraphicSize(Std.int(numScore.width * 0.5));
