@@ -119,7 +119,7 @@ class Main extends Sprite
 		bitmapFPS.smoothing = true;
 		#end
 
-		game = new FlxGame(gameWidth, gameHeight, initialState, zoom, Std.int(framerate), Std.int(framerate), skipSplash, startFullscreen);
+		game = new FlxGame(gameWidth, gameHeight, initialState, framerate, framerate, skipSplash, startFullscreen);
 		addChild(game);
 
 		FlxG.signals.focusGained.add(function()
