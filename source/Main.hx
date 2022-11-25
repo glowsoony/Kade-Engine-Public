@@ -119,7 +119,7 @@ class Main extends Sprite
 		bitmapFPS.smoothing = true;
 		#end
 
-		game = new FlxGame(gameWidth, gameHeight, initialState, zoom, framerate, framerate, skipSplash, startFullscreen);
+		game = new FlxGame(gameWidth, gameHeight, initialState, zoom, Std.int(framerate), Std.int(framerate), skipSplash, startFullscreen);
 		addChild(game);
 
 		FlxG.signals.focusGained.add(function()
@@ -192,16 +192,6 @@ class Main extends Sprite
 			FlxG.drawFramerate = cap;
 			FlxG.updateFramerate = cap;
 		}
-	}
-
-	public static function getFPSCap():Float
-	{
-		return openfl.Lib.current.stage.frameRate;
-	}
-
-	public function getFPS():Float
-	{
-		return fpsCounter.currentFPS;
 	}
 
 	// Code was entirely made by sqirra-rng for their fnf engine named "Izzy Engine", big props to them!!!
