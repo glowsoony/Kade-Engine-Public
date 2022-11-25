@@ -94,7 +94,8 @@ class FreeplayState extends MusicBeatState
 	public static var list:Array<String> = [];
 
 	override function create()
-	{FlxG.mouse.visible = true;
+	{
+		FlxG.mouse.visible = true;
 		instance = this;
 
 		Main.dumpCache();
@@ -172,33 +173,6 @@ class FreeplayState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		/*var currentIndex = 0;
-			for (i in hmm.eventObjects)
-			{
-				if (i.type == "BPM Change")
-				{
-					var beat:Float = i.position * rate;
-
-					var endBeat:Float = Math.POSITIVE_INFINITY;
-
-					var bpm = i.value * rate;
-
-					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
-
-					if (currentIndex != 0)
-					{
-						var data = TimingStruct.AllTimings[currentIndex - 1];
-						data.endBeat = beat;
-						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
-						var step = ((60 / data.bpm) * 1000) / 4;
-						TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
-						TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
-					}
-
-					currentIndex++;
-				}
-		}*/
-
 		// LOAD CHARACTERS
 		bg.antialiasing = FlxG.save.data.antialiasing;
 		add(bg);
@@ -238,10 +212,7 @@ class FreeplayState extends MusicBeatState
 		var bottomText:String = #if !mobile #if PRELOAD_ALL "  Press SPACE to listen to the Song Instrumental / Click and scroll through the songs with your MOUSE /"
 			+ #else "  Click and scroll through the songs with your MOUSE /"
 			+ #end #end
-		" Your offset is "
-		+ FlxG.save.data.offset
-		+ "ms "
-		+ (FlxG.save.data.optimize ? "/ Optimized" : "");
+		" Your offset is " + FlxG.save.data.offset + "ms ";
 
 		var downText:FlxText = new FlxText(bottomBG.x, bottomBG.y + 4, FlxG.width, bottomText, 16);
 		downText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
@@ -317,7 +288,6 @@ class FreeplayState extends MusicBeatState
 		{
 			if (!FlxG.sound.music.playing)
 				FlxG.sound.playMusic(Paths.music(FlxG.save.data.watermark ? "ke_freakyMenu" : "freakyMenu"));
-			Conductor.changeBPM(102);
 		}
 
 		super.create();
@@ -502,25 +472,24 @@ class FreeplayState extends MusicBeatState
 
 	public var updateFrame = 0;
 
+	var playinSong:SongData;
+
 	override function update(elapsed:Float)
 	{
 		Conductor.songPosition = FlxG.sound.music.time;
-		var hmm = songData.get(songs[curPlayed].songName)[curDifficulty];
 
 		if (FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
 		{
-			var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
-
-			if (hmm != null)
+			/*if (playinSong != null)
 				if (updateFrame == 4)
 				{
 					TimingStruct.clearTimings();
 					var currentIndex = 0;
-					for (i in hmm.eventObjects)
+					for (i in playinSong.eventObjects)
 					{
 						if (i.type == "BPM Change")
 						{
-							var beat:Float = i.position * rate;
+							var beat:Float = i.position;
 
 							var endBeat:Float = Math.POSITIVE_INFINITY;
 
@@ -531,8 +500,8 @@ class FreeplayState extends MusicBeatState
 							{
 								var data = TimingStruct.AllTimings[currentIndex - 1];
 								data.endBeat = beat;
-								data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
-								var step = (((60 / data.bpm) * 1000) / rate) / 4;
+								data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60));
+								var step = (((60 / data.bpm) * 1000)) / 4;
 
 								TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
 								TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;
@@ -543,7 +512,9 @@ class FreeplayState extends MusicBeatState
 					updateFrame++;
 				}
 				else if (updateFrame != 5)
-					updateFrame++;
+					updateFrame++; */
+
+			var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
 			if (timingSeg != null)
 			{
 				var timingSegBpm = timingSeg.bpm;
@@ -556,10 +527,10 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		/*if (!FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
-			{
-				dotheMusicThing();
-		}*/
+		if (!FlxG.sound.music.playing && !MainMenuState.freakyPlaying)
+		{
+			dotheMusicThing();
+		}
 
 		super.update(elapsed);
 
@@ -686,12 +657,14 @@ class FreeplayState extends MusicBeatState
 					rate -= 0.05;
 					lastRate = rate;
 					updateDiffCalc();
+					updateScoreText();
 				}
 				if (FlxG.keys.justPressed.RIGHT)
 				{
 					rate += 0.05;
 					lastRate = rate;
 					updateDiffCalc();
+					updateScoreText();
 				}
 
 				if (FlxG.keys.justPressed.R)
@@ -699,6 +672,7 @@ class FreeplayState extends MusicBeatState
 					rate = 1;
 					lastRate = rate;
 					updateDiffCalc();
+					updateScoreText();
 				}
 
 				if (rate > 3)
@@ -706,12 +680,14 @@ class FreeplayState extends MusicBeatState
 					rate = 3;
 					lastRate = rate;
 					updateDiffCalc();
+					updateScoreText();
 				}
 				else if (rate < 0.5)
 				{
 					rate = 0.5;
 					lastRate = rate;
 					updateDiffCalc();
+					updateScoreText();
 				}
 
 				previewtext.text = "Rate: < " + FlxMath.roundDecimal(rate, 2) + "x >";
@@ -801,6 +777,27 @@ class FreeplayState extends MusicBeatState
 					item.alpha = 0;
 			}
 		}
+	}
+
+	function updateScoreText()
+	{
+		var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
+		// adjusting the highscore song name to be compatible (changeDiff)
+		switch (songHighscore)
+		{
+			case 'Dad-Battle':
+				songHighscore = 'Dadbattle';
+			case 'Philly-Nice':
+				songHighscore = 'Philly';
+			case 'M.I.L.F':
+				songHighscore = 'Milf';
+		}
+		#if !switch
+		intendedScore = Highscore.getScore(songHighscore, curDifficulty, rate);
+		combo = Highscore.getCombo(songHighscore, curDifficulty, rate);
+		letter = Highscore.getLetter(songHighscore, curDifficulty, rate);
+		intendedaccuracy = Highscore.getAcc(songHighscore, curDifficulty, rate);
+		#end
 	}
 
 	override function beatHit()
@@ -931,24 +928,7 @@ class FreeplayState extends MusicBeatState
 		if (curDifficulty > songs[curSelected].diffs.length - 1)
 			curDifficulty = 0;
 
-		var songHighscore = StringTools.replace(songs[curSelected].songName, " ", "-");
-		// adjusting the highscore song name to be compatible (changeDiff)
-		switch (songHighscore)
-		{
-			case 'Dad-Battle':
-				songHighscore = 'Dadbattle';
-			case 'Philly-Nice':
-				songHighscore = 'Philly';
-			case 'M.I.L.F':
-				songHighscore = 'Milf';
-		}
-
-		#if !switch
-		intendedScore = Highscore.getScore(songHighscore, curDifficulty);
-		combo = Highscore.getCombo(songHighscore, curDifficulty);
-		letter = Highscore.getLetter(songHighscore, curDifficulty);
-		intendedaccuracy = Highscore.getAcc(songHighscore, curDifficulty);
-		#end
+		updateScoreText();
 		updateDiffCalc();
 		diffText.text = 'DIFFICULTY: < ' + songs[curSelected].diffs[curDifficulty].toUpperCase() + ' >';
 	}
@@ -1001,13 +981,7 @@ class FreeplayState extends MusicBeatState
 				songHighscore = 'Milf';
 		}
 
-		#if !switch
-		intendedScore = Highscore.getScore(songHighscore, curDifficulty);
-		combo = Highscore.getCombo(songHighscore, curDifficulty);
-		letter = Highscore.getLetter(songHighscore, curDifficulty);
-		intendedaccuracy = Highscore.getAcc(songHighscore, curDifficulty);
-		// lerpScore = 0;
-		#end
+		updateScoreText();
 
 		/*diffCalcText.text = 'RATING: ${DiffCalc.CalculateDiff(songData.get(songs[curSelected].songName)[curDifficulty])}';
 			diffText.text = 'DIFFICULTY: < ' + CoolUtil.difficultyFromInt(curDifficulty).toUpperCase() + ' >'; */
@@ -1074,28 +1048,28 @@ class FreeplayState extends MusicBeatState
 		#if desktop
 		try
 		{
-			rate = 1;
-			var hmm = songData.get(songs[curSelected].songName)[curDifficulty];
+			playinSong = songData.get(songs[curSelected].songName)[curDifficulty];
 
 			FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.7, true);
-			curPlayed = curSelected;
+
 			FlxG.sound.music.fadeIn(0.75, 0, 0.8);
 			MainMenuState.freakyPlaying = false;
 
-			Conductor.changeBPM(hmm.bpm);
+			Conductor.changeBPM(playinSong.bpm);
 
 			TimingStruct.clearTimings();
 
 			var currentIndex = 0;
-			for (i in hmm.eventObjects)
+
+			for (i in playinSong.eventObjects)
 			{
 				if (i.type == "BPM Change")
 				{
-					var beat:Float = i.position * rate;
+					var beat:Float = i.position;
 
 					var endBeat:Float = Math.POSITIVE_INFINITY;
 
-					var bpm = i.value * rate;
+					var bpm = i.value;
 
 					TimingStruct.addTiming(beat, bpm, endBeat, 0); // offset in this case = start time since we don't have a offset
 
@@ -1103,7 +1077,7 @@ class FreeplayState extends MusicBeatState
 					{
 						var data = TimingStruct.AllTimings[currentIndex - 1];
 						data.endBeat = beat;
-						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60)) / rate;
+						data.length = ((data.endBeat - data.startBeat) / (data.bpm / 60));
 						var step = ((60 / data.bpm) * 1000) / 4;
 						TimingStruct.AllTimings[currentIndex].startStep = Math.floor((((data.endBeat / (data.bpm / 60)) * 1000) / step));
 						TimingStruct.AllTimings[currentIndex].startTime = data.startTime + data.length;

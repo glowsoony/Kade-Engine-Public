@@ -50,9 +50,6 @@ class KadeEngineData
 		if (FlxG.save.data.lerpScore == null)
 			FlxG.save.data.lerpScore = false;
 
-		if (FlxG.save.data.fpsBorder == null)
-			FlxG.save.data.fpsBorder = false;
-
 		if (FlxG.save.data.rotateSprites == null)
 			FlxG.save.data.rotateSprites = true;
 
@@ -234,6 +231,11 @@ class KadeEngineData
 			#end
 		}
 
+		if (FlxG.save.data.postProcessNotes == null)
+		{
+			FlxG.save.data.postProcessNotes = true;
+		}
+
 		if (FlxG.save.data.volume == null)
 			FlxG.save.data.volume = 1;
 
@@ -256,8 +258,6 @@ class KadeEngineData
 
 		if (FlxG.save.data.watermark == null)
 			FlxG.save.data.watermark = true;
-
-		(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
 	}
 
 	public static function resetModifiers():Void
