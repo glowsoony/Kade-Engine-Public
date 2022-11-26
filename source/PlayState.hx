@@ -1031,6 +1031,7 @@ class PlayState extends MusicBeatState
 		if (executeHScript)
 		{
 			startScript();
+			script.executeFunc('start', [PlayState.SONG.songId]);
 		}
 		#end
 
@@ -5773,21 +5774,21 @@ class PlayState extends MusicBeatState
 			
 			script.variables.set('setVar', function(name:String, value:Dynamic)
 			{
-				PlayState.variables.set(name, value);
+				variables.set(name, value);
 			});
 
 			script.variables.set('getVar', function(name:String)
 			{
 				var result:Dynamic = null;
-				if(PlayState.variables.exists(name)) result = PlayState.variables.get(name);
+				if(variables.exists(name)) result = variables.get(name);
 				return result;
 			});
 
 			script.variables.set('removeVar', function(name:String)
 			{
-				if(PlayState.variables.exists(name))
+				if(variables.exists(name))
 				{
-					PlayState.variables.remove(name);
+					variables.remove(name);
 					return true;
 				}
 				return false;
@@ -5885,6 +5886,26 @@ class PlayState extends MusicBeatState
 			script.setVariable("gf", PlayState.gf);
 			script.setVariable("bf", PlayState.boyfriend);
 			//not really needed cuz you can do PlayState.charactershit but it makes it cleaner imo -TheRealJake12;
+			
+			//mf give me those x's
+			script.setVariable("PlayerStrumsX0", playerStrums.members[0].x);
+			script.setVariable("PlayerStrumsX1", playerStrums.members[1].x);
+			script.setVariable("PlayerStrumsX2", playerStrums.members[2].x);
+			script.setVariable("PlayerStrumsX3", playerStrums.members[3].x);
+			script.setVariable("OpponentStrumsX0", opponentStrums.members[0].x);
+			script.setVariable("OpponentStrumsX1", opponentStrums.members[1].x);
+			script.setVariable("OpponentStrumsX2", opponentStrums.members[2].x);
+			script.setVariable("OpponentStrumsX3", opponentStrums.members[3].x);
+
+			//mf give me those y's
+			script.setVariable("PlayerStrumsY0", playerStrums.members[0].y);
+			script.setVariable("PlayerStrumsY1", playerStrums.members[1].y);
+			script.setVariable("PlayerStrumsY2", playerStrums.members[2].y);
+			script.setVariable("PlayerStrumsY3", playerStrums.members[3].y);
+			script.setVariable("OpponentStrumsY0", opponentStrums.members[0].y);
+			script.setVariable("OpponentStrumsY1", opponentStrums.members[1].y);
+			script.setVariable("OpponentStrumsY2", opponentStrums.members[2].y);
+			script.setVariable("OpponentStrumsY3", opponentStrums.members[3].y);
 			
 			script.variables.set('ShaderFilter', openfl.filters.ShaderFilter);
 
