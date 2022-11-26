@@ -434,8 +434,8 @@ class PlayState extends MusicBeatState
 		if (previousRate < 1.00)
 			previousRate = 1;
 
-		if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
+		/*if (FlxG.save.data.fpsCap > 300)
+			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300); */
 
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -2112,17 +2112,6 @@ class PlayState extends MusicBeatState
 			createTween(skipText, {alpha: 1}, 0.2);
 			add(skipText);
 		}
-
-		#if (FEATURE_MP4VIDEOS && !html5)
-		if (daVideoGroup != null)
-		{
-			for (vid in daVideoGroup)
-			{
-				var perecentSupposed = (vid.bitmap.getTime() / songMultiplier) / (vid.bitmap.getDuration() / songMultiplier);
-				vid.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
-			}
-		}
-		#end
 	}
 
 	var debugNum:Int = 0;
@@ -2569,14 +2558,10 @@ class PlayState extends MusicBeatState
 			#if (FEATURE_MP4VIDEOS && !html5)
 			if (daVideoGroup != null)
 			{
-				for (vid in daVideoGroup.members)
+				for (vid in daVideoGroup)
 				{
-					if (vid.alive && vid.visible)
-					{
-						var perecentSupposed = (vid.bitmap.getTime() / songMultiplier) / (vid.bitmap.getDuration() / songMultiplier);
-						vid.bitmap.seek(perecentSupposed); // I laughed my ass off so hard when I found out this was a fuckin PERCENTAGE
+					if (vid.alive)
 						vid.bitmap.resume();
-					}
 				}
 			}
 			#end
@@ -2670,56 +2655,12 @@ class PlayState extends MusicBeatState
 	{
 		switch (type)
 		{
-			case 'webm':
-				#if FEATURE_WEBM
-				var vid = new WebmSprite();
-
-				vid.antialiasing = true;
-				if (!layInFront)
-				{
-					vid.scrollFactor.set(0, 0);
-					vid.scale.set(1 + (Stage.camZoom / 8), 1 + (Stage.camZoom / 8));
-				}
-				else
-					vid.scrollFactor.set();
-
-				vid.updateHitbox();
-				vid.visible = false;
-				reserveWebmVids.push(vid);
-				if (!layInFront)
-				{
-					remove(gf);
-					remove(dad);
-					remove(boyfriend);
-					daWebmGroup = new FlxTypedGroup<WebmSprite>();
-					add(daWebmGroup);
-					for (vid in reserveWebmVids)
-						daWebmGroup.add(vid);
-					add(gf);
-					add(boyfriend);
-					add(dad);
-				}
-				else
-				{
-					daWebmGroup = new FlxTypedGroup<WebmSprite>();
-					add(daWebmGroup);
-					for (vid in reserveWebmVids)
-					{
-						vid.camera = camGame;
-						daWebmGroup.add(vid);
-					}
-				}
-
-				reserveWebmVids = [];
-				daWebmGroup.members[vidIndex].loadVideo(Paths.webmVideo('${PlayState.SONG.songId}/${vidSource}'));
-				daWebmGroup.members[vidIndex].visible = true;
-				vidIndex++;
-				#end
-			case 'mp4':
+			default:
 				#if (FEATURE_MP4VIDEOS && !html5)
 				var vid = new VideoSprite(-320, -180);
 
 				vid.antialiasing = true;
+
 				if (!layInFront)
 				{
 					vid.scrollFactor.set(0, 0);
@@ -2730,6 +2671,7 @@ class PlayState extends MusicBeatState
 					vid.scale.set(2 / 3, 2 / 3);
 					vid.scrollFactor.set();
 				}
+
 				vid.updateHitbox();
 				vid.visible = false;
 				vid.bitmap.canSkip = false;
@@ -2750,7 +2692,7 @@ class PlayState extends MusicBeatState
 				else
 				{
 					daVideoGroup = new FlxTypedGroup<VideoSprite>();
-					add(daWebmGroup);
+					add(daVideoGroup);
 					for (vid in reserveVids)
 					{
 						vid.camera = camGame;
@@ -2759,11 +2701,7 @@ class PlayState extends MusicBeatState
 				}
 
 				reserveVids = [];
-				daVideoGroup.members[vidIndex].playVideo(Paths.video('${PlayState.SONG.songId}/${vidSource}'));
-				var perecentSupposed = (daVideoGroup.members[vidIndex].bitmap.getTime() / songMultiplier) / (daVideoGroup.members[vidIndex].bitmap.getDuration() / songMultiplier);
-
-				daVideoGroup.members[vidIndex].bitmap.seek(perecentSupposed);
-				daVideoGroup.members[vidIndex].bitmap.resume();
+				daVideoGroup.members[vidIndex].playVideo(Paths.video('${PlayState.SONG.songId}/${vidSource}', type));
 				daVideoGroup.members[vidIndex].visible = true;
 				vidIndex++;
 				#end
@@ -3044,7 +2982,7 @@ class PlayState extends MusicBeatState
 		var pauseBind = FlxKey.fromString(FlxG.save.data.pauseBind);
 		var gppauseBind = FlxKey.fromString(FlxG.save.data.gppauseBind);
 
-		if ((FlxG.keys.anyJustPressed([pauseBind]) || KeyBinds.gamepad && FlxG.keys.anyJustPressed([gppauseBind]))
+		if ((FlxG.keys.anyJustPressed([pauseBind]) || KeyBinds.gamepad && FlxG.keys.anyJustPressed([gppauseBind]) || !Main.focused)
 			&& startedCountdown
 			&& canPause
 			&& !cannotDie)
@@ -4002,8 +3940,8 @@ class PlayState extends MusicBeatState
 		PlayStateChangeables.botPlay = false;
 		scrollSpeed = 1 / songMultiplier;
 
-		if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
+		/*if (FlxG.save.data.fpsCap > 300)
+			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300); */
 
 		#if FEATURE_LUAMODCHART
 		if (luaModchart != null)
@@ -6599,7 +6537,7 @@ class PlayState extends MusicBeatState
 		daNote.alive = false;
 		daNote.kill();
 		notes.remove(daNote, true);
-		daNote = null;
+		daNote.graphic = null;
 	}
 
 	private function addSongTiming()

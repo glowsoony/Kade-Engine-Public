@@ -348,14 +348,9 @@ class Paths
 		return OpenFlAssets.exists(path, AssetType.TEXT);
 	}
 
-	static public function video(key:String)
+	static public function video(key:String, type:String = VIDEO_EXT)
 	{
-		return 'assets/videos/$key.$VIDEO_EXT';
-	}
-
-	static public function webmVideo(key:String)
-	{
-		return 'assets/videos/$key.webm';
+		return 'assets/videos/$key.$type';
 	}
 
 	inline static public function image(key:String, ?library:String, ?gpuRender:Bool):FlxGraphic
@@ -531,7 +526,7 @@ class Paths
 
 		return AtlasFrameMaker.construct(key, library, excludeArray);
 	}
-
+  
 	inline static public function getJsonAtlas(key:String, ?library:String, ?isCharacter:Bool = false, ?gpuRender:Bool)
 	{
 		gpuRender = gpuRender != null ? gpuRender : FlxG.save.data.gpuRender;
@@ -540,5 +535,4 @@ class Paths
 
 		return FlxAtlasFrames.fromTexturePackerJson(image(key, library), file('images/$key.json', library));
 	}
-
 }
