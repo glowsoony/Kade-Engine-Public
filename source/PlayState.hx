@@ -5896,20 +5896,20 @@ class PlayState extends MusicBeatState
 			script.setVariable("PlayerStrumsX1", playerStrums.members[1].x);
 			script.setVariable("PlayerStrumsX2", playerStrums.members[2].x);
 			script.setVariable("PlayerStrumsX3", playerStrums.members[3].x);
-			script.setVariable("OpponentStrumsX0", opponentStrums.members[0].x);
-			script.setVariable("OpponentStrumsX1", opponentStrums.members[1].x);
-			script.setVariable("OpponentStrumsX2", opponentStrums.members[2].x);
-			script.setVariable("OpponentStrumsX3", opponentStrums.members[3].x);
+			script.setVariable("CpuStrumsX0", cpuStrums.members[0].x);
+			script.setVariable("CpuStrumsX1", cpuStrums.members[1].x);
+			script.setVariable("CpuStrumsX2", cpuStrums.members[2].x);
+			script.setVariable("CpuStrumsX3", cpuStrums.members[3].x);
 
 			//mf give me those y's
 			script.setVariable("PlayerStrumsY0", playerStrums.members[0].y);
 			script.setVariable("PlayerStrumsY1", playerStrums.members[1].y);
 			script.setVariable("PlayerStrumsY2", playerStrums.members[2].y);
 			script.setVariable("PlayerStrumsY3", playerStrums.members[3].y);
-			script.setVariable("OpponentStrumsY0", opponentStrums.members[0].y);
-			script.setVariable("OpponentStrumsY1", opponentStrums.members[1].y);
-			script.setVariable("OpponentStrumsY2", opponentStrums.members[2].y);
-			script.setVariable("OpponentStrumsY3", opponentStrums.members[3].y);
+			script.setVariable("CpuStrumsY0", cpuStrums.members[0].y);
+			script.setVariable("CpuStrumsY1", cpuStrums.members[1].y);
+			script.setVariable("CpuStrumsY2", cpuStrums.members[2].y);
+			script.setVariable("CupStrumsY3", cpuStrums.members[3].y);
 			
 			script.variables.set('ShaderFilter', openfl.filters.ShaderFilter);
 
