@@ -693,37 +693,34 @@ class PlayState extends MusicBeatState
 			gfCheck = SONG.gfVersion;
 		}
 
-		if (FlxG.save.data.characters)
+		gf = new Character(400, 130, gfCheck);
+
+		if (FlxG.save.data.characters && gf.frames == null)
 		{
-			gf = new Character(400, 130, gfCheck);
+			#if debug
+			FlxG.log.warn(["Couldn't load gf: " + gfCheck + ". Loading default gf"]);
+			#end
+			gf = new Character(400, 130, 'gf');
+		}
 
-			if (FlxG.save.data.characters && gf.frames == null)
-			{
-				#if debug
-				FlxG.log.warn(["Couldn't load gf: " + gfCheck + ". Loading default gf"]);
-				#end
-				gf = new Character(400, 130, 'gf');
-			}
+		boyfriend = new Boyfriend(770, 450, SONG.player1);
 
-			boyfriend = new Boyfriend(770, 450, SONG.player1);
+		if (FlxG.save.data.characters && boyfriend.frames == null)
+		{
+			#if debug
+			FlxG.log.warn(["Couldn't load boyfriend: " + SONG.player1 + ". Loading default boyfriend"]);
+			#end
+			boyfriend = new Boyfriend(770, 450, 'bf');
+		}
 
-			if (FlxG.save.data.characters && boyfriend.frames == null)
-			{
-				#if debug
-				FlxG.log.warn(["Couldn't load boyfriend: " + SONG.player1 + ". Loading default boyfriend"]);
-				#end
-				boyfriend = new Boyfriend(770, 450, 'bf');
-			}
+		dad = new Character(100, 100, SONG.player2);
 
-			dad = new Character(100, 100, SONG.player2);
-
-			if (FlxG.save.data.characters && dad.frames == null)
-			{
-				#if debug
-				FlxG.log.warn(["Couldn't load opponent: " + SONG.player2 + ". Loading default opponent"]);
-				#end
-				dad = new Character(100, 100, 'dad');
-			}
+		if (FlxG.save.data.characters && dad.frames == null)
+		{
+			#if debug
+			FlxG.log.warn(["Couldn't load opponent: " + SONG.player2 + ". Loading default opponent"]);
+			#end
+			dad = new Character(100, 100, 'dad');
 		}
 
 		Stage = new Stage(SONG.stage);
@@ -772,6 +769,7 @@ class PlayState extends MusicBeatState
 					case 0:
 						add(gf);
 						gf.scrollFactor.set(0.95, 0.95);
+
 						for (bg in array)
 							add(bg);
 					case 1:
@@ -3331,70 +3329,73 @@ class PlayState extends MusicBeatState
 			#end
 			try
 			{
-				if (!SONG.notes[Std.int(curStep / 16)].mustHitSection)
+				if (!Stage.staticCam)
 				{
-					var offsetX = 0;
-					var offsetY = 0;
-
-					#if FEATURE_LUAMODCHART
-					if (luaModchart != null)
+					if (!SONG.notes[Std.int(curStep / 16)].mustHitSection)
 					{
-						offsetX = luaModchart.getVar("followXOffset", "float");
-						offsetY = luaModchart.getVar("followYOffset", "float");
-					}
-					#end
-					camFollow.set(dad.getMidpoint().x + 150 + offsetX, dad.getMidpoint().y - 100 + offsetY);
-					// camFollow.setPosition(dad.getMidpoint().x + 150 + offsetX, dad.getMidpoint().y - 100 + offsetY);
-					#if FEATURE_LUAMODCHART
-					if (luaModchart != null)
-						luaModchart.executeState('playerTwoTurn', []);
-					#end
+						var offsetX = 0;
+						var offsetY = 0;
 
-					// camFollow.setPosition(lucky.getMidpoint().x - 120, lucky.getMidpoint().y + 210);
-					#if !FEATURE_LUAMODCHART
-					if (SONG.songId == 'tutorial')
-						tweenCamZoom(true);
-					#end
+						#if FEATURE_LUAMODCHART
+						if (luaModchart != null)
+						{
+							offsetX = luaModchart.getVar("followXOffset", "float");
+							offsetY = luaModchart.getVar("followYOffset", "float");
+						}
+						#end
+						camFollow.set(dad.getMidpoint().x + 150 + offsetX, dad.getMidpoint().y - 100 + offsetY);
+						// camFollow.setPosition(dad.getMidpoint().x + 150 + offsetX, dad.getMidpoint().y - 100 + offsetY);
+						#if FEATURE_LUAMODCHART
+						if (luaModchart != null)
+							luaModchart.executeState('playerTwoTurn', []);
+						#end
 
-					camFollow.x += dad.camFollow[0];
-					camFollow.y += dad.camFollow[1];
-				}
+						// camFollow.setPosition(lucky.getMidpoint().x - 120, lucky.getMidpoint().y + 210);
+						#if !FEATURE_LUAMODCHART
+						if (SONG.songId == 'tutorial')
+							tweenCamZoom(true);
+						#end
 
-				if (SONG.notes[Std.int(curStep / 16)].mustHitSection)
-				{
-					var offsetX = 0;
-					var offsetY = 0;
-
-					#if FEATURE_LUAMODCHART
-					if (luaModchart != null)
-					{
-						offsetX = luaModchart.getVar("followXOffset", "float");
-						offsetY = luaModchart.getVar("followYOffset", "float");
-					}
-					#end
-					camFollow.set(boyfriend.getMidpoint().x - 100 + offsetX, boyfriend.getMidpoint().y - 100 + offsetY);
-					#if FEATURE_LUAMODCHART
-					if (luaModchart != null)
-						luaModchart.executeState('playerOneTurn', []);
-					#end
-					#if !FEATURE_LUAMODCHART
-					if (SONG.songId == 'tutorial')
-						tweenCamZoom(false);
-					#end
-
-					switch (Stage.curStage)
-					{
-						case 'limo':
-							camFollow.x = boyfriend.getMidpoint().x - 300;
-						case 'mall':
-							camFollow.y = boyfriend.getMidpoint().y - 200;
-						case 'school' | 'schoolEvil':
-							camFollow.x = boyfriend.getMidpoint().x - 300;
-							camFollow.y = boyfriend.getMidpoint().y - 300;
+						camFollow.x += dad.camFollow[0];
+						camFollow.y += dad.camFollow[1];
 					}
 
-					camFollow.x += boyfriend.camFollow[0];
-					camFollow.y += boyfriend.camFollow[1];
+					if (SONG.notes[Std.int(curStep / 16)].mustHitSection)
+					{
+						var offsetX = 0;
+						var offsetY = 0;
+
+						#if FEATURE_LUAMODCHART
+						if (luaModchart != null)
+						{
+							offsetX = luaModchart.getVar("followXOffset", "float");
+							offsetY = luaModchart.getVar("followYOffset", "float");
+						}
+						#end
+						camFollow.set(boyfriend.getMidpoint().x - 100 + offsetX, boyfriend.getMidpoint().y - 100 + offsetY);
+						#if FEATURE_LUAMODCHART
+						if (luaModchart != null)
+							luaModchart.executeState('playerOneTurn', []);
+						#end
+						#if !FEATURE_LUAMODCHART
+						if (SONG.songId == 'tutorial')
+							tweenCamZoom(false);
+						#end
+
+						switch (Stage.curStage)
+						{
+							case 'limo':
+								camFollow.x = boyfriend.getMidpoint().x - 300;
+							case 'mall':
+								camFollow.y = boyfriend.getMidpoint().y - 200;
+							case 'school' | 'schoolEvil':
+								camFollow.x = boyfriend.getMidpoint().x - 300;
+								camFollow.y = boyfriend.getMidpoint().y - 300;
+						}
+
+						camFollow.x += boyfriend.camFollow[0];
+						camFollow.y += boyfriend.camFollow[1];
+					}
 				}
 			}
 			catch (e)
@@ -6202,7 +6203,7 @@ class PlayState extends MusicBeatState
 			bg.cameras = [camHUD];
 			add(bg);
 
-			#if (!html5)
+			#if (FEATURE_MP4VIDEOS && !html5)
 			var daVid:VideoHandler = new VideoHandler();
 			daVid.playVideo(fileName);
 			(daVid).finishCallback = function()

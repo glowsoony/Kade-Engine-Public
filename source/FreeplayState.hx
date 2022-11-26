@@ -100,6 +100,7 @@ class FreeplayState extends MusicBeatState
 
 		Main.dumpCache();
 		Paths.clearStoredMemory();
+		Paths.clearUnusedMemory();
 
 		PlayState.wentToChartEditor = false;
 
@@ -290,8 +291,6 @@ class FreeplayState extends MusicBeatState
 		}
 
 		super.create();
-
-		Paths.clearUnusedMemory();
 	}
 
 	public static var cached:Bool = false;
