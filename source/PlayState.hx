@@ -1031,7 +1031,7 @@ class PlayState extends MusicBeatState
 		if (executeHScript)
 		{
 			startScript();
-			script.executeFunc('start', [PlayState.SONG.songId]);
+			script.executeFunc("start", [PlayState.SONG.songId]);
 		}
 		#end
 
@@ -5792,6 +5792,10 @@ class PlayState extends MusicBeatState
 					return true;
 				}
 				return false;
+			});
+			
+			script.setVariable("start", function()
+			{
 			});
 
 			script.setVariable("onSongStart", function()
