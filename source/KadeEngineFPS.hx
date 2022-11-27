@@ -41,7 +41,7 @@ class KadeEngineFPS extends TextField
 
 	public var memoryTotal:Int64 = 0;
 
-	public var memoryUsage:String;
+	public var memoryUsage:String = '';
 
 	public var gpuMemory:Float = 0;
 
@@ -126,6 +126,7 @@ class KadeEngineFPS extends TextField
 
 		if (currentCount != cacheCount /*&& visible*/)
 		{
+			#if !html5
 			memoryUsage = (FlxG.save.data.memoryDisplay ? "Memory Usage: " : "");
 
 			memoryMegas = Int64.make(0, System.totalMemory);
@@ -154,6 +155,7 @@ class KadeEngineFPS extends TextField
 						+ ' KB';
 				else
 					memoryUsage += memoryMegas + " B / " + memoryTotal + " B";
+			#end
 
 			/*if (FlxG.save.data.gpuRender)
 					memoryUsage = (FlxG.save.data.memoryDisplay?"Memory Usage: " + memoryMegas + " MB / " + memoryTotal + " MB" + "\nGPU Usage: " + gpuMemory
