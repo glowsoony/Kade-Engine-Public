@@ -14,12 +14,13 @@ class Script extends FlxBasic
 
 	public static var parser:Parser = new Parser();
 
-	public static var scriptName:String = '';
+	// public static var scriptName:String = '';
 
-	public override function new(script:String)
+	// public override function new(script:String)
+	public override function new()
 	{
 		super();
-		scriptName = script;
+		// scriptName = script;
 		hscript = new Interp();
 	}
 	
@@ -102,14 +103,15 @@ class Script extends FlxBasic
 		return null;
 	}
 	
-	public function initHaxeModule()
+	/*public function initHaxeModule()
 	{
 		if(hscriptreal == null)
 		{
-			trace('initializing haxe interp for: $scriptName');
-			hscriptreal = new Script(scriptName); //TO DO: Fix issue with 2 scripts not being able to use the same variable names
+			// trace('initializing haxe interp for: $scriptName');
+			// hscriptreal = new Script(scriptName); //TO DO: Fix issue with 2 scripts not being able to use the same variable names
+                        hscriptreal = new Script(); //TO DO: Fix issue with 2 scripts not being able to use the same variable names
 		}
-	}
+	}*/
 
 	public override function destroy()
 	{
