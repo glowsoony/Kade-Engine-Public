@@ -511,9 +511,9 @@ class PlayState extends MusicBeatState
 		#end
 		#if FEATURE_HSCRIPT
 		if (!isStoryMode)
-			executeHScript = OpenFlAssets.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
+			executeHScript = OpenFlAssets.exists(Paths.hscript('songs/${SONG.songId}/script'));
 		else
-			executeHScript = OpenFlAssets.exists(Paths.hscript('songs/${PlayState.SONG.songId}/script'));
+			executeHScript = OpenFlAssets.exists(Paths.hscript('songs/${SONG.songId}/script'));
 		#if FEATURE_STEPMANIA
 		if (isSM)
 			executeHScript = FileSystem.exists(pathToSm + "/script.hx");
@@ -521,7 +521,7 @@ class PlayState extends MusicBeatState
 		#end
 
 		Debug.logInfo('Searching for mod chart? ($executeModchart) at ' + Paths.lua('songs/${PlayState.SONG.songId}/modchart'));
-		Debug.logInfo('Searching for hscript? ($executeHScript) at ' + Paths.hscript('songs/${PlayState.SONG.songId}/script'));
+		Debug.logInfo('Searching for hscript? ($executeHScript) at ' + Paths.hscript('songs/${SONG.songId}/script'));
 
 		/*if (executeModchart)
 			songMultiplier = 1; */
@@ -5758,10 +5758,12 @@ class PlayState extends MusicBeatState
 		#if FEATURE_HSCRIPT
 		var path:String;
 		
-		if (Script.scriptName == null || Script.scriptName == '' || Script.scriptName == 'script')
+		/*if (Script.scriptName == null || Script.scriptName == '' || Script.scriptName == 'script')
 			path = Paths.hscript('songs/${PlayState.SONG.songId}/script');
 		else
-			path = Paths.hscript('songs/${PlayState.SONG.songId}/${Script.scriptName}');
+			path = Paths.hscript('songs/${PlayState.SONG.songId}/${Script.scriptName}');*/
+		
+		path = Paths.hscript('songs/${SONG.songId}/script');
 
 		var hxdata:String = "";
 
@@ -5770,7 +5772,8 @@ class PlayState extends MusicBeatState
 
 		if (hxdata != "")
 		{
-			script = new Script(Script.scriptName);
+			// sadge script = new Script(Script.scriptName);
+			script = new Script();
 			
 			script.variables.set('setVar', function(name:String, value:Dynamic)
 			{
