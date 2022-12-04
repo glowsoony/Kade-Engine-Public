@@ -3829,10 +3829,10 @@ class PlayState extends MusicBeatState
 	{
 		for (i in SONG.notes)
 		{
-			var start = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(i.startTime)));
-			var end = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(i.endTime)));
+			/*var start = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(i.startTime / songMultiplier)));
+				var end = TimingStruct.getTimeFromBeat((TimingStruct.getBeatFromTime(i.endTime / songMultiplier))); */
 
-			if (ms >= start && ms < end)
+			if (ms >= i.startTime && ms < i.endTime)
 			{
 				return i;
 			}
@@ -3856,7 +3856,7 @@ class PlayState extends MusicBeatState
 			if (currentSeg == null)
 				return;
 
-			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60)) / songMultiplier;
+			var start:Float = ((currentBeat - currentSeg.startBeat) / ((currentSeg.bpm) / 60));
 
 			section.startTime = (((currentSeg.startTime + start)) * 1000);
 
@@ -4691,7 +4691,7 @@ class PlayState extends MusicBeatState
 						replayAna.anaArray.push(i); // put em all there */
 		}
 
-		if (PlayStateChangeables.botPlay)
+		if (PlayStateChangeables.botPlay || FlxG.save.data.botplay)
 			notes.forEachAlive(function(daNote:Note)
 			{
 				if (daNote.mustPress && Conductor.songPosition >= daNote.strumTime)
