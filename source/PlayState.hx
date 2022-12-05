@@ -611,14 +611,9 @@ class PlayState extends MusicBeatState
 				sourceModchart = false;
 		}
 
-		Conductor.mapBPMChanges(SONG);
-		Conductor.changeBPM(SONG.bpm);
-
-		Conductor.bpm = SONG.bpm;
-
 		if (SONG.eventObjects == null)
 		{
-			SONG.eventObjects = [new Song.Event("Init BPM", 0, SONG.bpm, "BPM Change")];
+			SONG.eventObjects = [new Song.Event("Init BPM", 0, SONG.bpm * songMultiplier, "BPM Change")];
 		}
 
 		trace('INFORMATION ABOUT WHAT U PLAYIN WIT:\nFRAMES: ' + PlayStateChangeables.safeFrames + '\nZONE: ' + Conductor.safeZoneOffset + '\nTS: '
@@ -2120,7 +2115,12 @@ class PlayState extends MusicBeatState
 
 		addSongTiming();
 
-		Conductor.crochet = ((60 / (SONG.bpm) * 1000));
+		Conductor.mapBPMChanges(SONG);
+		Conductor.changeBPM(SONG.bpm * songMultiplier);
+
+		Conductor.bpm = SONG.bpm * songMultiplier;
+
+		Conductor.crochet = ((60 / (SONG.bpm * songMultiplier) * 1000));
 		Conductor.stepCrochet = Conductor.crochet / 4;
 
 		var timingSeg = TimingStruct.getTimingAtBeat(curDecimalBeat);
@@ -2816,11 +2816,16 @@ class PlayState extends MusicBeatState
 
 				if (timingSegBpm != Conductor.bpm)
 				{
+					Debug.logInfo('Timing Struct BPM: ${timingSeg.bpm} | Current Conductor BPM: ${Conductor.bpm}');
 					Debug.logInfo("BPM CHANGE to " + timingSegBpm);
+
 					Conductor.changeBPM(timingSegBpm);
 
 					Conductor.crochet = ((60 / (timingSegBpm) * 1000)) / songMultiplier;
 					Conductor.stepCrochet = Conductor.crochet / 4;
+
+					Debug.logInfo('Timing Struct BPM: ${timingSeg.bpm} | Current Conductor BPM: ${Conductor.bpm}');
+
 					recalculateAllSectionTimes();
 				}
 			}
@@ -3803,17 +3808,17 @@ class PlayState extends MusicBeatState
 					}
 			});
 		}
-		if (FlxG.save.data.cpuStrums)
-		{
-			cpuStrums.forEach(function(spr:StaticArrow)
+		/*if (FlxG.save.data.cpuStrums)
 			{
-				if (spr.animation.finished)
+				cpuStrums.forEach(function(spr:StaticArrow)
 				{
-					spr.playAnim('static');
-					spr.centerOffsets();
-				}
-			});
-		}
+					if (spr.animation.finished)
+					{
+						spr.playAnim('static');
+						spr.centerOffsets();
+					}
+				});
+		}*/
 		if (!inCutscene && songStarted)
 			keyShit();
 		#if debug
@@ -4761,14 +4766,13 @@ class PlayState extends MusicBeatState
 					&& spr.animation.curAnim.name != 'confirm'
 					&& spr.animation.curAnim.name != 'pressed'
 					&& !spr.animation.curAnim.name.startsWith('dirCon'))
+				{
 					spr.playAnim('pressed', false);
+					if (spr.animation.curAnim.name == 'pressed' && spr.animation.curAnim.finished)
+						spr.animation.curAnim.pause();
+				}
 				if (!keys[spr.ID])
 					spr.playAnim('static', false);
-			}
-			else if (FlxG.save.data.cpuStrums)
-			{
-				if (spr.animation.finished)
-					spr.playAnim('static');
 			}
 		});
 	}
@@ -5150,23 +5154,7 @@ class PlayState extends MusicBeatState
 					else
 						dad.playAnim('sing' + dataSuffix[singData] + altAnim, true);
 				}
-				if (FlxG.save.data.cpuStrums)
-				{
-					cpuStrums.forEach(function(spr:StaticArrow)
-					{
-						pressArrow(spr, spr.ID, daNote);
-						/*
-							if (spr.animation.curAnim.name == 'confirm' && SONG.noteStyle != 'pixel')
-							{
-								spr.centerOffsets();
-								spr.offset.x -= 13;
-								spr.offset.y -= 13;
-							}
-							else
-								spr.centerOffsets();
-						 */
-					});
-				}
+
 				#if FEATURE_LUAMODCHART
 				if (luaModchart != null)
 					if (!PlayStateChangeables.opponentMode)
@@ -5190,23 +5178,7 @@ class PlayState extends MusicBeatState
 				else
 					dad.playAnim('sing' + dataSuffix[singData] + altAnim, true);
 			}
-			if (FlxG.save.data.cpuStrums)
-			{
-				cpuStrums.forEach(function(spr:StaticArrow)
-				{
-					pressArrow(spr, spr.ID, daNote);
-					/*
-						if (spr.animation.curAnim.name == 'confirm' && SONG.noteStyle != 'pixel')
-						{
-							spr.centerOffsets();
-							spr.offset.x -= 13;
-							spr.offset.y -= 13;
-						}
-						else
-							spr.centerOffsets();
-					 */
-				});
-			}
+
 			#if FEATURE_LUAMODCHART
 			if (luaModchart != null)
 				if (!PlayStateChangeables.opponentMode)
@@ -5221,6 +5193,25 @@ class PlayState extends MusicBeatState
 			if (SONG.needsVoices)
 				vocals.volume = 1;
 		}
+
+		if (FlxG.save.data.cpuStrums)
+		{
+			cpuStrums.forEach(function(spr:StaticArrow)
+			{
+				pressArrow(spr, spr.ID, daNote);
+				/*
+					if (spr.animation.curAnim.name == 'confirm' && SONG.noteStyle != 'pixel')
+					{
+						spr.centerOffsets();
+						spr.offset.x -= 13;
+						spr.offset.y -= 13;
+					}
+					else
+						spr.centerOffsets();
+				 */
+			});
+		}
+
 		destroyNote(daNote);
 	}
 
@@ -5324,7 +5315,7 @@ class PlayState extends MusicBeatState
 				saveJudge.push(note.rating);
 			}
 
-			if (!PlayStateChangeables.botPlay || FlxG.save.data.cpuStrums)
+			if (!FlxG.save.data.botplay || FlxG.save.data.cpuStrums)
 			{
 				playerStrums.forEach(function(spr:StaticArrow)
 				{
@@ -5355,11 +5346,55 @@ class PlayState extends MusicBeatState
 			if (!FlxG.save.data.stepMania)
 			{
 				spr.playAnim('confirm', true);
+				spr.animation.finishCallback = function(name)
+				{
+					if (daNote.mustPress && FlxG.save.data.botplay)
+					{
+						if ((!daNote.isSustainNote && !daNote.isParent) || daNote.isSustainEnd)
+						{
+							spr.playAnim('static', true);
+							spr.centerOffsets();
+						}
+					}
+					else if (!daNote.mustPress)
+					{
+						if (FlxG.save.data.cpuStrums)
+						{
+							if ((!daNote.isSustainNote && !daNote.isParent) || daNote.isSustainEnd)
+							{
+								spr.playAnim('static', true);
+								spr.centerOffsets();
+							}
+						}
+					}
+				}
 			}
 			else
 			{
 				spr.playAnim('dirCon' + daNote.originColor, true);
 				spr.localAngle = daNote.originAngle;
+				spr.animation.finishCallback = function(name)
+				{
+					if (daNote.mustPress && FlxG.save.data.botplay)
+					{
+						if ((!daNote.isSustainNote && !daNote.isParent) || daNote.isSustainEnd)
+						{
+							spr.playAnim('static', true);
+							spr.centerOffsets();
+						}
+					}
+					else if (!daNote.mustPress)
+					{
+						if (FlxG.save.data.cpuStrums)
+						{
+							if ((!daNote.isSustainNote && !daNote.isParent) || daNote.isSustainEnd)
+							{
+								spr.playAnim('static', true);
+								spr.centerOffsets();
+							}
+						}
+					}
+				}
 			}
 		}
 	}
