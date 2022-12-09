@@ -2255,7 +2255,8 @@ class PlayState extends MusicBeatState
 		for (i in 0...4)
 		{
 			// FlxG.log.add(i);
-			var babyArrow:StaticArrow = new StaticArrow(-10, strumLine.y);
+			var babyArrow:StaticArrow = new StaticArrow(43,
+				strumLine.y + FlxG.save.data.strumOffset.get(FlxG.save.data.downscroll ? 'downscroll' : 'upscroll'));
 
 			// defaults if no noteStyle was found in chart
 			var noteTypeCheck:String = 'normal';
@@ -2340,45 +2341,35 @@ class PlayState extends MusicBeatState
 			{
 				case 0:
 					if (!PlayStateChangeables.opponentMode)
-					{
-						babyArrow.x += 20;
 						cpuStrums.add(babyArrow);
-					}
 					else
-					{
-						babyArrow.x += 20;
 						playerStrums.add(babyArrow);
-					}
+					babyArrow.x += 20.5;
+
 				case 1:
 					if (!PlayStateChangeables.opponentMode)
-					{
 						playerStrums.add(babyArrow);
-						babyArrow.x -= 5;
-					}
 					else
-					{
-						babyArrow.x -= 20;
 						cpuStrums.add(babyArrow);
-					}
 			}
 
 			babyArrow.playAnim('static');
-			babyArrow.x += 98.5;
 			babyArrow.x += ((FlxG.width / 2) * player);
+			babyArrow.x += 48.5;
 
 			if (FlxG.save.data.middleScroll)
 			{
 				if (!PlayStateChangeables.opponentMode)
 				{
-					babyArrow.x -= 303.5;
+					babyArrow.x -= 310;
 					if (player == 0)
-						babyArrow.x -= 275 / Math.pow(FlxG.save.data.zoom, 3);
+						babyArrow.x -= 275;
 				}
 				else
 				{
-					babyArrow.x += 311.5;
+					babyArrow.x += 310;
 					if (player == 1)
-						babyArrow.x += 275 / Math.pow(FlxG.save.data.zoom, 3);
+						babyArrow.x += 275;
 				}
 			}
 
@@ -2685,9 +2676,9 @@ class PlayState extends MusicBeatState
 		var shit:Float = 3500;
 		if (SONG.speed < 1 || scrollSpeed < 1)
 			shit /= scrollSpeed == 1 ? SONG.speed : scrollSpeed;
-		if (unspawnNotes[0] != null)
+		while (unspawnNotes.length > 0 && unspawnNotes[0] != null)
 		{
-			while (unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < shit)
+			if (unspawnNotes[0].strumTime - Conductor.songPosition < shit)
 			{
 				var dunceNote:Note = unspawnNotes[0];
 				if (FlxG.save.data.postProcessNotes)
@@ -2710,6 +2701,10 @@ class PlayState extends MusicBeatState
 				var index:Int = unspawnNotes.indexOf(dunceNote);
 				unspawnNotes.splice(index, 1);
 				currentLuaIndex++;
+			}
+			else
+			{
+				break;
 			}
 		}
 

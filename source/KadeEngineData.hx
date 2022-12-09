@@ -236,6 +236,9 @@ class KadeEngineData
 			FlxG.save.data.postProcessNotes = true;
 		}
 
+		if (FlxG.save.data.strumOffset == null)
+			FlxG.save.data.strumOffset = ['downscroll' => 0, 'upscroll' => 0];
+
 		if (FlxG.save.data.volume == null)
 			FlxG.save.data.volume = 1;
 
