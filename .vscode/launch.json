@@ -18,7 +18,7 @@
     {
       "name": "Windows x32 (Debug)",
       "type": "hxcpp",
-      "preLaunchTask": "Build Windows x32 (Release)",
+      "preLaunchTask": "Build Windows x32 (Debug)",
       "request": "launch",
       "program": "${workspaceFolder}/export/debug-32bits/windows/bin/Kade Engine.exe"
     },
