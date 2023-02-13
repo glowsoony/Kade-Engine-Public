@@ -15,7 +15,7 @@ install:
   - tar -xf haxe-4.2.4-osx.tar.gz -C $HAXE_INSTALLDIR
   - export PATH=$PATH:$HAXE_INSTALLDIR/haxe_20201231082044_5e33a78aa
   - mkdir $HAXELIB_ROOT && haxelib setup $HAXELIB_ROOT
-  - haxelib install lime 7.9.0
+  - haxelib install lime 
   - haxelib install openfl
   - haxelib install flixel
   - haxelib run lime setup flixel
@@ -24,7 +24,7 @@ install:
   - haxelib install flixel-addons
   - haxelib install flixel-ui
   - haxelib install hscript
-  - haxelib git hxCodec 
+  - haxelib install hxCodec 
   - haxelib git faxe https://github.com/uhrobots/faxe
   - haxelib git polymod https://github.com/larsiusprime/polymod.git
   - haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
