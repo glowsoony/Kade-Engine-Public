@@ -802,7 +802,9 @@ class PlayState extends MusicBeatState
 				}
 			}
 
+			#if (FEATURE_MP4VIDEOS && !html5)
 			add(daVideoGroup);
+			#end
 
 			if (dad.hasTrail)
 			{
@@ -5976,7 +5978,9 @@ class PlayState extends MusicBeatState
 			if (!noteDef.isParent && !noteDef.isSustainNote)
 			{
 				noteDef.connectedNote = null;
+				#if FEATURE_LUAMODCHART
 				noteDef.LuaNote = null;
+				#end
 
 				noteDef = null;
 
@@ -5988,12 +5992,16 @@ class PlayState extends MusicBeatState
 				for (susDef in noteDef.parent.children)
 				{
 					susDef.connectedNote = null;
+					#if FEATURE_LUAMODCHART
 					susDef.LuaNote = null;
+					#end
 					susDef = null;
 				}
 
 				noteDef.parent.connectedNote = null;
+				#if FEATURE_LUAMODCHART
 				noteDef.parent.LuaNote = null;
+				#end
 				noteDef.parent = null;
 
 				return;

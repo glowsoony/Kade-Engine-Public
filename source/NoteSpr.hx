@@ -324,7 +324,9 @@ class NoteSpr extends FlxSprite
 			if (!_def.isParent && !_def.isSustainNote)
 			{
 				_def.connectedNote = null;
+				#if FEATURE_LUAMODCHART
 				_def.LuaNote = null;
+				#end
 
 				_def = null;
 
@@ -336,12 +338,16 @@ class NoteSpr extends FlxSprite
 				for (susDef in _def.parent.children)
 				{
 					susDef.connectedNote = null;
+					#if FEATURE_LUAMODCHART
 					susDef.LuaNote = null;
+					#end
 					susDef = null;
 				}
 
 				_def.parent.connectedNote = null;
+				#if FEATURE_LUAMODCHART
 				_def.parent.LuaNote = null;
+				#end
 				_def.parent = null;
 
 				return;
@@ -354,7 +360,9 @@ class NoteSpr extends FlxSprite
 		if (!_def.isParent && !_def.isSustainNote)
 		{
 			_def.connectedNote = null;
+			#if FEATURE_LUAMODCHART
 			_def.LuaNote = null;
+			#end
 
 			_def = null;
 
@@ -368,12 +376,16 @@ class NoteSpr extends FlxSprite
 				for (susDef in _def.parent.children)
 				{
 					susDef.connectedNote = null;
+					#if FEATURE_LUAMODCHART
 					susDef.LuaNote = null;
+					#end
 					susDef = null;
 				}
 
 				_def.parent.connectedNote = null;
+				#if FEATURE_LUAMODCHART
 				_def.parent.LuaNote = null;
+				#end
 				_def.parent = null;
 
 				return;

@@ -282,8 +282,10 @@ class ChartingState extends MusicBeatState
 		instStream = PlayState.instStream;
 		vocalsStream = PlayState.vocalsStream;
 
+		#if desktop
 		instStream.play();
 		instStream.pause();
+		#end
 
 		instStream.time = 0;
 

@@ -1,6 +1,5 @@
 package;
 
-import hxcodec.VideoSprite;
 import flixel.FlxSubState;
 import flixel.FlxBasic;
 import flixel.FlxG;
