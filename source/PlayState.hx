@@ -1011,7 +1011,9 @@ class PlayState extends MusicBeatState
 		}
 		#end
 
+		#if (FEATURE_MP4VIDEOS && !html5)
 		daVideoGroup = new FlxTypedGroup<VideoSprite>();
+		#end
 
 		#if FEATURE_LUAMODCHART
 		if (executeModchart)

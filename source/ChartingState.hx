@@ -285,9 +285,9 @@ class ChartingState extends MusicBeatState
 		#if desktop
 		instStream.play();
 		instStream.pause();
-		#end
 
 		instStream.time = 0;
+		#end
 
 		setSongTimings();
 
