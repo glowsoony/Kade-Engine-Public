@@ -1,23 +1,30 @@
+import Song.SongData;
 import flixel.FlxG;
+import flixel.util.FlxColor;
 
 class Ratings
 {
 	public static function GenerateComboRank(accuracy:Float) // generate a letter ranking
 	{
 		var comboranking:String = "N/A";
-		if (PlayState.misses == 0 && PlayState.bads == 0 && PlayState.shits == 0 && PlayState.goods == 0) // Marvelous (SICK) Full Combo
-			comboranking = "(MFC)";
-		else if (PlayState.misses == 0 && PlayState.bads == 0 && PlayState.shits == 0 && PlayState.goods >= 1) // Good Full Combo (Nothing but Goods & Sicks)
-			comboranking = "(GFC)";
-		else if (PlayState.misses == 0) // Regular FC
-			comboranking = "(FC)";
+
+		if (PlayState.misses == 0)
+		{
+			var reverseWindows = timingWindows.copy();
+			reverseWindows.reverse();
+			for (rate in reverseWindows)
+			{
+				if (rate.count > 0)
+				{
+					comboranking = '(${rate.comboRanking})';
+				}
+			}
+		}
 		else if (PlayState.misses < 10) // Single Digit Combo Breaks
 			comboranking = "(SDCB)";
 		else
 			comboranking = "(Clear)";
-
 		return comboranking;
-		// WIFE TIME :)))) (based on Wife3)
 	}
 
 	public static function GenerateLetterRank(accuracy:Float)
@@ -95,31 +102,23 @@ class Ratings
 		return letterRanking;
 	}
 
-	public static var timingWindows = [];
+	public static var timingWindows:Array<RatingWindow> = [];
 
-	public static function judgeNote(noteDiff:Float)
+	public static function judgeNote(noteDiff:Float):RatingWindow
 	{
 		var diff = Math.abs(noteDiff);
-		for (index in 0...timingWindows.length) // based on 4 timing windows, will break with anything else
+		if (PlayStateChangeables.botPlay)
+			return timingWindows[timingWindows.length - 1];
+		for (index in 0...timingWindows.length)
 		{
-			var time = timingWindows[index];
-			var nextTime = index + 1 > timingWindows.length - 1 ? 0 : timingWindows[index + 1];
+			var time = timingWindows[index].timingWindow;
+			var nextTime = index + 1 > timingWindows.length - 1 ? 0 : timingWindows[index + 1].timingWindow;
 			if (diff < time && diff >= nextTime)
 			{
-				switch (index)
-				{
-					case 0: // shit
-						return "shit";
-					case 1: // bad
-						return "bad";
-					case 2: // good
-						return "good";
-					case 3: // sick
-						return "sick";
-				}
+				return timingWindows[index];
 			}
 		}
-		return "good";
+		return null;
 	}
 
 	public static function CalculateRanking(score:Int, scoreDef:Int, nps:Int, maxNPS:Int, accuracy:Float):String
@@ -131,21 +130,91 @@ class Ratings
 			+ maxNPS
 			+ ")"
 			+ (!PlayStateChangeables.botPlay || PlayState.loadRep ? " | " : "") : "") + // 	NPS
-			(!PlayStateChangeables.botPlay
-				|| PlayState.loadRep ? "Score:" + (Conductor.safeFrames != 10 ? score + " (" + scoreDef + ")" : "" + score) + // Score
-					(FlxG.save.data.accuracyDisplay ? // Accuracy Toggle
-						" | Combo Breaks:"
-						+ PlayState.misses // 	Misses/Combo Breaks
-						+ (!FlxG.save.data.healthBar ? " | Health:"
-							+ (!PlayStateChangeables.opponentMode ? Math.round(PlayState.instance.health * 50) : Math.round(100
-								- (PlayState.instance.health * 50)))
-							+ "%" : "")
-						+ " | Accuracy:"
-						+ (PlayStateChangeables.botPlay && !PlayState.loadRep ? "N/A" : HelperFunctions.truncateFloat(accuracy, 2) + " %")
-						+ // 	Accuracy
-						" | "
-						+ GenerateComboRank(accuracy)
-						+ " "
-						+ (!PlayStateChangeables.practiceMode ? GenerateLetterRank(accuracy) : 'PRACTICE') : "") : ""); // 	Letter Rank
+			(!PlayStateChangeables.botPlay || PlayState.loadRep ? "Score:" + score + // Score
+				(FlxG.save.data.accuracyDisplay ? // Accuracy Toggle
+					" | Combo Breaks:"
+					+ PlayState.misses // 	Misses/Combo Breaks
+					+ (!FlxG.save.data.healthBar ? " | Health:"
+						+ (!PlayStateChangeables.opponentMode ? Math.round(PlayState.instance.health * 50) : Math.round(100 - (PlayState.instance.health * 50)))
+						+ "%" : "")
+					+ " | Accuracy:"
+					+ (PlayStateChangeables.botPlay && !PlayState.loadRep ? "N/A" : HelperFunctions.truncateFloat(accuracy, 2) + " %")
+					+ // 	Accuracy
+					" | "
+					+ GenerateComboRank(accuracy)
+					+ " "
+					+ (!PlayStateChangeables.practiceMode ? GenerateLetterRank(accuracy) : 'PRACTICE') : "") : ""); // 	Letter Rank
+	}
+}
+
+class RatingWindow
+{
+	public var name:String;
+	public var timingWindow:Float;
+	public var displayColor:FlxColor;
+	public var healthBonus:Float;
+	public var scoreBonus:Float;
+	public var defaultTimingWindow:Float;
+	public var causeMiss:Bool;
+	public var doNoteSplash:Bool;
+	public var count:Int = 0;
+
+	public var pluralSuffix:String;
+
+	public var comboRanking:String;
+
+	public function new(name:String, timingWindow:Float, comboRanking:String, displayColor:FlxColor, healthBonus:Float, scoreBonus:Float, causeMiss:Bool,
+			doNoteSplash:Bool)
+	{
+		this.name = name;
+		this.timingWindow = timingWindow;
+		this.comboRanking = comboRanking;
+		this.displayColor = displayColor;
+		this.healthBonus = healthBonus;
+		this.causeMiss = causeMiss;
+		this.doNoteSplash = doNoteSplash;
+	}
+
+	public static function createRatings(judgeStyle:Null<String>):Void
+	{
+		Ratings.timingWindows = [];
+
+		switch (judgeStyle)
+		{
+			default:
+				var ratings:Array<String> = ['Shit', 'Bad', 'Good', 'Sick', 'Swag'];
+				var timings:Array<Float> = [
+					FlxG.save.data.shitMs,
+					FlxG.save.data.badMs,
+					FlxG.save.data.goodMs,
+					FlxG.save.data.sickMs,
+					FlxG.save.data.swagMs
+				];
+				var colors:Array<FlxColor> = [
+					FlxColor.fromString('0x8b0000'),
+					FlxColor.RED,
+					FlxColor.LIME,
+					FlxColor.YELLOW,
+					FlxColor.CYAN
+				];
+				var healthBonuses:Array<Float> = [-0.2, -0.06, 0, 0.04, 0.06];
+				var scoreBonuses:Array<Int> = [-300, 0, 200, 350, 350];
+				var defaultTimings:Array<Float> = [180, 135, 90, 45, 22.5];
+				var missArray:Array<Bool> = [true, false, false, false, false];
+				var splashArray:Array<Bool> = [false, false, false, true, true];
+				var suffixes:Array<String> = ['s', 's', 's', 's', 's'];
+				var combos:Array<String> = ['', 'FC', 'GFC', 'PFC', 'MFC'];
+				for (i in 0...ratings.length)
+				{
+					var rClass = new RatingWindow(ratings[i], timings[i], combos[i], colors[i], healthBonuses[i], scoreBonuses[i], missArray[i],
+						splashArray[i]);
+					rClass.defaultTimingWindow = defaultTimings[i];
+					rClass.pluralSuffix = suffixes[i];
+					Ratings.timingWindows.push(rClass);
+				}
+		}
+
+		if (Ratings.timingWindows.length == 0)
+			createRatings(null);
 	}
 }

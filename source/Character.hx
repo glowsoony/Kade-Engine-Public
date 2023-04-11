@@ -31,7 +31,9 @@ class Character extends FlxSprite
 	public var camPos:Array<Int>;
 	public var camFollow:Array<Int>;
 
-	public static var animationNotes:Array<Note> = [];
+	public var animationNotes:Array<NoteDef> = [];
+
+	var tex:FlxFramesCollection = null;
 
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false)
 	{
@@ -79,8 +81,7 @@ class Character extends FlxSprite
 		if (jsonData == null)
 		{
 			Debug.logError('Failed to parse JSON data for character ${curCharacter}. Loading default characters...');
-			if (FlxG.fullscreen)
-				FlxG.fullscreen = !FlxG.fullscreen;
+
 			if (isPlayer)
 			{
 				Debug.logError('Failed to parse JSON data for character  ${curCharacter}. Loading default boyfriend...');
@@ -95,6 +96,7 @@ class Character extends FlxSprite
 			{
 				Debug.logError('Failed to parse JSON data for character  ${curCharacter}. Loading default opponent...');
 				jsonData = Paths.loadJSON('characters/dad');
+				curCharacter = 'dad';
 			}
 		}
 
@@ -102,8 +104,6 @@ class Character extends FlxSprite
 
 		if (FlxG.save.data.characters)
 		{
-			var tex:FlxFramesCollection;
-
 			if (data.AtlasType == 'PackerAtlas')
 				tex = Paths.getPackerAtlas(data.asset, 'shared');
 			else if (data.AtlasType == 'TextureAtlas')
@@ -124,12 +124,11 @@ class Character extends FlxSprite
 
 					if (anim.frameIndices != null)
 					{
-						animation.addByIndices(anim.name, anim.prefix, anim.frameIndices, "", Std.int(frameRate * PlayState.songMultiplier), looped, flipX,
-							flipY);
+						animation.addByIndices(anim.name, anim.prefix, anim.frameIndices, "", Std.int(frameRate), looped, flipX, flipY);
 					}
 					else
 					{
-						animation.addByPrefix(anim.name, anim.prefix, Std.int(frameRate * PlayState.songMultiplier), looped, flipX, flipY);
+						animation.addByPrefix(anim.name, anim.prefix, Std.int(frameRate), looped, flipX, flipY);
 					}
 
 					animOffsets[anim.name] = anim.offsets == null ? [0, 0] : anim.offsets;
@@ -179,7 +178,7 @@ class Character extends FlxSprite
 						holdTimer += elapsed;
 					}
 
-					if (holdTimer >= Conductor.stepCrochet * 0.0011 * holdLength * PlayState.songMultiplier)
+					if (holdTimer >= Conductor.stepCrochet * 0.0011 * holdLength * PlayState.rate)
 					{
 						dance();
 
@@ -273,7 +272,7 @@ class Character extends FlxSprite
 						{
 							if (altAnim && animation.getByName('idle-alt') != null)
 								playAnim('idle-alt', forced);
-							else
+							else if (animOffsets.exists('idle'))
 								playAnim('idle', forced);
 						}
 					}
@@ -323,26 +322,26 @@ class Character extends FlxSprite
 		}
 	}
 
-	public static function loadMappedAnims():Void
+	public function loadMappedAnims():Void
 	{
 		var noteData:Array<SwagSection> = Song.loadFromJson(PlayState.SONG.songId, 'picospeaker').notes;
 		for (section in noteData)
 		{
 			for (songNotes in section.sectionNotes)
 			{
-				var daStrumTime:Float = (songNotes[0] - FlxG.save.data.offset - PlayState.SONG.offset) / PlayState.songMultiplier;
+				var daStrumTime:Float = (songNotes[0] - FlxG.save.data.offset - PlayState.SONG.offset) / PlayState.rate;
 				if (daStrumTime < 0)
 					daStrumTime = 0;
 
 				var daNoteData:Int = Std.int(songNotes[1] % 4);
 
-				var oldNote:Note;
+				var oldNote:NoteDef;
 
 				if (PlayState.instance.unspawnNotes.length > 0)
 					oldNote = PlayState.instance.unspawnNotes[Std.int(PlayState.instance.unspawnNotes.length - 1)];
 				else
 					oldNote = null;
-				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote, false, false, false, songNotes[4]);
+				var swagNote:NoteDef = new NoteDef(daStrumTime, daNoteData, oldNote, false, false, 0);
 
 				animationNotes.push(swagNote);
 			}
@@ -351,7 +350,7 @@ class Character extends FlxSprite
 		animationNotes.sort(sortAnims);
 	}
 
-	static function sortAnims(Obj1:Note, Obj2:Note):Int
+	static function sortAnims(Obj1:NoteDef, Obj2:NoteDef):Int
 	{
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
 	}
@@ -359,6 +358,19 @@ class Character extends FlxSprite
 	public function addOffset(name:String, x:Float = 0, y:Float = 0)
 	{
 		animOffsets[name] = [x, y];
+	}
+
+	override function destroy()
+	{
+		animOffsets.clear();
+		animInterrupt.clear();
+		animNext.clear();
+		animDanced.clear();
+
+		tex = null;
+		animationNotes.resize(0);
+
+		super.destroy();
 	}
 }
 

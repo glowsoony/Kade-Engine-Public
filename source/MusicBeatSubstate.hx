@@ -4,9 +4,9 @@ import lime.app.Application;
 import openfl.Lib;
 import flixel.text.FlxText;
 import flixel.input.gamepad.FlxGamepad;
-import Conductor.BPMChangeEvent;
 import flixel.FlxG;
 import flixel.FlxSubState;
+import flixel.input.keyboard.FlxKey;
 
 class MusicBeatSubstate extends FlxSubState
 {
@@ -26,15 +26,13 @@ class MusicBeatSubstate extends FlxSubState
 
 	override function create()
 	{
+		FlxG.mouse.enabled = true;
 		super.create();
 		#if desktop
 		/*Application.current.window.onFocusIn.add(onWindowFocusIn);
 			Application.current.window.onFocusOut.add(onWindowFocusOut); */
 		#end
 	}
-
-	private var lastBeat:Float = 0;
-	private var lastStep:Float = 0;
 
 	private var curStep:Int = 0;
 	private var curBeat:Int = 0;
@@ -43,29 +41,20 @@ class MusicBeatSubstate extends FlxSubState
 	inline function get_controls():Controls
 		return PlayerSettings.player1.controls;
 
+	var oldStep:Int = 0;
+
+	var curDecimalBeat:Float = 0;
+
 	override function update(elapsed:Float)
 	{
-		// everyStep();
-		var nextStep = updateCurStep();
+		curDecimalBeat = (((Conductor.songPosition / 1000))) * (Conductor.bpm / 60);
+		curBeat = Math.floor(curDecimalBeat);
+		curStep = Math.floor(curDecimalBeat * 4);
 
-		if (nextStep >= 0)
+		if (oldStep != curStep)
 		{
-			if (nextStep > curStep)
-			{
-				for (i in curStep...nextStep)
-				{
-					curStep++;
-					updateBeat();
-					stepHit();
-				}
-			}
-			else if (nextStep < curStep)
-			{
-				// Song reset?
-				curStep = nextStep;
-				updateBeat();
-				stepHit();
-			}
+			stepHit();
+			oldStep = curStep;
 		}
 
 		var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
@@ -75,28 +64,13 @@ class MusicBeatSubstate extends FlxSubState
 			KeyBinds.gamepad = false;
 
 		super.update(elapsed);
-	}
 
-	private function updateBeat():Void
-	{
-		lastBeat = curBeat;
-		curBeat = Math.floor(curStep / 4);
-	}
+		var fullscreenBind = FlxKey.fromString(FlxG.save.data.fullscreenBind);
 
-	private function updateCurStep():Int
-	{
-		var lastChange:BPMChangeEvent = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: 0
-		}
-		for (i in 0...Conductor.bpmChangeMap.length)
+		if (FlxG.keys.anyJustPressed([fullscreenBind]))
 		{
-			if (Conductor.songPosition > Conductor.bpmChangeMap[i].songTime)
-				lastChange = Conductor.bpmChangeMap[i];
+			FlxG.fullscreen = !FlxG.fullscreen;
 		}
-
-		return lastChange.stepTime + Math.floor((Conductor.songPosition - lastChange.songTime) / Conductor.stepCrochet);
 	}
 
 	public function stepHit():Void
@@ -109,32 +83,4 @@ class MusicBeatSubstate extends FlxSubState
 	{
 		// do literally nothing dumbass
 	}
-	/*function onWindowFocusOut():Void
-		{
-			if (PlayState.inDaPlay)
-			{
-				PlayState.instance.vocals.pause();
-				FlxG.sound.music.pause();
-				if (!PlayState.instance.paused && !PlayState.instance.endingSong && PlayState.instance.songStarted)
-				{
-					Debug.logTrace("Lost Focus");
-					PlayState.instance.openSubState(new PauseSubState());
-					PlayState.boyfriend.stunned = true;
-
-					PlayState.instance.persistentUpdate = false;
-					PlayState.instance.persistentDraw = true;
-					PlayState.instance.paused = true;
-				}
-			}
-	}*/
-	/*function onWindowFocusIn():Void
-		{
-			Debug.logTrace("IM BACK!!!");
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
-			if (PlayState.inDaPlay)
-			{
-				if (PlayState.boyfriend.stunned)
-					PlayState.boyfriend.stunned = false;
-			}
-	}*/
 }

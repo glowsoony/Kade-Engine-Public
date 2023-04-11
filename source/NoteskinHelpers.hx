@@ -9,31 +9,12 @@ using StringTools;
 class NoteskinHelpers
 {
 	public static var noteskinArray = [];
-	public static var xmlData = [];
 
 	public static function updateNoteskins()
 	{
 		noteskinArray = [];
-		xmlData = [];
-		#if FEATURE_FILESYSTEM
-		var count:Int = 0;
-		for (i in FileSystem.readDirectory(FileSystem.absolutePath("assets/shared/images/noteskins")))
-		{
-			if (i.contains("-pixel"))
-				continue;
-			if (i.endsWith(".xml"))
-			{
-				xmlData.push(sys.io.File.getContent(FileSystem.absolutePath("assets/shared/images/noteskins") + "/" + i));
-				continue;
-			}
 
-			if (!i.endsWith(".png"))
-				continue;
-			noteskinArray.push(i.replace(".png", ""));
-		}
-		#else
 		noteskinArray = ["Arrows", "Circles"];
-		#end
 
 		return noteskinArray;
 	}
@@ -48,15 +29,33 @@ class NoteskinHelpers
 		return noteskinArray[id];
 	}
 
-	static public function generateNoteskinSprite(id:Int)
+	static public function generateNoteskinSprite(id:Int, type:String, style:String = 'normal')
 	{
-		Debug.logTrace("bruh momento");
+		// Debug.logTrace("bruh momento");
 
-		return Paths.getSparrowAtlas('noteskins/${NoteskinHelpers.getNoteskinByID(FlxG.save.data.noteskin)}', 'shared');
+		if (type == null)
+			type = '';
+
+		var suffix = '_${type.toUpperCase()}';
+
+		if (type == '')
+			suffix = '_NORMAL';
+
+		var atlas = null;
+
+		atlas = Paths.getSparrowAtlas('hud/$style/noteskins/${NoteskinHelpers.getNoteskinByID(FlxG.save.data.noteskin)}/NOTE_ASSETS$suffix', 'shared');
+
+		return atlas;
 	}
 
-	static public function generatePixelSprite(id:Int, ends:Bool = false)
+	static public function generatePixelSprite(id:Int, ends:Bool = false, type:String)
 	{
-		return Paths.image('noteskins/${NoteskinHelpers.getNoteskinByID(FlxG.save.data.noteskin)}-pixel${(ends ? '-ends' : '')}', "shared");
+		var suffix = '_${type.toUpperCase()}';
+
+		if (type == '')
+			suffix = '_NORMAL';
+
+		return Paths.image('hud/pixel/noteskins/${NoteskinHelpers.getNoteskinByID(FlxG.save.data.noteskin)}/NOTE_ASSETS$suffix${(ends ? '_ENDS' : '')}',
+			"shared");
 	}
 }

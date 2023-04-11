@@ -13,6 +13,9 @@ import Discord.DiscordClient;
 import OptionsMenu;
 import KadeEngineData;
 import flixel.input.gamepad.FlxGamepad;
+#if FEATURE_FILESYSTEM
+import sys.FileSystem;
+#end
 
 class Option
 {
@@ -33,6 +36,15 @@ class Option
 	public var acceptType:Bool = false;
 
 	public var waitingType:Bool = false;
+
+	public var blocked:Bool = false;
+
+	public var pauseDesc:String = "This option cannot be toggled in the pause menu.";
+
+	// Vars for Option Menu don't modify.
+	public var targetY:Int = 0;
+
+	public var connectedText:OptionText = null;
 
 	public final function getDisplay():String
 	{
@@ -74,6 +86,10 @@ class Option
 		return false;
 	}
 
+	public function updateBlocks()
+	{
+	}
+
 	public function right():Bool
 	{
 		return false;
@@ -86,12 +102,13 @@ class DFJKOption extends Option
 	{
 		super();
 		description = "Edit your keybindings";
+		acceptType = true;
 	}
 
 	public override function press():Bool
 	{
 		OptionsMenu.instance.selectedCatIndex = 5;
-		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[5], false);
+		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[5], true);
 		return false;
 	}
 
@@ -443,27 +460,68 @@ class FullscreenBind extends Option
 	}
 }
 
-class SickMSOption extends Option
+class SwagMSOption extends Option
 {
 	public function new(desc:String)
 	{
 		super();
 		description = desc + " (Press R to reset)";
-		acceptType = true;
+		acceptValues = true;
 	}
 
 	public override function left():Bool
 	{
-		FlxG.save.data.sickMs--;
-		if (FlxG.save.data.sickMs < 0)
-			FlxG.save.data.sickMs = 0;
+		FlxG.save.data.swagMs -= 0.1;
+		if (FlxG.save.data.swagMs < 0)
+			FlxG.save.data.swagMs = 0;
+		FlxG.save.data.swagMs = HelperFunctions.truncateFloat(FlxG.save.data.swagMs, 1);
 		display = updateDisplay();
 		return true;
 	}
 
 	public override function right():Bool
 	{
-		FlxG.save.data.sickMs++;
+		FlxG.save.data.swagMs += 0.1;
+		FlxG.save.data.swagMs = HelperFunctions.truncateFloat(FlxG.save.data.swagMs, 1);
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function onType(char:String)
+	{
+		if (char.toLowerCase() == "r")
+			FlxG.save.data.swagMs = 22.5;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "SWAG: < " + FlxG.save.data.swagMs + " ms >";
+	}
+}
+
+class SickMSOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc + " (Press R to reset)";
+		acceptValues = true;
+	}
+
+	public override function left():Bool
+	{
+		FlxG.save.data.sickMs -= 0.1;
+		if (FlxG.save.data.sickMs < 0)
+			FlxG.save.data.sickMs = 0;
+		FlxG.save.data.sickMs = HelperFunctions.truncateFloat(FlxG.save.data.sickMs, 1);
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		FlxG.save.data.sickMs += 0.1;
+		FlxG.save.data.sickMs = HelperFunctions.truncateFloat(FlxG.save.data.sickMs, 1);
 		display = updateDisplay();
 		return true;
 	}
@@ -486,21 +544,23 @@ class GoodMsOption extends Option
 	{
 		super();
 		description = desc + " (Press R to reset)";
-		acceptType = true;
+		acceptValues = true;
 	}
 
 	public override function left():Bool
 	{
-		FlxG.save.data.goodMs--;
+		FlxG.save.data.goodMs -= 0.1;
 		if (FlxG.save.data.goodMs < 0)
 			FlxG.save.data.goodMs = 0;
+		FlxG.save.data.goodMs = HelperFunctions.truncateFloat(FlxG.save.data.goodMs, 1);
 		display = updateDisplay();
 		return true;
 	}
 
 	public override function right():Bool
 	{
-		FlxG.save.data.goodMs++;
+		FlxG.save.data.goodMs += 0.1;
+		FlxG.save.data.goodMs = HelperFunctions.truncateFloat(FlxG.save.data.goodMs, 1);
 		display = updateDisplay();
 		return true;
 	}
@@ -523,21 +583,23 @@ class BadMsOption extends Option
 	{
 		super();
 		description = desc + " (Press R to reset)";
-		acceptType = true;
+		acceptValues = true;
 	}
 
 	public override function left():Bool
 	{
-		FlxG.save.data.badMs--;
+		FlxG.save.data.badMs -= 0.1;
 		if (FlxG.save.data.badMs < 0)
 			FlxG.save.data.badMs = 0;
+		FlxG.save.data.badMs = HelperFunctions.truncateFloat(FlxG.save.data.badMs, 1);
 		display = updateDisplay();
 		return true;
 	}
 
 	public override function right():Bool
 	{
-		FlxG.save.data.badMs++;
+		FlxG.save.data.badMs += 0.1;
+		FlxG.save.data.badMs = HelperFunctions.truncateFloat(FlxG.save.data.badMs, 1);
 		display = updateDisplay();
 		return true;
 	}
@@ -560,14 +622,15 @@ class ShitMsOption extends Option
 	{
 		super();
 		description = desc + " (Press R to reset)";
-		acceptType = true;
+		acceptValues = true;
 	}
 
 	public override function left():Bool
 	{
-		FlxG.save.data.shitMs--;
+		FlxG.save.data.shitMs -= 0.1;
 		if (FlxG.save.data.shitMs < 0)
 			FlxG.save.data.shitMs = 0;
+		FlxG.save.data.shitMs = HelperFunctions.truncateFloat(FlxG.save.data.shitMs, 1);
 		display = updateDisplay();
 		return true;
 	}
@@ -575,12 +638,13 @@ class ShitMsOption extends Option
 	public override function onType(char:String)
 	{
 		if (char.toLowerCase() == "r")
-			FlxG.save.data.shitMs = 160;
+			FlxG.save.data.shitMs = 180;
 	}
 
 	public override function right():Bool
 	{
-		FlxG.save.data.shitMs++;
+		FlxG.save.data.shitMs += 0.1;
+		FlxG.save.data.shitMs = HelperFunctions.truncateFloat(FlxG.save.data.shitMs, 1);
 		display = updateDisplay();
 		return true;
 	}
@@ -597,7 +661,10 @@ class NoteCocks extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
 	}
@@ -631,7 +698,10 @@ class AutoSaveChart extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
 	}
@@ -666,7 +736,10 @@ class GPURendering extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
 
@@ -789,34 +862,6 @@ class GraphicLoading extends Option
 	}
 }
 
-class EditorRes extends Option
-{
-	public function new(desc:String)
-	{
-		super();
-		description = desc;
-	}
-
-	public override function left():Bool
-	{
-		FlxG.save.data.editorBG = !FlxG.save.data.editorBG;
-
-		display = updateDisplay();
-		return true;
-	}
-
-	public override function right():Bool
-	{
-		left();
-		return true;
-	}
-
-	private override function updateDisplay():String
-	{
-		return "Editor Grid: < " + (FlxG.save.data.editorBG ? "Shown" : "Hidden") + " >";
-	}
-}
-
 class DownscrollOption extends Option
 {
 	public function new(desc:String)
@@ -930,13 +975,37 @@ class SongPositionOption extends Option
 
 class DistractionsAndEffectsOption extends Option
 {
+	var desc:String = '';
+
 	public function new(desc:String)
 	{
 		super();
+		this.desc = desc;
+		setDesc(desc);
+	}
+
+	function setDesc(desc:String)
+	{
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
+		else if (!FlxG.save.data.background)
+		{
+			blocked = true;
+			description = "BACKGROUNDS ARE DISABLED, OPTION DISABLED.";
+		}
 		else
+		{
+			blocked = false;
 			description = desc;
+		}
+	}
+
+	public override function updateBlocks()
+	{
+		setDesc(desc);
 	}
 
 	public override function left():Bool
@@ -1199,13 +1268,13 @@ class Judgement extends Option
 			description = desc + " (RESTART REQUIRED)";
 		else
 			description = desc;
-		acceptValues = true;
+		acceptType = true;
 	}
 
 	public override function press():Bool
 	{
 		OptionsMenu.instance.selectedCatIndex = 6;
-		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[6], false);
+		OptionsMenu.instance.switchCat(OptionsMenu.instance.options[6], true);
 		return true;
 	}
 
@@ -1226,7 +1295,7 @@ class FPSOption extends Option
 	public override function left():Bool
 	{
 		FlxG.save.data.fps = !FlxG.save.data.fps;
-		(cast(Lib.current.getChildAt(0), Main)).toggleFPS(FlxG.save.data.fps);
+		(cast(Lib.current.stage.getChildAt(0), Main)).toggleFPS(FlxG.save.data.fps);
 		display = updateDisplay();
 		return true;
 	}
@@ -1294,14 +1363,14 @@ class FPSCapOption extends Option
 		#if html5
 		return false;
 		#end
-		if (FlxG.save.data.fpsCap >= 300)
+		if (FlxG.save.data.fpsCap >= 900)
 		{
-			FlxG.save.data.fpsCap = 300;
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300);
+			FlxG.save.data.fpsCap = 900;
+			(cast(Lib.current.stage.getChildAt(0), Main)).setFPSCap(900);
 		}
 		else
-			FlxG.save.data.fpsCap = FlxG.save.data.fpsCap + 10;
-		(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
+			FlxG.save.data.fpsCap++;
+		(cast(Lib.current.stage.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
 
 		return true;
 	}
@@ -1311,13 +1380,13 @@ class FPSCapOption extends Option
 		#if html5
 		return false;
 		#end
-		if (FlxG.save.data.fpsCap > 300)
-			FlxG.save.data.fpsCap = 300;
+		if (FlxG.save.data.fpsCap > 900)
+			FlxG.save.data.fpsCap = 900;
 		else if (FlxG.save.data.fpsCap < 60)
-			FlxG.save.data.fpsCap = Application.current.window.displayMode.refreshRate;
+			FlxG.save.data.fpsCap = 60;
 		else
-			FlxG.save.data.fpsCap = FlxG.save.data.fpsCap - 10;
-				(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
+			FlxG.save.data.fpsCap--;
+		(cast(Lib.current.stage.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
 		return true;
 	}
 
@@ -1389,7 +1458,7 @@ class RainbowFPSOption extends Option
 	public override function left():Bool
 	{
 		FlxG.save.data.fpsRain = !FlxG.save.data.fpsRain;
-		(cast(Lib.current.getChildAt(0), Main)).changeFPSColor(FlxColor.WHITE);
+		(cast(Lib.current.stage.getChildAt(0), Main)).changeFPSColor(FlxColor.WHITE);
 		return true;
 	}
 
@@ -1459,7 +1528,10 @@ class AccuracyDOption extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
 	}
@@ -1485,15 +1557,55 @@ class AccuracyDOption extends Option
 	}
 }
 
+class ScoreDOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+		{
+			description = "This option cannot be toggled in the pause menu.";
+			blocked = true;
+		}
+		else
+			description = desc;
+	}
+
+	public override function left():Bool
+	{
+		if (blocked)
+			return false;
+		FlxG.save.data.scoreMod = FlxG.save.data.scoreMod == 1 ? 0 : 1;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Scoring Mode: < " + (FlxG.save.data.scoreMod == 0 ? "Simple" : "Complex") + " >";
+	}
+}
+
 class CustomizeGameplay extends Option
 {
 	public function new(desc:String)
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
+
+		acceptType = true;
 	}
 
 	public override function press():Bool
@@ -1530,7 +1642,6 @@ class WatermarkOption extends Option
 			MainMenuState.freakyPlaying = true;
 		}
 		Conductor.changeBPM(102);
-		KadeEngineFPS.updateEngineName();
 		display = updateDisplay();
 		return true;
 	}
@@ -1607,6 +1718,7 @@ class OffsetThing extends Option
 	public function new(desc:String)
 	{
 		super();
+		acceptValues = true;
 		if (OptionsMenu.isInPause)
 			description = desc + " (RESTART REQUIRED)";
 		else
@@ -1839,13 +1951,51 @@ class HitSoundVolume extends Option
 	}
 }
 
+class HitErrorBarOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
+		else
+			description = desc;
+	}
+
+	public override function left():Bool
+	{
+		if (blocked)
+			return false;
+		FlxG.save.data.hitErrorBar = !FlxG.save.data.hitErrorBar;
+		display = updateDisplay();
+		return true;
+	}
+
+	public override function right():Bool
+	{
+		left();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Hit Error Bar: < " + (FlxG.save.data.hitErrorBar ? "Enabled" : "Disabled") + " >";
+	}
+}
+
 class Background extends Option
 {
 	public function new(desc:String)
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu."
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
 	}
@@ -1877,7 +2027,10 @@ class CharacterOption extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu."
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
 	}
@@ -1900,36 +2053,6 @@ class CharacterOption extends Option
 	private override function updateDisplay():String
 	{
 		return "Display Characters: < " + (FlxG.save.data.characters ? "Enabled" : "Disabled") + " >";
-	}
-}
-
-class RotateSpritesOption extends Option
-{
-	public function new(desc:String)
-	{
-		super();
-		if (OptionsMenu.isInPause)
-			description = desc + " (RESTART REQUIRED)";
-		else
-			description = desc;
-	}
-
-	public override function left():Bool
-	{
-		FlxG.save.data.rotateSprites = !FlxG.save.data.rotateSprites;
-		display = updateDisplay();
-		return true;
-	}
-
-	public override function right():Bool
-	{
-		left();
-		return true;
-	}
-
-	private override function updateDisplay():String
-	{
-		return "Rotate Sprites: < " + (FlxG.save.data.rotateSprites ? "Enabled" : "Disabled") + " >";
 	}
 }
 
@@ -2091,13 +2214,16 @@ class ScoreSmoothing extends Option
 	}
 }
 
-class NotePostProcessing extends Option
-{
+/*class NotePostProcessing extends Option
+	{
 	public function new(desc:String)
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
 	}
@@ -2122,8 +2248,7 @@ class NotePostProcessing extends Option
 	{
 		return "[EXP] Post Process Song Notes: < " + (FlxG.save.data.postProcessNotes ? "on" : "off") + " >";
 	}
-}
-
+}*/
 class HitSoundMode extends Option
 {
 	public function new(desc:String)
@@ -2211,9 +2336,14 @@ class LockWeeksOption extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
+
+		acceptType = true;
 	}
 
 	public override function press():Bool
@@ -2248,9 +2378,14 @@ class ResetModifiersOption extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
+
+		acceptType = true;
 	}
 
 	public override function press():Bool
@@ -2285,9 +2420,14 @@ class ResetScoreOption extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
+
+		acceptType = true;
 	}
 
 	public override function press():Bool
@@ -2335,9 +2475,14 @@ class ResetSettings extends Option
 	{
 		super();
 		if (OptionsMenu.isInPause)
-			description = "This option cannot be toggled in the pause menu.";
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
 		else
 			description = desc;
+
+		acceptType = true;
 	}
 
 	public override function press():Bool
@@ -2415,5 +2560,97 @@ class ResetSettings extends Option
 	private override function updateDisplay():String
 	{
 		return confirm ? "Confirm Settings Reset" : "Reset Settings";
+	}
+}
+
+class ClearLogFolder extends Option
+{
+	var confirm:Bool = false;
+
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
+		else
+			description = desc;
+
+		acceptType = true;
+	}
+
+	public override function press():Bool
+	{
+		if (OptionsMenu.isInPause)
+			return false;
+		if (!confirm)
+		{
+			confirm = true;
+			display = updateDisplay();
+			return true;
+		}
+
+		Debug.clearLogsFolder();
+		confirm = false;
+
+		display = updateDisplay();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return confirm ? "Confirm Delete Logs Files" : "Clear Logs Folder";
+	}
+}
+
+class ClearCrashDumpFolder extends Option
+{
+	var confirm:Bool = false;
+
+	public function new(desc:String)
+	{
+		super();
+		if (OptionsMenu.isInPause)
+		{
+			blocked = true;
+			description = pauseDesc;
+		}
+		else
+			description = desc;
+
+		acceptType = true;
+	}
+
+	public override function press():Bool
+	{
+		if (OptionsMenu.isInPause)
+			return false;
+		if (!confirm)
+		{
+			confirm = true;
+			display = updateDisplay();
+			return true;
+		}
+
+		#if FEATURE_FILESYSTEM
+		if (FileSystem.exists("./crash/"))
+		{
+			var files = FileSystem.readDirectory("./crash/");
+			for (file in files)
+				FileSystem.deleteFile('./crash/$file');
+		}
+		#end
+
+		confirm = false;
+
+		display = updateDisplay();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return confirm ? "Confirm Delete Crash Dumps" : "Clear Crash Folder";
 	}
 }

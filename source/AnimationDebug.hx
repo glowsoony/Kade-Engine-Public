@@ -46,7 +46,11 @@ class AnimationDebug extends MusicBeatState
 	var front:FlxSprite;
 
 	var UI_box:FlxUITabMenu;
+	var UI_note:FlxUITabMenu;
 	var UI_options:FlxUITabMenu;
+
+	var UI_noteSettings:FlxUITabMenu;
+
 	var offsetX:FlxUINumericStepper;
 	var offsetY:FlxUINumericStepper;
 
@@ -65,8 +69,6 @@ class AnimationDebug extends MusicBeatState
 		// var gridBG:FlxSprite = FlxGridOverlay.create(10, 10);
 		// gridBG.scrollFactor.set(0.5, 0.5);
 		// add(gridBG);
-
-		FlxG.mouse.visible = true;
 
 		background = new FlxSprite(-600, -525).loadGraphic(Paths.image('stageback', 'shared'));
 		front = new FlxSprite(-650, 325).loadGraphic(Paths.image('stagefront', 'shared'));

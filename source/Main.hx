@@ -26,7 +26,12 @@ import haxe.CallStack;
 import haxe.io.Path;
 import sys.FileSystem;
 import sys.io.File;
+import lime.system.System;
+import lime.ui.Window;
 import sys.io.Process;
+#end
+#if FEATURE_MULTITHREADING
+import sys.thread.Mutex;
 #end
 
 class Main extends Sprite
@@ -41,11 +46,13 @@ class Main extends Sprite
 		startFullscreen: false // if the game should start at fullscreen mode
 	};
 
-	public static var bitmapFPS:Bitmap;
-
 	public static var watermarks = true; // Whether to put Kade Engine literally anywhere
 
 	public static var focused:Bool = true; // Whether the game is currently focused or not.
+
+	public static var appName:String = ''; // Application name.
+
+	public static var internetConnection:Bool = false; // If the user is connected to internet.
 
 	// You can pretty much ignore everything from here on - your code should go in your states.
 
@@ -59,7 +66,6 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
-
 		if (stage != null)
 		{
 			init();
@@ -110,10 +116,10 @@ class Main extends Sprite
 		});
 		#end
 
+		game.framerate = Application.current.window.displayMode.refreshRate;
+
 		#if !mobile
-		fpsCounter = new KadeEngineFPS(10, 3, 0xFFFFFF);
-		bitmapFPS = ImageOutline.renderImage(fpsCounter, 1, 0x000000, true);
-		bitmapFPS.smoothing = true;
+		fpsCounter = new StatsCounter(10, 10, 0xFFFFFF);
 		#end
 		addChild(new FlxGame(game.width, game.height, game.initialState, #if (flixel < "5.0.0") game.zoom, #end game.framerate, game.framerate,
 			game.skipSplash, game.startFullscreen));
@@ -136,32 +142,16 @@ class Main extends Sprite
 		// Finish up loading debug tools.
 		Debug.onGameStart();
 
-		#if !html5
+		#if desktop
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
-		#end
-	}
 
-	var fpsCounter:KadeEngineFPS;
-
-	public static function dumpCache()
-	{
-		///* SPECIAL THANKS TO HAYA
-		#if PRELOAD_ALL
+		// Get first window in case the coder creates more windows.
 		@:privateAccess
-		for (key in FlxG.bitmap._cache.keys())
-		{
-			var obj = FlxG.bitmap._cache.get(key);
-			if (obj != null)
-			{
-				Assets.cache.removeBitmapData(key);
-				FlxG.bitmap._cache.remove(key);
-				obj.destroy();
-			}
-		}
-		Assets.cache.clear("songs");
+		appName = openfl.Lib.application.windows[0].__backend.parent.__attributes.title;
 		#end
-		// */
 	}
+
+	var fpsCounter:StatsCounter;
 
 	public function toggleFPS(fpsEnabled:Bool):Void
 	{
@@ -174,18 +164,34 @@ class Main extends Sprite
 
 	public function setFPSCap(cap:Int)
 	{
-		/*var framerate = Std.int(cap);
-			openfl.Lib.current.stage.frameRate = cap; */
-		if (cap > FlxG.drawFramerate)
+		FlxG.updateFramerate = cap;
+		FlxG.drawFramerate = FlxG.updateFramerate;
+	}
+
+	public function checkInternetConnection()
+	{
+		Debug.logInfo('Checking Internet connection through URL: https://www.google.com"');
+		var http = new haxe.Http("https://www.google.com");
+		http.onStatus = function(status:Int)
 		{
-			FlxG.updateFramerate = cap;
-			FlxG.drawFramerate = cap;
-		}
-		else
+			switch status
+			{
+				case 200: // success
+					internetConnection = true;
+					Debug.logInfo('CONNECTED');
+				default: // error
+					internetConnection = false;
+					Debug.logInfo('NO INTERNET CONNECTION');
+			}
+		};
+
+		http.onError = function(e)
 		{
-			FlxG.drawFramerate = cap;
-			FlxG.updateFramerate = cap;
+			internetConnection = false;
+			Debug.logInfo('NO INTERNET CONNECTION');
 		}
+
+		http.request();
 	}
 
 	// Code was entirely made by sqirra-rng for their fnf engine named "Izzy Engine", big props to them!!!
@@ -219,7 +225,11 @@ class Main extends Sprite
 
 		errMsg += "\nUncaught Error: "
 			+ e.error
-			+ "\nPlease report this error to My Github page: https://github.com/BoloVEVO/Kade-Engine-Public\n\n> Crash Handler written by: sqirra-rng";
+			+ "\nPlease report this error to My Github page: https://github.com/BoloVEVO/Kade-Engine\n\nCrash dump saved in crash folder as "
+			+ "KadeEngine_"
+			+ dateNow
+			+ ".txt"
+			+ "\n\n> Crash Handler written by: sqirra-rng";
 
 		if (!FileSystem.exists("./crash/"))
 			FileSystem.createDirectory("./crash/");

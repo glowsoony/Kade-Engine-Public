@@ -25,6 +25,10 @@ import flixel.addons.ui.FlxUITabMenu;
 import flixel.addons.plugin.FlxMouseControl;
 import flixel.addons.display.FlxExtendedSprite;
 import flixel.math.FlxRect;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.util.FlxTimer;
+import MusicBeatState.transSubstate;
 
 using StringTools;
 
@@ -40,15 +44,23 @@ class GameplayCustomizeState extends MusicBeatState
 	var text:FlxText;
 	var blackBorder:FlxSprite;
 
-	var laneunderlay:FlxSprite;
-	var laneunderlayOpponent:FlxSprite;
-
 	var strumLine:FlxSprite;
 	var strumLineNotes:FlxTypedGroup<StaticArrow>;
 	var playerStrums:FlxTypedGroup<StaticArrow>;
 	var cpuStrums:FlxTypedGroup<StaticArrow>;
 
+	var arrowLanes:FlxTypedGroup<FlxSprite>;
+
+	public static var instance:GameplayCustomizeState = null;
+
+	public var arrowsGenerated:Bool = false;
+
+	public var arrowsAppeared:Bool = false;
+
 	var camPos:FlxPoint;
+
+	public var tweenManager:FlxTweenManager;
+	public var timerManager:FlxTimerManager;
 
 	var pixelShitPart1:String = '';
 	var pixelShitPart2:String = '';
@@ -69,10 +81,11 @@ class GameplayCustomizeState extends MusicBeatState
 	private var dataSuffix:Array<String> = ['LEFT', 'DOWN', 'UP', 'RIGHT'];
 	private var dataColor:Array<String> = ['purple', 'blue', 'green', 'red'];
 
-	public static var dad:Character;
-	public static var gf:Character;
-	public static var boyfriend:Boyfriend;
-	public static var Stage:Stage;
+	public var dad:Character;
+	public var gf:Character;
+	public var boyfriend:Boyfriend;
+	public var Stage:Stage;
+
 	public static var freeplayNoteStyle:String = 'normal';
 	public static var freeplayWeek:Int = 1;
 
@@ -90,9 +103,13 @@ class GameplayCustomizeState extends MusicBeatState
 
 	var strumYBounds:FlxSprite;
 
+	public static var noteskinSprite:FlxAtlasFrames;
+
 	public override function create()
 	{
 		Paths.clearStoredMemory();
+
+		instance = this;
 
 		#if FEATURE_DISCORD
 		// Updating Discord Rich Presence
@@ -115,8 +132,6 @@ class GameplayCustomizeState extends MusicBeatState
 		FlxG.cameras.add(camRatings, false);
 		FlxG.cameras.add(mainCam, false);
 
-		PsychTransition.nextCamera = mainCam;
-
 		camHUD.zoom = FlxG.save.data.zoom;
 
 		camStrums.zoom = camHUD.zoom;
@@ -124,6 +139,9 @@ class GameplayCustomizeState extends MusicBeatState
 		camRatings.zoom = camHUD.zoom;
 
 		persistentUpdate = persistentDraw = true;
+
+		tweenManager = new FlxTweenManager();
+		timerManager = new FlxTimerManager();
 
 		var opt_tabs = [
 			{name: "Appeareance", label: 'Appeareance'},
@@ -143,32 +161,35 @@ class GameplayCustomizeState extends MusicBeatState
 
 		add(UI_options);
 
-		addOptionsUI();
+		Stage = new Stage('stage');
 
-		gf = new Character(400, 130, 'gf');
+		Stage.initStageProperties();
+
+		if (Stage.loadGF)
+			gf = new Character(400, 130, 'gf');
 
 		boyfriend = new Boyfriend(770, 450, 'bf');
 
 		dad = new Character(100, 100, 'dad');
 
-		Stage = new Stage('stage');
+		Stage.camPosition = [
+			gf.getGraphicMidpoint().x + gf.camPos[0],
+			gf.getGraphicMidpoint().y + gf.camPos[1]
+		];
 
-		if (FlxG.save.data.background)
+		var positions = Stage.positions[Stage.curStage];
+		if (positions != null)
 		{
-			var positions = Stage.positions[Stage.curStage];
-			if (positions != null)
-			{
-				for (char => pos in positions)
-					for (person in [boyfriend, gf, dad])
+			for (char => pos in positions)
+				for (person in [boyfriend, gf, dad])
+					if (person != null)
 						if (person.curCharacter == char)
 							person.setPosition(pos[0], pos[1]);
-			}
+		}
 
-			for (person in [boyfriend, gf, dad])
-			{
-				person.animation.curAnim.frameRate = Math.round(person.animation.curAnim.frameRate / PlayState.songMultiplier);
-			}
-
+		Stage.initStageSprites();
+		if (FlxG.save.data.background)
+		{
 			for (i in Stage.toAdd)
 			{
 				add(i);
@@ -178,10 +199,13 @@ class GameplayCustomizeState extends MusicBeatState
 				switch (index)
 				{
 					case 0:
-						add(gf);
-						gf.scrollFactor.set(0.95, 0.95);
-						for (bg in array)
-							add(bg);
+						if (gf != null)
+						{
+							add(gf);
+							gf.scrollFactor.set(0.95, 0.95);
+							for (bg in array)
+								add(bg);
+						}
 					case 1:
 						add(dad);
 						for (bg in array)
@@ -193,24 +217,31 @@ class GameplayCustomizeState extends MusicBeatState
 				}
 			}
 
-			switch (dad.curCharacter)
+			if (gf != null)
 			{
-				case 'gf':
-					dad.setPosition(gf.x, gf.y);
-					gf.visible = false;
+				switch (dad.curCharacter)
+				{
+					case 'gf':
+						dad.setPosition(gf.x, gf.y);
+						gf.visible = false;
+				}
 			}
 		}
 		else
 		{
-			gf.scrollFactor.set(0.95, 0.95);
-			add(gf);
+			if (gf != null)
+			{
+				gf.scrollFactor.set(0.95, 0.95);
+				add(gf);
+			}
 			add(dad);
 			add(boyfriend);
 		}
 
 		if (!FlxG.save.data.characters)
 		{
-			gf.alpha = 0;
+			if (gf != null)
+				gf.alpha = 0;
 			dad.alpha = 0;
 			boyfriend.alpha = 0;
 		}
@@ -255,32 +286,17 @@ class GameplayCustomizeState extends MusicBeatState
 			strumLine.y = FlxG.height - 670;
 		}
 
-		laneunderlayOpponent = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height * 2);
-		laneunderlayOpponent.alpha = FlxG.save.data.laneTransparency;
-		laneunderlayOpponent.color = FlxColor.BLACK;
-		laneunderlayOpponent.scrollFactor.set();
-		laneunderlayOpponent.cameras = [camHUD];
-
-		laneunderlay = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height * 2);
-		laneunderlay.alpha = FlxG.save.data.laneTransparency;
-		laneunderlay.color = FlxColor.BLACK;
-		laneunderlay.scrollFactor.set();
-		laneunderlay.cameras = [camHUD];
-
-		if (FlxG.save.data.laneUnderlay)
-		{
-			if (!FlxG.save.data.middleScroll)
-			{
-				add(laneunderlayOpponent);
-			}
-			add(laneunderlay);
-		}
-
 		strumLineNotes = new FlxTypedGroup<StaticArrow>();
 		add(strumLineNotes);
 
 		playerStrums = new FlxTypedGroup<StaticArrow>();
 		cpuStrums = new FlxTypedGroup<StaticArrow>();
+
+		add(playerStrums);
+		add(cpuStrums);
+
+		playerStrums.visible = false;
+		cpuStrums.visible = false;
 
 		if (freeplayNoteStyle == 'pixel')
 		{
@@ -302,21 +318,29 @@ class GameplayCustomizeState extends MusicBeatState
 			sick.antialiasing = FlxG.save.data.antialiasing;
 		}
 		else
-			sick.setGraphicSize(Std.int(sick.width * CoolUtil.daPixelZoom * 0.7));
+			sick.setGraphicSize(Std.int(sick.width * 0.7));
 
 		// sick.enableMouseDrag(false, false, 255);
 
 		sick.updateHitbox();
 		add(sick);
 
-		strumLine.cameras = [camHUD];
-		strumLineNotes.cameras = [camHUD];
+		strumLine.cameras = [camStrums];
+		strumLineNotes.cameras = [camStrums];
 		sick.cameras = [camRatings];
 
-		generateStaticArrows(0);
-		generateStaticArrows(1);
+		arrowLanes = new FlxTypedGroup<FlxSprite>();
+		arrowLanes.camera = camHUD;
+		add(arrowLanes);
+
+		setupStaticArrows(0);
+		setupStaticArrows(1);
+
+		appearStaticArrows(true);
 
 		strumYRef = new FlxExtendedSprite(0, strumLine.y + FlxG.save.data.strumOffset.get(FlxG.save.data.downscroll ? 'downscroll' : 'upscroll'));
+
+		noteskinSprite = NoteskinHelpers.generateNoteskinSprite(FlxG.save.data.noteskin, 'normal', 'default');
 
 		strumYRef.makeGraphic(FlxG.width * 2, Std.int(arrowHeight), FlxColor.WHITE);
 		strumYRef.screenCenter(X);
@@ -329,12 +353,6 @@ class GameplayCustomizeState extends MusicBeatState
 		add(strumYBounds);
 
 		add(strumYRef);
-
-		laneunderlay.x = playerStrums.members[0].x - 25;
-		laneunderlayOpponent.x = cpuStrums.members[0].x - 25;
-
-		laneunderlay.screenCenter(Y);
-		laneunderlayOpponent.screenCenter(Y);
 
 		text = new FlxText(5, FlxG.height + 40, 0,
 			"  Use Arrows or Mouse to move your combo Rate around. Press R to reset. Q/E to change zoom. C to show combo. Escape to exit.", 12);
@@ -356,10 +374,13 @@ class GameplayCustomizeState extends MusicBeatState
 		sick.x = FlxG.save.data.changedHitX;
 		sick.y = FlxG.save.data.changedHitY;
 
-		FlxG.mouse.visible = true;
-
 		super.create();
+
+		transSubstate.nextCamera = mainCam;
+
 		Paths.clearUnusedMemory();
+
+		addOptionsUI();
 	}
 
 	function snapCamFollowToPos(x:Float, y:Float)
@@ -421,8 +442,6 @@ class GameplayCustomizeState extends MusicBeatState
 			changedPos = true;
 		}
 
-		for (i in playerStrums)
-			i.y = strumYRef.y;
 		for (i in strumLineNotes)
 			i.y = strumYRef.y;
 
@@ -469,15 +488,7 @@ class GameplayCustomizeState extends MusicBeatState
 			comboSpr.acceleration.y = 600;
 			comboSpr.velocity.y -= 150;
 
-			if (freeplayNoteStyle != 'pixel')
-			{
-				comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.6));
-				comboSpr.antialiasing = FlxG.save.data.antialiasing;
-			}
-			else
-			{
-				comboSpr.setGraphicSize(Std.int(comboSpr.width * CoolUtil.daPixelZoom * 0.7));
-			}
+			comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.6));
 
 			if (FlxG.save.data.showCombo)
 				add(comboSpr);
@@ -531,7 +542,7 @@ class GameplayCustomizeState extends MusicBeatState
 					numScore.setGraphicSize(Std.int(numScore.width * 0.5));
 				}
 				else
-					numScore.setGraphicSize(Std.int(numScore.width * CoolUtil.daPixelZoom));
+					numScore.setGraphicSize(Std.int(numScore.width));
 
 				numScore.updateHitbox();
 
@@ -634,114 +645,137 @@ class GameplayCustomizeState extends MusicBeatState
 
 		gf.dance();
 
-		if (!FlxG.keys.pressed.SPACE)
-		{
-			if (curBeat % 4 == 0)
+		/*if (!FlxG.keys.pressed.SPACE)
 			{
-				FlxG.camera.zoom += 0.015;
-				camHUD.zoom += 0.03;
-			}
-		}
+				if (curBeat % 4 == 0)
+				{
+					FlxG.camera.zoom += 0.015;
+					camHUD.zoom += 0.03;
+				}
+		}*/
 
 		trace('beat');
 	}
 
 	// ripped from playstate cuz lol
-	private function generateStaticArrows(player:Int):Void
+	private function setupStaticArrows(player:Int):Void
 	{
 		for (i in 0...4)
 		{
-			var babyArrow:StaticArrow = new StaticArrow(-10,
+			// FlxG.log.add(i);
+			var babyArrow:StaticArrow = new StaticArrow(43,
 				strumLine.y + FlxG.save.data.strumOffset.get(FlxG.save.data.downscroll ? 'downscroll' : 'upscroll'));
 
 			// defaults if no noteStyle was found in chart
-			var noteTypeCheck:String = 'normal';
+			var noteStyleCheck:String = 'normal';
+
+			/*if (FlxG.save.data.optimize && player == 0)
+				continue; */
+
+			babyArrow.downScroll = FlxG.save.data.downscroll;
 
 			if (freeplayNoteStyle == null && FlxG.save.data.overrideNoteskins)
 			{
 				switch (freeplayWeek)
 				{
 					case 6:
-						noteTypeCheck = 'pixel';
+						noteStyleCheck = 'pixel';
+					default:
+						noteStyleCheck = 'normal';
 				}
 			}
 			else
-				noteTypeCheck = freeplayNoteStyle;
-
-			switch (noteTypeCheck)
 			{
-				case 'pixel':
-					babyArrow.loadGraphic(Paths.image('weeb/pixelUI/arrows-pixels', 'week6'), true, 17, 17);
-					babyArrow.animation.add('green', [6]);
-					babyArrow.animation.add('red', [7]);
-					babyArrow.animation.add('blue', [5]);
-					babyArrow.animation.add('purplel', [4]);
-
-					babyArrow.setGraphicSize(Std.int(babyArrow.width * CoolUtil.daPixelZoom));
-					babyArrow.updateHitbox();
-					babyArrow.antialiasing = false;
-
-					babyArrow.x += Note.swagWidth * i;
-					babyArrow.animation.add('static', [i]);
-					babyArrow.animation.add('pressed', [4 + i, 8 + i], 12, false);
-					babyArrow.animation.add('confirm', [12 + i, 16 + i], 24, false);
-
-					for (j in 0...4)
-					{
-						babyArrow.animation.add('dirCon' + j, [12 + j, 16 + j], 24, false);
-					}
-
-				default:
-					babyArrow.frames = NoteskinHelpers.generateNoteskinSprite(FlxG.save.data.noteskin);
-					for (j in 0...4)
-					{
-						babyArrow.animation.addByPrefix(dataColor[j], 'arrow' + dataSuffix[j]);
-						babyArrow.animation.addByPrefix('dirCon' + j, dataSuffix[j].toLowerCase() + ' confirm', 24, false);
-					}
-
-					var lowerDir:String = dataSuffix[i].toLowerCase();
-
-					babyArrow.animation.addByPrefix('static', 'arrow' + dataSuffix[i]);
-					babyArrow.animation.addByPrefix('pressed', lowerDir + ' press', 24, false);
-					babyArrow.animation.addByPrefix('confirm', lowerDir + ' confirm', 24, false);
-
-					babyArrow.x += Note.swagWidth * i;
-
-					babyArrow.antialiasing = FlxG.save.data.antialiasing;
-					babyArrow.setGraphicSize(Std.int(babyArrow.width * 0.7));
+				noteStyleCheck = freeplayNoteStyle;
 			}
 
+			babyArrow.frames = noteskinSprite;
+			Debug.logTrace(babyArrow.frames);
+			for (j in 0...4)
+			{
+				babyArrow.animation.addByPrefix(dataColor[j], 'arrow' + dataSuffix[j]);
+				babyArrow.animation.addByPrefix('dirCon' + j, dataSuffix[j].toLowerCase() + ' confirm', 24, false);
+			}
+
+			var lowerDir:String = dataSuffix[i].toLowerCase();
+
+			babyArrow.animation.addByPrefix('static', 'arrow' + dataSuffix[i]);
+			babyArrow.animation.addByPrefix('pressed', lowerDir + ' press', 24, false);
+			babyArrow.animation.addByPrefix('confirm', lowerDir + ' confirm', 24, false);
+
+			babyArrow.x += NoteSpr.swagWidth * i;
+
+			babyArrow.antialiasing = FlxG.save.data.antialiasing;
+			babyArrow.setGraphicSize(Std.int(babyArrow.width * 0.7));
+
+			babyArrow.loadLane();
+
+			babyArrow.bgLane.updateHitbox();
+			babyArrow.bgLane.scrollFactor.set();
 			babyArrow.updateHitbox();
 			babyArrow.scrollFactor.set();
+			babyArrow.camera = camStrums;
+
+			babyArrow.alpha = 0;
+			arrowHeight = babyArrow.height;
 
 			babyArrow.ID = i;
 
 			switch (player)
 			{
 				case 0:
-					babyArrow.visible = !FlxG.save.data.middleScroll;
-					babyArrow.x += 20;
-					cpuStrums.add(babyArrow);
+					if (!PlayStateChangeables.opponentMode)
+						cpuStrums.add(babyArrow);
+					else
+						playerStrums.add(babyArrow);
+					babyArrow.x += 20.5;
+
 				case 1:
-					playerStrums.add(babyArrow);
+					if (!PlayStateChangeables.opponentMode)
+						playerStrums.add(babyArrow);
+					else
+						cpuStrums.add(babyArrow);
 			}
 
-			arrowHeight = babyArrow.height;
 			babyArrow.playAnim('static');
-			babyArrow.x += 110;
 			babyArrow.x += ((FlxG.width / 2) * player);
-			babyArrow.cameras = [camStrums];
+			babyArrow.x += 48.5;
 
 			if (FlxG.save.data.middleScroll)
-				babyArrow.x -= 320;
-
-			cpuStrums.forEach(function(spr:FlxSprite)
 			{
-				spr.centerOffsets(); // CPU arrows start out slightly off-center
-			});
+				if (!PlayStateChangeables.opponentMode)
+				{
+					babyArrow.x -= 310;
+					if (player == 0)
+						babyArrow.x -= 410;
+				}
+				else
+				{
+					babyArrow.x += 310;
+					if (player == 1)
+						babyArrow.x += 410;
+				}
+			}
+
+			/*cpuStrums.forEach(function(spr:FlxSprite)
+				{
+					spr.centerOffsets(); // CPU arrows start out slightly off-center
+			});*/
 
 			strumLineNotes.add(babyArrow);
 		}
+		arrowsGenerated = true;
+	}
+
+	private function appearStaticArrows(?tween:Bool = true):Void
+	{
+		strumLineNotes.forEach(function(babyArrow:StaticArrow)
+		{
+			babyArrow.alpha = 1;
+
+			arrowLanes.add(babyArrow.bgLane);
+		});
+		arrowsAppeared = true;
 	}
 
 	function addOptionsUI()
@@ -777,7 +811,7 @@ class GameplayCustomizeState extends MusicBeatState
 		var tab_modules = new FlxUI(null, UI_options);
 		tab_modules.name = "Gameplay Modules";
 
-		var gameplayModules = ['Rating', 'Receptors', 'Health Bar'];
+		var gameplayModules = ['Rating', 'Receptors'];
 		var modulesDropDown = new FlxUIDropDownMenu(10, 15, FlxUIDropDownMenu.makeStrIdLabelArray(gameplayModules, true), function(gameplayModule:String)
 		{
 			sick.disableMouseDrag();
@@ -791,12 +825,22 @@ class GameplayCustomizeState extends MusicBeatState
 					sick.enableMouseDrag();
 				case 'Receptors':
 					strumYBounds.alpha = 0.5;
+
 					strumYRef.enableMouseDrag(false, false, 255, null, strumYBounds);
 					strumYRef.setDragLock(false, true);
 			}
 		});
+		modulesDropDown.selectedLabel = 'Rating';
+		modulesDropDown.callback('0');
+
 		tab_modules.add(modulesDropDown);
 
 		UI_options.addGroup(tab_modules);
+	}
+
+	override function destroy()
+	{
+		instance = null;
+		super.destroy();
 	}
 }

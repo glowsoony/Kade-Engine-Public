@@ -26,10 +26,11 @@ import flixel.util.FlxTimer;
 import lime.app.Application;
 import openfl.Assets;
 import flixel.input.keyboard.FlxKey;
+import openfl.utils.Assets as OpenFlAssets;
+import openfl.Lib;
 #if FEATURE_MULTITHREADING
 import sys.thread.Mutex;
 #end
-import openfl.utils.Assets as OpenFlAssets;
 
 using StringTools;
 
@@ -54,22 +55,20 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
-		getBuildVer();
-		#if FEATURE_MULTITHREADING
-		MasterObjectLoader.mutex = new Mutex();
-		#end
+		(cast(Lib.current.getChildAt(0), Main)).checkInternetConnection();
+
+		if (Main.internetConnection)
+			getBuildVer();
+
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
-		// TODO: Refactor this to use OpenFlAssets.
-		#if FEATURE_FILESYSTEM
-		if (!sys.FileSystem.exists(Sys.getCwd() + "/assets/replays"))
-			sys.FileSystem.createDirectory(Sys.getCwd() + "/assets/replays");
-		#end
 
 		@:privateAccess
 		{
 			Debug.logTrace("We loaded " + openfl.Assets.getLibrary("default").assetsLoaded + " assets into the default library");
 		}
+
+		FlxG.fixedTimestep = false;
 
 		FlxG.autoPause = false;
 
@@ -77,7 +76,7 @@ class TitleState extends MusicBeatState
 
 		PlayerSettings.init();
 
-		OpenFlAssets.cache.enabled = true;
+		openfl.Assets.cache.enabled = true;
 
 		KadeEngineData.initSave();
 
@@ -100,13 +99,9 @@ class TitleState extends MusicBeatState
 		FlxG.sound.volumeDownKeys = [FlxKey.fromString(Std.string(FlxG.save.data.volDownBind))];
 		FlxG.sound.volumeUpKeys = [FlxKey.fromString(Std.string(FlxG.save.data.volUpBind))];
 
-		FlxG.mouse.visible = true;
-
 		FlxG.worldBounds.set(0, 0);
 
 		MusicBeatState.initSave = true;
-
-		fullscreenBind = FlxKey.fromString(Std.string(FlxG.save.data.fullscreenBind));
 
 		Highscore.load();
 
@@ -197,6 +192,7 @@ class TitleState extends MusicBeatState
 	}
 
 	var logoBl:FlxSprite;
+
 	var gfDance:FlxSprite;
 	var danceLeft:Bool = false;
 	var titleText:FlxSprite;
@@ -209,7 +205,6 @@ class TitleState extends MusicBeatState
 		add(logoBl);
 		add(titleText);
 
-		FlxG.mouse.visible = true;
 		// FlxTween.tween(logoBl, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG});
 		// FlxTween.tween(logo, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG, startDelay: 0.1});
 
@@ -272,17 +267,11 @@ class TitleState extends MusicBeatState
 	}
 
 	var transitioning:Bool = false;
-	var fullscreenBind:FlxKey;
 
 	override function update(elapsed:Float)
 	{
 		if (FlxG.sound.music != null)
 			Conductor.songPosition = FlxG.sound.music.time;
-
-		if (FlxG.keys.anyJustPressed([fullscreenBind]))
-		{
-			FlxG.fullscreen = !FlxG.fullscreen;
-		}
 
 		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT || FlxG.mouse.justPressed;
 
@@ -335,8 +324,6 @@ class TitleState extends MusicBeatState
 
 	function getBuildVer():Void
 	{
-		http.request();
-
 		http.onData = function(data:String)
 		{
 			returnedData[0] = data.substring(0, data.indexOf(';'));

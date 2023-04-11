@@ -15,7 +15,7 @@
       "label": "Build Windows x64 (Release)",
       "target": "windows",
       "args": [
-        "-release"
+        "-release -D HXCPP_M64"
       ]
     },
     {
@@ -74,5 +74,11 @@
         "-release"
       ]
     }
-  ]
+  ],
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/.hg/store/**": true
+  }
 }
