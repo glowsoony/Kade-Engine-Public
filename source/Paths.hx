@@ -101,9 +101,9 @@ class Paths
 
 					bitmap = null;
 
-					bitmap.unlock();
-
 					bitmap = BitmapData.fromTexture(texture);
+
+					bitmap.unlock();
 				}
 				graphic = FlxGraphic.fromBitmapData(bitmap, false, path, false);
 
