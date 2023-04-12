@@ -1,3 +1,4 @@
+### PLEASE BE AWARE THIS PROJECT IS STILL INCOMPLETE AND IN A BUGGY STATE
 
 ![Kade Engine logo](assets/preload/images/KadeEngineLogo.png)
 
