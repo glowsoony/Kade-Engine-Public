@@ -2153,18 +2153,11 @@ class PlayState extends MusicBeatState
 
 		songLengthDiscord = (#if cpp instStream.length #else inst.length #end / songMultiplier);
 
-		var hudStyleShit = SONGStyle.replaceHUDAssets ? SONG.songStyle : 'default';
-
-		songPosBG = new FlxSprite(0, FlxG.height - 710).loadGraphic(Paths.image('hud/$hudStyleShit/healthBar', 'shared'));
-
+		var songPosY = FlxG.height - 706;
 		if (PlayStateChangeables.useDownscroll)
-			songPosBG.y = FlxG.height - 37;
+			songPosY = FlxG.height - 33;
 
-		songPosBG.screenCenter(X);
-		songPosBG.scrollFactor.set();
-
-		songPosBar = new FlxBar(640 - (Std.int(songPosBG.width - 100) / 2), songPosBG.y + 4, LEFT_TO_RIGHT, Std.int(songPosBG.width - 100),
-			Std.int(songPosBG.height + 6), this, 'songPositionBar', 0, songLength);
+		songPosBar = new FlxBar(390, songPosY, LEFT_TO_RIGHT, 500, 25, this, 'songPositionBar', 0, songLength);
 		songPosBar.alpha = 0;
 		songPosBar.scrollFactor.set();
 		songPosBar.createGradientBar([FlxColor.BLACK], [boyfriend.barColor, dad.barColor]);
@@ -2178,9 +2171,7 @@ class PlayState extends MusicBeatState
 		FlxSpriteUtil.drawRect(bar, 0, 0, songPosBar.width, songPosBar.height, FlxColor.TRANSPARENT,
 			{thickness: 4, color: (!FlxG.save.data.background ? FlxColor.WHITE : FlxColor.BLACK)});
 
-		songPosBG.width = songPosBar.width;
-
-		songName = new CoolText(0, songPosBG.y - 15, 14.5, 16, Paths.bitmapFont('fonts/vcr'));
+		songName = new CoolText(0, bar.y + ((songPosBar.height - 15) / 2), 14.5, 16, Paths.bitmapFont('fonts/vcr'));
 		songName.antialiasing = FlxG.save.data.antialiasing;
 		songName.autoSize = true;
 		songName.borderStyle = FlxTextBorderStyle.OUTLINE_FAST;
@@ -2190,13 +2181,12 @@ class PlayState extends MusicBeatState
 		songName.scrollFactor.set();
 
 		songName.text = SONG.songName + ' (' + FlxStringUtil.formatTime(songLength, false) + ')';
-		songName.y = songPosBG.y + (songPosBG.height / 3) + 2;
+
 		songName.alpha = 0;
 		songName.visible = FlxG.save.data.songPosition;
 
 		add(songName);
 
-		songPosBG.cameras = [camHUD];
 		bar.cameras = [camHUD];
 		songPosBar.cameras = [camHUD];
 		songName.cameras = [camHUD];
