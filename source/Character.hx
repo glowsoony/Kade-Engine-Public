@@ -21,6 +21,8 @@ class Character extends FlxSprite
 	public var curCharacter:String = 'bf';
 	public var barColor:FlxColor;
 
+	public var deadChar:String = 'bf-dead';
+
 	public var holdTimer:Float = 0;
 
 	public var replacesGF:Bool;
@@ -30,6 +32,8 @@ class Character extends FlxSprite
 	public var charPos:Array<Int>;
 	public var camPos:Array<Int>;
 	public var camFollow:Array<Int>;
+
+	public var healthicon:String;
 
 	public var animationNotes:Array<NoteDef> = [];
 
@@ -157,6 +161,8 @@ class Character extends FlxSprite
 		this.camPos = data.camPos == null ? [0, 0] : data.camPos;
 		this.camFollow = data.camFollow == null ? [0, 0] : data.camFollow;
 		this.holdLength = data.holdLength == null ? 4 : data.holdLength;
+		this.healthicon = data.healthicon == null ? curCharacter : data.healthicon;
+		this.deadChar = data.deadChar == null ? curCharacter + '-dead' : data.deadChar;
 
 		flipX = data.flipX == null ? false : data.flipX;
 
@@ -390,6 +396,7 @@ typedef CharacterData =
 	 */
 	var barColor:String;
 
+	var ?healthicon:String;
 	var animations:Array<AnimationData>;
 
 	/**
@@ -397,6 +404,8 @@ typedef CharacterData =
 	 * @default false
 	 */
 	var ?flipX:Bool;
+
+	var ?deadChar:String;
 
 	/**
 	 * The scale of this character.

@@ -62,16 +62,14 @@ class NoteDef
 
 	public var insideCharter:Bool = false;
 
-	public var overrideDistance:Bool = false; // Set this to true if you know what are you doing.
-
 	public var speedMultiplier:Float = 1.0;
 
 	public var connectedNote:NoteSpr = null;
 
-	public var noteStyle:String = 'normal';
+	public var noteStyle:String = 'default';
 
 	public function new(strumTime:Float, noteData:Int, ?prevNote:NoteDef, ?sustainNote:Bool = false, ?inCharter:Bool = false, ?bet:Float = 0,
-			?noteType:String = 'normal', ?speedMultiplier:Float = 1.0, ?noteStyle:String = 'normal')
+			?noteType:String = 'normal', ?speedMultiplier:Float = 1.0, ?noteStyle:String = 'default')
 	{
 		if (prevNote == null)
 			prevNote = this;

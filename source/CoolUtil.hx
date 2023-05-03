@@ -19,7 +19,9 @@ class CoolUtil
 {
 	public static var defaultDifficulties:Array<String> = ['Easy', "Normal", "Hard"];
 
-	public static var difficultyArray:Array<String> = defaultDifficulties.copy();
+	public static var customDifficulties:Array<String> = [];
+
+	public static var difficultyArray:Array<String> = getGlobalDiffs();
 
 	public static var pauseMenuItems:Array<String> = ['Resume', 'Restart Song', 'Options', 'Exit to menu'];
 
@@ -213,6 +215,20 @@ class CoolUtil
 			suffix = '-${diff.toLowerCase()}';
 
 		return suffix;
+	}
+
+	static function getGlobalDiffs():Array<String>
+	{
+		var returnArray:Array<String> = [];
+		if (defaultDifficulties.length > 0)
+			for (el in defaultDifficulties)
+				returnArray.push(el);
+
+		if (customDifficulties.length > 0)
+			for (el2 in customDifficulties)
+				returnArray.push(el2);
+
+		return returnArray;
 	}
 }
 

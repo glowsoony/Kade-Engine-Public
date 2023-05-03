@@ -13,7 +13,7 @@
     },
     "spritesPositions": {
         "bg": [
-            0,
+            -600,
             -200
         ],
         "stageFront": [

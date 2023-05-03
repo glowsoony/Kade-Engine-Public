@@ -40,6 +40,7 @@ class LuaClass
 	public var properties:Map<String, LuaProperty> = [];
 	public var methods:Map<String, cpp.Callable<StatePointer->Int>> = [];
 	public var className:String = "BaseClass";
+	public var classIndex:Int = 0;
 
 	private static var state:State;
 
@@ -52,6 +53,7 @@ class LuaClass
 		LuaStorage.objectProperties[className] = this.properties;
 
 		var classIdx = Lua.gettop(l);
+		classIndex = classIdx;
 		Lua.pushvalue(l, classIdx);
 		if (addToGlobal)
 			Lua.setglobal(l, className);
@@ -166,6 +168,10 @@ class LuaClass
 		Lua.pop(l, 2);
 	};
 
+	public function destroy()
+	{
+	}
+
 	public function new()
 	{
 	}
@@ -177,12 +183,16 @@ class LuaNote extends LuaClass
 
 	public var note:NoteDef;
 
+	var defaultAngle = 0.0;
+
 	public function new(connectedNote:NoteDef, index:Int)
 	{
 		super();
 		className = "note_" + index;
 
 		note = connectedNote;
+
+		defaultAngle = connectedNote.connectedNote.modAngle;
 
 		properties = [
 			"alpha" => {
@@ -223,7 +233,7 @@ class LuaNote extends LuaClass
 				defaultValue: 1,
 				getter: function(l:State, data:Any):Int
 				{
-					Lua.pushnumber(l, connectedNote.connectedNote.angle);
+					Lua.pushnumber(l, connectedNote.connectedNote.modAngle);
 					return 1;
 				},
 				setter: function(l:State):Int
@@ -244,6 +254,16 @@ class LuaNote extends LuaClass
 					LuaClass.DefaultSetter(l);
 					return 0;
 				}
+			},
+
+			"defaultAngle" => {
+				defaultValue: defaultAngle,
+				getter: function(l:State, data:Any):Int
+				{
+					Lua.pushnumber(l, defaultAngle);
+					return 1;
+				},
+				setter: SetNumProperty
 			},
 
 			"strumTime" => {
@@ -310,16 +330,6 @@ class LuaNote extends LuaClass
 				getter: function(l:State, data:Any):Int
 				{
 					Lua.pushboolean(l, connectedNote.isSustainNote);
-					return 1;
-				},
-				setter: SetNumProperty
-			},
-
-			"followAngle" => {
-				defaultValue: 0,
-				getter: function(l:State, data:Any):Int
-				{
-					Lua.pushboolean(l, connectedNote.connectedNote.followAngle);
 					return 1;
 				},
 				setter: SetNumProperty
@@ -604,6 +614,11 @@ class LuaNote extends LuaClass
 		state = l;
 		super.Register(l);
 	}
+
+	override function destroy()
+	{
+		state = null;
+	}
 }
 
 class LuaReceptor extends LuaClass
@@ -619,8 +634,6 @@ class LuaReceptor extends LuaClass
 	var defaultScaleY = 0.0;
 	var defaultDirection = 0.0;
 	var defaultScrollType = false;
-
-	public static var receptorTween:FlxTween;
 
 	public function new(connectedSprite:StaticArrow, name:String)
 	{
@@ -664,7 +677,7 @@ class LuaReceptor extends LuaClass
 				defaultValue: 0,
 				getter: function(l:State, data:Any):Int
 				{
-					Lua.pushnumber(l, connectedSprite.angle);
+					Lua.pushnumber(l, connectedSprite.modAngle);
 					return 1;
 				},
 				setter: function(l:State):Int
@@ -957,22 +970,13 @@ class LuaReceptor extends LuaClass
 		}
 		if (yp == receptor.y)
 		{
-			receptorTween = PlayState.instance.createTween(receptor, {x: xp}, time, {
+			PlayState.instance.createTween(receptor, {x: xp}, time, {
 				ease: ModchartState.getFlxEaseByString(ease),
-				onComplete: function(twn:FlxTween)
-				{
-					receptorTween = null;
-				}
 			});
 		}
 		else
-			receptorTween = PlayState.instance.createTween(receptor, {x: xp, y: yp}, time, {
+			PlayState.instance.createTween(receptor, {x: xp, y: yp}, time, {
 				ease: ModchartState.getFlxEaseByString(ease),
-
-				onComplete: function(twn:FlxTween)
-				{
-					receptorTween = null;
-				}
 			});
 
 		return 0;
@@ -1126,6 +1130,11 @@ class LuaReceptor extends LuaClass
 		state = l;
 		super.Register(l);
 		trace("Registered " + className);
+	}
+
+	override function destroy()
+	{
+		state = null;
 	}
 }
 
@@ -1462,6 +1471,11 @@ class LuaCamera extends LuaClass
 		state = l;
 		super.Register(l);
 		trace("Registered " + className);
+	}
+
+	override function destroy()
+	{
+		state = null;
 	}
 }
 
@@ -1833,6 +1847,11 @@ class LuaCharacter extends LuaClass
 		state = l;
 		super.Register(l);
 	}
+
+	override function destroy()
+	{
+		state = null;
+	}
 }
 
 class LuaSprite extends LuaClass
@@ -1952,7 +1971,7 @@ class LuaSprite extends LuaClass
 				defaultValue: 0,
 				getter: function(l:State, data:Any)
 				{
-					Lua.pushcfunction(l, destroyC);
+					Lua.pushcfunction(l, destroySprC);
 					return 1;
 				},
 				setter: function(l:State)
@@ -2084,7 +2103,7 @@ class LuaSprite extends LuaClass
 		return 0;
 	}
 
-	private static function destroy(l:StatePointer):Int
+	private static function destroySpr(l:StatePointer):Int
 	{
 		// 1 = self
 
@@ -2111,7 +2130,7 @@ class LuaSprite extends LuaClass
 		return 0;
 	}
 
-	private static var destroyC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(destroy);
+	private static var destroySprC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(destroySpr);
 	private static var tweenPosC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenPos);
 	private static var tweenAngleC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenAngle);
 	private static var tweenAlphaC:cpp.Callable<StatePointer->Int> = cpp.Callable.fromStaticFunction(tweenAlpha);
@@ -2271,6 +2290,11 @@ class LuaWindow extends LuaClass
 		state = l;
 		super.Register(l);
 	}
+
+	override function destroy()
+	{
+		state = null;
+	}
 }
 
 class LuaGame extends LuaClass
@@ -2365,6 +2389,11 @@ class LuaGame extends LuaClass
 	{
 		state = l;
 		super.Register(l);
+	}
+
+	override function destroy()
+	{
+		state = null;
 	}
 }
 #end

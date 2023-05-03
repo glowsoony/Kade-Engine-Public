@@ -33,14 +33,14 @@ class GameOverSubstate extends MusicBeatSubstate
 		switch (PlayState.instance.boyfriend.curCharacter)
 		{
 			default:
-				daBf = PlayState.instance.boyfriend.curCharacter + '-dead';
+				daBf = PlayState.instance.boyfriend.deadChar;
 		}
 
 		var leDad:String = '';
 		switch (PlayState.instance.dad.curCharacter)
 		{
 			default:
-				leDad = PlayState.instance.dad.curCharacter + '-dead';
+				leDad = PlayState.instance.dad.deadChar;
 		}
 
 		Conductor.songPosition = 0;
@@ -114,7 +114,8 @@ class GameOverSubstate extends MusicBeatSubstate
 		{
 			if (PlayState.SONG.stage == 'tank' && !PlayStateChangeables.opponentMode)
 			{
-				FlxG.sound.playMusic(Paths.music('gameOver'), 0.2);
+				FlxG.sound.playMusic(Paths.music('$styleShit/gameOver'));
+
 				FlxG.sound.play(Paths.sound('jeffGameover/jeffGameover-' + FlxG.random.int(1, 25), 'week7'), 1, false, null, true, function()
 				{
 					if (!isEnding)
@@ -123,8 +124,6 @@ class GameOverSubstate extends MusicBeatSubstate
 					}
 				});
 			}
-			else
-				FlxG.sound.playMusic(Paths.music('$styleShit/gameOver'));
 
 			startVibin = true;
 		}

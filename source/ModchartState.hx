@@ -36,9 +36,7 @@ using StringTools;
 class ModchartState
 {
 	// public static var shaders:Array<LuaShader> = null;
-	public static var lua:State = null;
-
-	public static var shownNotes:Array<LuaNote> = [];
+	public var lua:State = null;
 
 	function callLua(func_name:String, args:Array<Dynamic>, ?type:String):Dynamic
 	{
@@ -224,7 +222,7 @@ class ModchartState
 	{
 		// trace('setting variable ' + var_name + ' to ' + object);
 
-		Lua.pushnumber(lua, object);
+		Convert.toLua(lua, object);
 		Lua.setglobal(lua, var_name);
 	}
 
@@ -415,7 +413,6 @@ class ModchartState
 
 	public function new()
 	{
-		shownNotes = [];
 		trace('opening a lua state (because we are cool :))');
 		lua = LuaL.newstate();
 		LuaL.openlibs(lua);
@@ -595,6 +592,13 @@ class ModchartState
 
 		// SHADER SHIT (Thanks old psych engine)
 
+		new LuaGame().Register(lua);
+
+		new LuaWindow().Register(lua);
+	}
+
+	public function registerStrums()
+	{
 		for (i in 0...PlayState.instance.strumLineNotes.length)
 		{
 			var member = PlayState.instance.strumLineNotes.members[i];
@@ -612,10 +616,6 @@ class ModchartState
 			var member = PlayState.instance.playerStrums.members[i];
 			new LuaReceptor(member, "Player_receptor_" + i).Register(lua);
 		}
-
-		new LuaGame().Register(lua);
-
-		new LuaWindow().Register(lua);
 	}
 
 	public function executeState(name, args:Array<Dynamic>)

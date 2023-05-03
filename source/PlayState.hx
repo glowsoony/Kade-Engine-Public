@@ -484,6 +484,7 @@ class PlayState extends MusicBeatState
 
 		// FlxG.save.data.optimize = FlxG.save.data.optimize;
 		PlayStateChangeables.zoom = FlxG.save.data.zoom;
+		PlayStateChangeables.middleScroll = FlxG.save.data.middleScroll;
 
 		removedVideo = false;
 
@@ -676,9 +677,6 @@ class PlayState extends MusicBeatState
 		{
 			stageCheck = SONG.stage;
 		}
-
-		if (isStoryMode)
-			songMultiplier = 1;
 
 		if (!isStoryMode)
 		{
@@ -952,6 +950,13 @@ class PlayState extends MusicBeatState
 
 		add(arrowLanes);
 
+		#if FEATURE_LUAMODCHART
+		if (executeModchart)
+		{
+			luaModchart.registerStrums();
+		}
+		#end
+
 		appearStaticArrows(tweenBoolshit);
 
 		grpNoteSplashes = new FlxTypedGroup<NoteSplash>();
@@ -1019,15 +1024,15 @@ class PlayState extends MusicBeatState
 		if (executeModchart)
 		{
 			var window = new LuaWindow();
-			new LuaCamera(FlxG.camera, "camGame").Register(ModchartState.lua);
-			new LuaCamera(camHUD, "camHUD").Register(ModchartState.lua);
-			new LuaCamera(mainCam, "mainCam").Register(ModchartState.lua);
-			new LuaCamera(camStrums, "camStrums").Register(ModchartState.lua);
-			new LuaCamera(camNotes, "camNotes").Register(ModchartState.lua);
-			new LuaCamera(camSustains, "camSustains").Register(ModchartState.lua);
-			new LuaCharacter(dad, "dad").Register(ModchartState.lua);
-			new LuaCharacter(gf, "gf").Register(ModchartState.lua);
-			new LuaCharacter(boyfriend, "boyfriend").Register(ModchartState.lua);
+			new LuaCamera(FlxG.camera, "camGame").Register(luaModchart.lua);
+			new LuaCamera(camHUD, "camHUD").Register(luaModchart.lua);
+			new LuaCamera(mainCam, "mainCam").Register(luaModchart.lua);
+			new LuaCamera(camStrums, "camStrums").Register(luaModchart.lua);
+			new LuaCamera(camNotes, "camNotes").Register(luaModchart.lua);
+			new LuaCamera(camSustains, "camSustains").Register(luaModchart.lua);
+			new LuaCharacter(dad, "dad").Register(luaModchart.lua);
+			new LuaCharacter(gf, "gf").Register(luaModchart.lua);
+			new LuaCharacter(boyfriend, "boyfriend").Register(luaModchart.lua);
 		}
 		#end
 
@@ -1190,10 +1195,10 @@ class PlayState extends MusicBeatState
 		if (PlayStateChangeables.botPlay && !loadRep)
 			add(botPlayState);
 
-		iconP1 = new HealthIcon(boyfriend.curCharacter, true);
+		iconP1 = new HealthIcon(boyfriend.healthicon, true);
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 
-		iconP2 = new HealthIcon(dad.curCharacter, false);
+		iconP2 = new HealthIcon(dad.healthicon, false);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
 
 		if (FlxG.save.data.healthBar)
@@ -1331,13 +1336,10 @@ class PlayState extends MusicBeatState
 
 		if (FlxG.save.data.characters)
 		{
-			switch (boyfriend.curCharacter)
-			{
-				default:
-					precacheThing('characters/BOYFRIEND_DEAD', 'image', 'shared');
-				case 'bf-holding-gf':
-					precacheThing('characters/bfHoldingGF-DEAD', 'image', 'shared');
-			}
+			if (PlayStateChangeables.opponentMode)
+				new Character(0, 0, dad.deadChar);
+			else
+				new Character(0, 0, boyfriend.deadChar);
 		}
 
 		/*if (!loadRep)
@@ -2016,7 +2018,7 @@ class PlayState extends MusicBeatState
 		FlxG.sound.list.add(vocals);
 		#end
 
-		songMultiplier = PlayState.rate;
+		songMultiplier = isStoryMode ? 1 : PlayState.rate;
 
 		addSongEvents();
 
@@ -2037,8 +2039,6 @@ class PlayState extends MusicBeatState
 		notes = new FlxTypedGroup<NoteSpr>();
 
 		add(notes);
-
-		NoteSpr.container = new FlxPool<NoteSpr>(NoteSpr);
 
 		var noteData:Array<SwagSection>;
 
@@ -2206,34 +2206,6 @@ class PlayState extends MusicBeatState
 		bar.visible = FlxG.save.data.songPosition;
 
 		Debug.logTrace("whats the fuckin shit");
-	}
-
-	function allocateNotes()
-	{
-		/*var toAllocate:Int = 0;
-				for (section in SONG.notes)
-				{
-					for (songNotes in section.sectionNotes)
-					{
-						toAllocate++;
-						var sus = 0.0;
-						if (PlayStateChangeables.holds)
-							sus = songNotes[2] / songMultiplier;
-						else
-							sus = 0;
-
-						var anotherCrochet:Float = Conductor.crochet * songMultiplier;
-						var anotherStepCrochet:Float = anotherCrochet / 4;
-						var susLength = sus / anotherStepCrochet;
-
-						for (i in 0...Std.int(Math.max(susLength, 2)))
-						{
-							toAllocate++;
-						}
-					}
-			}
-
-			NoteSpr.container.preAllocate(toAllocate); */
 	}
 
 	public static function setupMusicStream()
@@ -2429,7 +2401,7 @@ class PlayState extends MusicBeatState
 			babyArrow.x += ((FlxG.width / 2) * player);
 			babyArrow.x += 48.5;
 
-			if (FlxG.save.data.middleScroll)
+			if (PlayStateChangeables.middleScroll)
 			{
 				if (!PlayStateChangeables.opponentMode)
 				{
@@ -2536,10 +2508,6 @@ class PlayState extends MusicBeatState
 			if (vocals != null)
 				if (vocals.playing)
 					vocals.pause();
-			#end
-			#if FEATURE_LUAMODCHART
-			if (LuaReceptor.receptorTween != null)
-				LuaReceptor.receptorTween.active = false;
 			#end
 
 			if (scrollTween != null)
@@ -2824,7 +2792,7 @@ class PlayState extends MusicBeatState
 				var defNote:NoteDef = unspawnNotes.shift();
 
 				// Idk if doing note pooling make creating instances safe or not.
-				var dunceNote:NoteSpr = NoteSpr.container.get();
+				var dunceNote:NoteSpr = new NoteSpr();
 				dunceNote.setupNote(defNote);
 				dunceNote.scrollFactor.set(0, 0);
 
@@ -2835,7 +2803,7 @@ class PlayState extends MusicBeatState
 				if (executeModchart)
 				{
 					var n = new LuaNote(dunceNote._def, currentLuaIndex);
-					n.Register(ModchartState.lua);
+					n.Register(luaModchart.lua);
 					dunceNote._def.LuaNote = n;
 					dunceNote._def.luaID = currentLuaIndex;
 				}
@@ -3662,10 +3630,6 @@ class PlayState extends MusicBeatState
 				else
 					daNote.x = strumX + Math.cos(angleDir) * daNote.distance;
 
-				if (daNote.followAngle)
-					daNote.localAngle = strumDirection - 90 + strumAngle;
-				else if (daNote._def.isSustainNote)
-					daNote.localAngle = strumDirection - 90;
 				daNote.y = strumY + Math.sin(angleDir) * daNote.distance;
 
 				if (!daNote.overrideDistance)
@@ -6009,9 +5973,6 @@ class PlayState extends MusicBeatState
 				return;
 			}
 		}
-
-		NoteSpr.container.clear();
-		NoteSpr.container = null;
 
 		chartEventHandler.destroy();
 		chartEventHandler = null;

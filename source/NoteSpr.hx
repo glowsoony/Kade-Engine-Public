@@ -16,8 +16,6 @@ using StringTools;
 
 class NoteSpr extends FlxSprite
 {
-	public static var container:FlxPool<NoteSpr>;
-
 	public var _def:NoteDef;
 
 	public var noteYOff:Float = 0;
@@ -41,8 +39,6 @@ class NoteSpr extends FlxSprite
 	public var distance:Float = 2000;
 
 	public var originColor:Int = 0; // The sustain note's original note's color
-
-	public var followAngle:Bool = false;
 
 	public var overrideDistance:Bool = false; // Set this to true if you know what are you doing.
 
@@ -222,6 +218,8 @@ class NoteSpr extends FlxSprite
 				}
 			}
 		}
+
+		angle = localAngle + modAngle;
 	}
 
 	override function update(elapsed:Float)
@@ -244,7 +242,7 @@ class NoteSpr extends FlxSprite
 			}
 		}
 
-		angle = modAngle + localAngle;
+		angle = localAngle + modAngle;
 
 		if (_def.isSustainNote)
 		{
@@ -325,32 +323,39 @@ class NoteSpr extends FlxSprite
 			{
 				_def.connectedNote = null;
 				#if FEATURE_LUAMODCHART
-				_def.LuaNote = null;
+				if (_def.LuaNote != null)
+				{
+					_def.LuaNote.destroy();
+					_def.LuaNote = null;
+				}
 				#end
 
 				_def = null;
-
-				return;
 			}
-
-			if (_def.isSustainNote)
+			else if (_def.isSustainNote)
 			{
 				for (susDef in _def.parent.children)
 				{
 					susDef.connectedNote = null;
 					#if FEATURE_LUAMODCHART
-					susDef.LuaNote = null;
+					if (susDef.LuaNote != null)
+					{
+						susDef.LuaNote.destroy();
+						susDef.LuaNote = null;
+					}
 					#end
 					susDef = null;
 				}
 
 				_def.parent.connectedNote = null;
 				#if FEATURE_LUAMODCHART
-				_def.parent.LuaNote = null;
+				if (_def.parent.LuaNote != null)
+				{
+					_def.parent.LuaNote.destroy();
+					_def.parent.LuaNote = null;
+				}
 				#end
 				_def.parent = null;
-
-				return;
 			}
 		}
 	}
@@ -361,15 +366,18 @@ class NoteSpr extends FlxSprite
 		{
 			_def.connectedNote = null;
 			#if FEATURE_LUAMODCHART
-			_def.LuaNote = null;
+			if (_def.LuaNote != null)
+			{
+				_def.LuaNote.destroy();
+				_def.LuaNote = null;
+			}
 			#end
 
 			_def = null;
 
 			return;
 		}
-
-		if (_def.isSustainNote)
+		else if (_def.isSustainNote)
 		{
 			if (_def.spotInLine == _def.parent.children.length - 1)
 			{
@@ -377,14 +385,22 @@ class NoteSpr extends FlxSprite
 				{
 					susDef.connectedNote = null;
 					#if FEATURE_LUAMODCHART
-					susDef.LuaNote = null;
+					if (susDef.LuaNote != null)
+					{
+						susDef.LuaNote.destroy();
+						susDef.LuaNote = null;
+					}
 					#end
 					susDef = null;
 				}
 
 				_def.parent.connectedNote = null;
 				#if FEATURE_LUAMODCHART
-				_def.parent.LuaNote = null;
+				if (_def.parent.LuaNote != null)
+				{
+					_def.parent.LuaNote.destroy();
+					_def.parent.LuaNote = null;
+				}
 				#end
 				_def.parent = null;
 
