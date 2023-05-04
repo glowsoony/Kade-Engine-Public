@@ -945,6 +945,14 @@ class PlayState extends MusicBeatState
 
 		var tweenBoolshit = !isStoryMode || storyPlaylist.length >= 3 || SONG.songId == 'tutorial';
 
+		#if FEATURE_LUAMODCHART
+		if (executeModchart)
+		{
+			luaModchart = ModchartState.createModchartState();
+			luaModchart.executeState('start', [PlayState.SONG.songId]);
+		}
+		#end
+
 		setupStaticArrows(0);
 		setupStaticArrows(1);
 
@@ -953,7 +961,8 @@ class PlayState extends MusicBeatState
 		#if FEATURE_LUAMODCHART
 		if (executeModchart)
 		{
-			luaModchart.registerStrums();
+			if (luaModchart != null)
+				luaModchart.registerStrums();
 		}
 		#end
 
@@ -1007,14 +1016,6 @@ class PlayState extends MusicBeatState
 
 		if (SONG.songId == 'test')
 			storyDifficulty = 1;
-
-		#if FEATURE_LUAMODCHART
-		if (executeModchart)
-		{
-			luaModchart = ModchartState.createModchartState();
-			luaModchart.executeState('start', [PlayState.SONG.songId]);
-		}
-		#end
 
 		#if (FEATURE_MP4VIDEOS && !html5)
 		daVideoGroup = new FlxTypedGroup<VideoSprite>();
