@@ -1788,13 +1788,6 @@ class PlayState extends MusicBeatState
 			@:privateAccess
 			var key = FlxKey.toStringMap.get(evt.keyCode);
 
-			var lastConductorTime:Float = Conductor.songPosition;
-			#if cpp
-			Conductor.songPosition = instStream.time / songMultiplier;
-			#else
-			Conductor.songPosition = inst.time / songMultiplier;
-			#end
-
 			var data = -1;
 
 			data = getKeyFromKeyCode(evt.keyCode);
@@ -1866,8 +1859,6 @@ class PlayState extends MusicBeatState
 
 			if (songStarted && !inCutscene && !paused)
 				keyShit();
-
-			Conductor.songPosition = lastConductorTime;
 		}
 	}
 
