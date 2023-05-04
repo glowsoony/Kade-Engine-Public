@@ -227,78 +227,81 @@ class NoteSpr extends FlxSprite
 		// This updates hold notes height to current scroll Speed in case of scroll Speed changes.
 		super.update(elapsed);
 
-		if (_def.isSustainNote)
+		if (!_def.insideCharter)
 		{
-			var newStepHeight = (((0.45 * PlayState.instance.fakeNoteStepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
-				2) * _def.speedMultiplier);
-
-			if (stepHeight != newStepHeight)
+			if (_def.isSustainNote)
 			{
-				stepHeight = newStepHeight;
-				if (_def.isSustainNote)
+				var newStepHeight = (((0.45 * PlayState.instance.fakeNoteStepCrochet)) * FlxMath.roundDecimal(PlayState.instance.scrollSpeed == 1 ? PlayState.SONG.speed : PlayState.instance.scrollSpeed,
+					2) * _def.speedMultiplier);
+
+				if (stepHeight != newStepHeight)
 				{
-					noteYOff = -stepHeight + swagWidth * 0.5;
+					stepHeight = newStepHeight;
+					if (_def.isSustainNote)
+					{
+						noteYOff = -stepHeight + swagWidth * 0.5;
+					}
 				}
 			}
-		}
 
-		angle = localAngle + modAngle;
+			angle = localAngle + modAngle;
 
-		if (_def.isSustainNote)
-		{
-			if (!_def.sustainActive && _def.parent.tooLate)
+			if (_def.isSustainNote)
 			{
-				alpha = 0.3;
+				if (!_def.sustainActive && _def.parent.tooLate)
+				{
+					alpha = 0.3;
+				}
 			}
-		}
 
-		if (!_def.mustPress)
-		{
-			// CPU NOTES
-			_def.canBeHit = false;
-
-			if (_def.strumTime - Conductor.songPosition < (Ratings.timingWindows[0].timingWindow) * _def.earlyHitMult)
+			if (!_def.mustPress)
 			{
-				if ((_def.isSustainNote && _def.prevNote.wasGoodHit) || _def.strumTime <= Conductor.songPosition)
-					_def.wasGoodHit = true;
+				// CPU NOTES
+				_def.canBeHit = false;
+
+				if (_def.strumTime - Conductor.songPosition < (Ratings.timingWindows[0].timingWindow) * _def.earlyHitMult)
+				{
+					if ((_def.isSustainNote && _def.prevNote.wasGoodHit) || _def.strumTime <= Conductor.songPosition)
+						_def.wasGoodHit = true;
+				}
 			}
-		}
-		else
-		{
-			switch (_def.noteType)
+			else
 			{
-				case 'hurt': // Really hard to hit
-					if (_def.strumTime - Conductor.songPosition <= ((Ratings.timingWindows[0].timingWindow) * 0.2)
-						&& _def.strumTime - Conductor.songPosition >= (-Ratings.timingWindows[0].timingWindow) * 0.4)
-					{
-						_def.canBeHit = true;
-					}
-					else
-					{
-						_def.canBeHit = false;
-					}
-					if (_def.strumTime - Conductor.songPosition < -Ratings.timingWindows[0].timingWindow && !_def.wasGoodHit)
-						_def.tooLate = true;
-				default:
-					// PLAYER NOTES
-					if (_def.strumTime - Conductor.songPosition <= (((Ratings.timingWindows[0].timingWindow) * _def.lateHitMult))
-						&& _def.strumTime - Conductor.songPosition >= (((-Ratings.timingWindows[0].timingWindow) * _def.earlyHitMult)))
-						_def.canBeHit = true;
-					else
-						_def.canBeHit = false;
+				switch (_def.noteType)
+				{
+					case 'hurt': // Really hard to hit
+						if (_def.strumTime - Conductor.songPosition <= ((Ratings.timingWindows[0].timingWindow) * 0.2)
+							&& _def.strumTime - Conductor.songPosition >= (-Ratings.timingWindows[0].timingWindow) * 0.4)
+						{
+							_def.canBeHit = true;
+						}
+						else
+						{
+							_def.canBeHit = false;
+						}
+						if (_def.strumTime - Conductor.songPosition < -Ratings.timingWindows[0].timingWindow && !_def.wasGoodHit)
+							_def.tooLate = true;
+					default:
+						// PLAYER NOTES
+						if (_def.strumTime - Conductor.songPosition <= (((Ratings.timingWindows[0].timingWindow) * _def.lateHitMult))
+							&& _def.strumTime - Conductor.songPosition >= (((-Ratings.timingWindows[0].timingWindow) * _def.earlyHitMult)))
+							_def.canBeHit = true;
+						else
+							_def.canBeHit = false;
 
-					if (_def.strumTime - Conductor.songPosition < (-Ratings.timingWindows[0].timingWindow) && !_def.wasGoodHit)
-						_def.tooLate = true;
+						if (_def.strumTime - Conductor.songPosition < (-Ratings.timingWindows[0].timingWindow) && !_def.wasGoodHit)
+							_def.tooLate = true;
+				}
 			}
-		}
 
-		if (_def.isSustainNote)
-			_def.isSustainEnd = _def.spotInLine == _def.parent.children.length - 1;
+			if (_def.isSustainNote)
+				_def.isSustainEnd = _def.spotInLine == _def.parent.children.length - 1;
 
-		if (_def.tooLate && !_def.wasGoodHit)
-		{
-			if (alpha > 0.3)
-				alpha = 0.3;
+			if (_def.tooLate && !_def.wasGoodHit)
+			{
+				if (alpha > 0.3)
+					alpha = 0.3;
+			}
 		}
 	}
 

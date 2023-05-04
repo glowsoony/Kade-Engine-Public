@@ -1775,7 +1775,7 @@ class PlayState extends MusicBeatState
 	private function handleInput(evt:KeyboardEvent):Void
 	{ // this actually handles press inputs
 
-		if (!isStoryMode && PlayStateChangeables.botPlay || loadRep || paused)
+		if (!isStoryMode && PlayStateChangeables.botPlay || loadRep || paused || !songStarted)
 			return;
 
 		// first convert it from openfl to a flixel key code
@@ -1789,9 +1789,9 @@ class PlayState extends MusicBeatState
 
 			var lastConductorTime:Float = Conductor.songPosition;
 			#if cpp
-			Conductor.songPosition = instStream.time;
+			Conductor.songPosition = instStream.time / songMultiplier;
 			#else
-			Conductor.songPosition = inst.time;
+			Conductor.songPosition = inst.time / songMultiplier;
 			#end
 
 			var data = -1;
@@ -5346,6 +5346,13 @@ class PlayState extends MusicBeatState
 
 	public function updateSettings():Void
 	{
+		binds = [
+			FlxG.save.data.leftBind,
+			FlxG.save.data.downBind,
+			FlxG.save.data.upBind,
+			FlxG.save.data.rightBind
+		];
+
 		scoreTxt.y = healthBarBG.y;
 		if (FlxG.save.data.colour)
 		{
@@ -6199,7 +6206,7 @@ class PlayState extends MusicBeatState
 
 	private function checkforSections()
 	{
-		var totalBeats = TimingStruct.getBeatFromTime(#if cpp instStream.length #else inst.length #end);
+		var totalBeats = TimingStruct.getBeatFromTime(#if cpp instStream.length / songMultiplier #else inst.length / songMultiplier #end);
 
 		var lastSecBeat = TimingStruct.getBeatFromTime(SONG.notes[SONG.notes.length - 1].endTime);
 
