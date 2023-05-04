@@ -112,10 +112,9 @@ class GameOverSubstate extends MusicBeatSubstate
 		if ((!PlayStateChangeables.opponentMode && bf.animation.curAnim.name == 'firstDeath' && bf.animation.curAnim.finished)
 			|| (PlayStateChangeables.opponentMode && dad.animation.curAnim.name == 'firstDeath' && dad.animation.curAnim.finished))
 		{
+			FlxG.sound.playMusic(Paths.music('$styleShit/gameOver'));
 			if (PlayState.SONG.stage == 'tank' && !PlayStateChangeables.opponentMode)
 			{
-				FlxG.sound.playMusic(Paths.music('$styleShit/gameOver'));
-
 				FlxG.sound.play(Paths.sound('jeffGameover/jeffGameover-' + FlxG.random.int(1, 25), 'week7'), 1, false, null, true, function()
 				{
 					if (!isEnding)

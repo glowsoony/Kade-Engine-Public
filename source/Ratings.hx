@@ -107,18 +107,21 @@ class Ratings
 	public static function judgeNote(noteDiff:Float):RatingWindow
 	{
 		var diff = Math.abs(noteDiff);
+
+		var shitWindows:Array<RatingWindow> = timingWindows.copy();
+		shitWindows.reverse();
+
 		if (PlayStateChangeables.botPlay)
-			return timingWindows[timingWindows.length - 1];
-		for (index in 0...timingWindows.length)
+			return shitWindows[0];
+
+		for (index in 0...shitWindows.length)
 		{
-			var time = timingWindows[index].timingWindow;
-			var nextTime = index + 1 > timingWindows.length - 1 ? 0 : timingWindows[index + 1].timingWindow;
-			if (diff < time && diff >= nextTime)
+			if (diff <= shitWindows[index].timingWindow)
 			{
-				return timingWindows[index];
+				return shitWindows[index];
 			}
 		}
-		return null;
+		return shitWindows[shitWindows.length - 1];
 	}
 
 	public static function CalculateRanking(score:Int, scoreDef:Int, nps:Int, maxNPS:Int, accuracy:Float):String

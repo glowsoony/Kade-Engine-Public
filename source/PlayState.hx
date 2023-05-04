@@ -1787,6 +1787,13 @@ class PlayState extends MusicBeatState
 			@:privateAccess
 			var key = FlxKey.toStringMap.get(evt.keyCode);
 
+			var lastConductorTime:Float = Conductor.songPosition;
+			#if cpp
+			Conductor.songPosition = instStream.time;
+			#else
+			Conductor.songPosition = inst.time;
+			#end
+
 			var data = -1;
 
 			data = getKeyFromKeyCode(evt.keyCode);
@@ -1858,6 +1865,8 @@ class PlayState extends MusicBeatState
 
 			if (songStarted && !inCutscene && !paused)
 				keyShit();
+
+			Conductor.songPosition = lastConductorTime;
 		}
 	}
 
@@ -4154,7 +4163,7 @@ class PlayState extends MusicBeatState
 
 		totalPlayed += 1;
 
-		var daRating:RatingWindow = Ratings.judgeNote(noteDiffAbs);
+		var daRating:RatingWindow = Ratings.judgeNote(noteDiff);
 
 		noteDef.rating = daRating;
 
@@ -6008,11 +6017,6 @@ class PlayState extends MusicBeatState
 		instance = null;
 
 		super.destroy();
-	}
-
-	override function switchTo(nextState:FlxState)
-	{
-		return super.switchTo(nextState);
 	}
 
 	// Precache List for some stuff (Like frames, sounds and that kinda of shit)

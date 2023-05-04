@@ -1194,10 +1194,10 @@ class FreeplayState extends MusicBeatState
 		super.destroy();
 	}
 
-	override function switchTo(state:FlxState)
+	override function startOutro(onOutroComplete:() -> Void)
 	{
 		MainMenuState.freakyPlaying = true;
-		return super.switchTo(state);
+		onOutroComplete();
 	}
 
 	public function updateDiffCalc():Void
