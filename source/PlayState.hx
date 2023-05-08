@@ -415,9 +415,6 @@ class PlayState extends MusicBeatState
 
 		GameplayCustomizeState.freeplayNoteStyle = SONG.noteStyle;
 
-		/*if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300); */
-
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
 
@@ -3818,9 +3815,6 @@ class PlayState extends MusicBeatState
 		Lib.current.stage.removeEventListener(KeyboardEvent.KEY_UP, releaseInput);
 
 		PlayStateChangeables.botPlay = false;
-
-		/*if (FlxG.save.data.fpsCap > 300)
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(300); */
 
 		canPause = false;
 

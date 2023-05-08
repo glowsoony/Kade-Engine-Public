@@ -54,6 +54,8 @@ class Main extends Sprite
 
 	public static var internetConnection:Bool = false; // If the user is connected to internet.
 
+	public static var gameContainer:Main = null; // Main instance to access when needed.
+
 	// You can pretty much ignore everything from here on - your code should go in your states.
 
 	public static function main():Void
@@ -121,8 +123,12 @@ class Main extends Sprite
 		#if !mobile
 		fpsCounter = new StatsCounter(10, 10, 0xFFFFFF);
 		#end
+		gameContainer = this;
+
 		addChild(new FlxGame(game.width, game.height, game.initialState, #if (flixel < "5.0.0") game.zoom, #end game.framerate, game.framerate,
 			game.skipSplash, game.startFullscreen));
+
+		FlxG.fixedTimestep = false;
 
 		FlxG.signals.focusGained.add(function()
 		{
@@ -136,7 +142,6 @@ class Main extends Sprite
 
 		#if !mobile
 		addChild(fpsCounter);
-		toggleFPS(FlxG.save.data.fps);
 		#end
 
 		// Finish up loading debug tools.
@@ -152,10 +157,6 @@ class Main extends Sprite
 	}
 
 	var fpsCounter:StatsCounter;
-
-	public function toggleFPS(fpsEnabled:Bool):Void
-	{
-	}
 
 	public function changeFPSColor(color:FlxColor)
 	{

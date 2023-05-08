@@ -142,7 +142,7 @@ class MusicBeatState extends FlxUIState
 		FlxTransitionableState.skipNextTransOut = false;
 
 		super.create();
-		(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
+		Main.gameContainer.setFPSCap(FlxG.save.data.fpsCap);
 	}
 
 	var step = 0.0;
@@ -299,7 +299,7 @@ class MusicBeatState extends FlxUIState
 			}
 		}
 
-		(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
+		Main.gameContainer.setFPSCap(FlxG.save.data.fpsCap);
 		super.update(elapsed);
 	}
 
@@ -378,37 +378,6 @@ class MusicBeatState extends FlxUIState
 		}
 	}
 
-	/*function onWindowFocusOut():Void
-		{
-			if (PlayState.inDaPlay)
-			{
-				if (PlayState.instance.vocals != null)
-					PlayState.instance.vocals.pause();
-				if (FlxG.sound.music != null)
-					FlxG.sound.music.pause();
-				if (!PlayState.instance.paused && !PlayState.instance.endingSong && PlayState.instance.songStarted)
-				{
-					Debug.logTrace("Lost Focus");
-					PlayState.instance.openSubState(new PauseSubState());
-					PlayState.boyfriend.stunned = true;
-
-					PlayState.instance.persistentUpdate = false;
-					PlayState.instance.persistentDraw = true;
-					PlayState.instance.paused = true;
-				}
-			}
-		}
-
-		function onWindowFocusIn():Void
-		{
-			Debug.logTrace("IM BACK!!!");
-			(cast(Lib.current.getChildAt(0), Main)).setFPSCap(FlxG.save.data.fpsCap);
-			if (PlayState.inDaPlay)
-			{
-				if (PlayState.boyfriend.stunned)
-					PlayState.boyfriend.stunned = false;
-			}
-	}*/
 	function getSectionLength()
 	{
 		var val:Null<Int> = 16;
