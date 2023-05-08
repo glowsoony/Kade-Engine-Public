@@ -2773,35 +2773,34 @@ class PlayState extends MusicBeatState
 		if (SONG.speed < 1 || scrollSpeed < 1)
 			shit /= scrollSpeed == 1 ? SONG.speed : scrollSpeed;
 
-		if (unspawnNotes.length > 0)
+		while (unspawnNotes[0] != null && unspawnNotes[0].strumTime - Conductor.songPosition < shit / unspawnNotes[0].speedMultiplier)
 		{
-			if (unspawnNotes[0].strumTime - Conductor.songPosition < shit / unspawnNotes[0].speedMultiplier)
+			var defNote:NoteDef = unspawnNotes.shift();
+
+			// Idk if doing note pooling make creating instances safe or not.
+			var dunceNote:NoteSpr = Type.createInstance(NoteSpr, []);
+			dunceNote.setupNote(defNote);
+			dunceNote.scrollFactor.set(0, 0);
+
+			dunceNote.visible = dunceNote.active = true;
+			notes.insert(0, dunceNote);
+
+			#if FEATURE_LUAMODCHART
+			if (executeModchart)
 			{
-				var defNote:NoteDef = unspawnNotes.shift();
-
-				// Idk if doing note pooling make creating instances safe or not.
-				var dunceNote:NoteSpr = new NoteSpr();
-				dunceNote.setupNote(defNote);
-				dunceNote.scrollFactor.set(0, 0);
-
-				dunceNote.visible = dunceNote.active = true;
-				notes.insert(0, dunceNote);
-
-				#if FEATURE_LUAMODCHART
-				if (executeModchart)
-				{
-					var n = new LuaNote(dunceNote._def, currentLuaIndex);
-					n.Register(luaModchart.lua);
-					dunceNote._def.LuaNote = n;
-					dunceNote._def.luaID = currentLuaIndex;
-				}
-				#end
-
-				if (dunceNote._def.isSustainNote)
-					dunceNote.camera = camSustains;
-				else
-					dunceNote.camera = camNotes;
+				var n = new LuaNote(dunceNote._def, currentLuaIndex);
+				n.Register(luaModchart.lua);
+				dunceNote._def.LuaNote = n;
+				dunceNote._def.luaID = currentLuaIndex;
 			}
+			#end
+
+			if (dunceNote._def.isSustainNote)
+				dunceNote.camera = camSustains;
+			else
+				dunceNote.camera = camNotes;
+
+			currentLuaIndex++;
 		}
 
 		if (generatedMusic && SONG.events != null)
