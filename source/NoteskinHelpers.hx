@@ -8,16 +8,7 @@ using StringTools;
 
 class NoteskinHelpers
 {
-	public static var noteskinArray = [];
-
-	public static function updateNoteskins()
-	{
-		noteskinArray = [];
-
-		noteskinArray = ["Arrows", "Circles"];
-
-		return noteskinArray;
-	}
+	public static var noteskinArray = ["Arrows", "Circles"];
 
 	public static function getNoteskins()
 	{
@@ -43,7 +34,7 @@ class NoteskinHelpers
 
 		var atlas = null;
 
-		atlas = Paths.getSparrowAtlas('hud/$style/noteskins/${NoteskinHelpers.getNoteskinByID(FlxG.save.data.noteskin)}/NOTE_ASSETS$suffix', 'shared');
+		atlas = Paths.getSparrowAtlas('hud/$style/noteskins/${NoteskinHelpers.getNoteskinByID(id)}/NOTE_ASSETS$suffix', 'shared');
 
 		return atlas;
 	}
@@ -55,7 +46,6 @@ class NoteskinHelpers
 		if (type == '')
 			suffix = '_NORMAL';
 
-		return Paths.image('hud/pixel/noteskins/${NoteskinHelpers.getNoteskinByID(FlxG.save.data.noteskin)}/NOTE_ASSETS$suffix${(ends ? '_ENDS' : '')}',
-			"shared");
+		return Paths.image('hud/pixel/noteskins/${NoteskinHelpers.getNoteskinByID(id)}/NOTE_ASSETS$suffix${(ends ? '_ENDS' : '')}', "shared");
 	}
 }

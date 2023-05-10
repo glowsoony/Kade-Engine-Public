@@ -161,19 +161,22 @@ class RatingWindow
 	public var causeMiss:Bool;
 	public var doNoteSplash:Bool;
 	public var count:Int = 0;
+	public var accuracyBonus:Float;
 
 	public var pluralSuffix:String;
 
 	public var comboRanking:String;
 
-	public function new(name:String, timingWindow:Float, comboRanking:String, displayColor:FlxColor, healthBonus:Float, scoreBonus:Float, causeMiss:Bool,
-			doNoteSplash:Bool)
+	public function new(name:String, timingWindow:Float, comboRanking:String, displayColor:FlxColor, healthBonus:Float, scoreBonus:Float, accuracyBonus:Float,
+			causeMiss:Bool, doNoteSplash:Bool)
 	{
 		this.name = name;
 		this.timingWindow = timingWindow;
 		this.comboRanking = comboRanking;
 		this.displayColor = displayColor;
 		this.healthBonus = healthBonus;
+		this.scoreBonus = scoreBonus;
+		this.accuracyBonus = accuracyBonus;
 		this.causeMiss = causeMiss;
 		this.doNoteSplash = doNoteSplash;
 	}
@@ -200,6 +203,8 @@ class RatingWindow
 					FlxColor.YELLOW,
 					FlxColor.CYAN
 				];
+				var acc:Array<Float> = [-1.00, 0.5, 0.75, 1.00, 1.00];
+
 				var healthBonuses:Array<Float> = [-0.2, -0.06, 0, 0.04, 0.06];
 				var scoreBonuses:Array<Int> = [-300, 0, 200, 350, 350];
 				var defaultTimings:Array<Float> = [180, 135, 90, 45, 22.5];
@@ -209,7 +214,7 @@ class RatingWindow
 				var combos:Array<String> = ['', 'FC', 'GFC', 'PFC', 'MFC'];
 				for (i in 0...ratings.length)
 				{
-					var rClass = new RatingWindow(ratings[i], timings[i], combos[i], colors[i], healthBonuses[i], scoreBonuses[i], missArray[i],
+					var rClass = new RatingWindow(ratings[i], timings[i], combos[i], colors[i], healthBonuses[i], scoreBonuses[i], acc[i], missArray[i],
 						splashArray[i]);
 					rClass.defaultTimingWindow = defaultTimings[i];
 					rClass.pluralSuffix = suffixes[i];

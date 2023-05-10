@@ -1151,9 +1151,10 @@ class ChartingState extends MusicBeatState
 					var daNoteInfo = i[1];
 					var daStrumTime = i[0];
 					var daSus = i[2];
-					var daNoteType = i[5];
+					var daNoteType = i[3];
+					var daBeat = TimingStruct.getBeatFromTime(daStrumTime);
 
-					var note:NoteDef = new NoteDef(daStrumTime, daNoteInfo % 4, null, false, true, i[3], i[4], daNoteType);
+					var note:NoteDef = new NoteDef(daStrumTime, daNoteInfo % 4, null, false, true, daBeat, daNoteType, i[4], 'default');
 
 					note.rawNoteData = daNoteInfo;
 					note.sustainLength = daSus;
@@ -2188,7 +2189,7 @@ class ChartingState extends MusicBeatState
 		}
 		else
 		{
-			var note:NoteDef = new NoteDef(n.strumTime, n.noteData % 4, null, false, true, TimingStruct.getBeatFromTime(n.strumTime));
+			var note:NoteDef = new NoteDef(n.strumTime, n.noteData % 4, null, false, true);
 
 			note.beat = TimingStruct.getBeatFromTime(n.strumTime);
 			note.rawNoteData = n.noteData;

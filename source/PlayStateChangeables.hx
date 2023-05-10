@@ -10,7 +10,7 @@ class PlayStateChangeables
 	public static var healthGain:Float;
 	public static var healthLoss:Float;
 	public static var useDownscroll:Bool;
-
+	public static var currentSkin:Int;
 	public static var middleScroll:Bool;
 	public static var botPlay:Bool;
 	public static var Optimize:Bool;

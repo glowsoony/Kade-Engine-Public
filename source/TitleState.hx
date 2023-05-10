@@ -84,10 +84,6 @@ class TitleState extends MusicBeatState
 
 		KeyBinds.keyCheck();
 
-		// It doesn't reupdate the list before u restart rn lmao
-
-		NoteskinHelpers.updateNoteskins();
-
 		if (FlxG.save.data.volDownBind == null)
 			FlxG.save.data.volDownBind = "NUMPADMINUS";
 		if (FlxG.save.data.volUpBind == null)

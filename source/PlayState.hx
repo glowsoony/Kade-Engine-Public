@@ -67,6 +67,7 @@ import MusicBeatState.subStates;
 import flixel.addons.display.FlxRuntimeShader;
 import MusicBeatState.transSubstate;
 import flixel.util.FlxPool;
+import flixel.group.FlxSpriteGroup;
 
 using StringTools;
 
@@ -152,6 +153,17 @@ class PlayState extends MusicBeatState
 	public var dad:Character = null;
 	public var gf:Character = null;
 	public var boyfriend:Boyfriend = null;
+
+	public var boyfriendMap:Map<String, Boyfriend> = [];
+
+	public var dadMap:Map<String, Character> = [];
+
+	public var gfMap:Map<String, Character> = [];
+
+	public var boyfriendGroup:FlxTypedSpriteGroup<Boyfriend>;
+
+	public var gfGroup:FlxTypedSpriteGroup<Character>;
+	public var dadGroup:FlxTypedSpriteGroup<Character>;
 
 	public var notes:FlxTypedGroup<NoteSpr> = null;
 
@@ -482,6 +494,9 @@ class PlayState extends MusicBeatState
 		// FlxG.save.data.optimize = FlxG.save.data.optimize;
 		PlayStateChangeables.zoom = FlxG.save.data.zoom;
 		PlayStateChangeables.middleScroll = FlxG.save.data.middleScroll;
+		PlayStateChangeables.currentSkin = FlxG.save.data.noteskin;
+
+		usedBot = false;
 
 		removedVideo = false;
 
@@ -740,6 +755,15 @@ class PlayState extends MusicBeatState
 
 		Stage.initCamPos();
 
+		gfGroup = new FlxTypedSpriteGroup<Character>(0, 0);
+		dadGroup = new FlxTypedSpriteGroup<Character>(0, 0);
+		boyfriendGroup = new FlxTypedSpriteGroup<Boyfriend>(0, 0);
+
+		boyfriendGroup.add(boyfriend);
+		dadGroup.add(dad);
+		if (gf != null)
+			gfGroup.add(gf);
+
 		var positions = Stage.positions[Stage.curStage];
 		if (positions != null)
 		{
@@ -780,18 +804,18 @@ class PlayState extends MusicBeatState
 					case 0:
 						if (gf != null)
 						{
-							add(gf);
+							add(gfGroup);
 							gf.scrollFactor.set(0.95, 0.95);
 						}
 
 						for (bg in array)
 							add(bg);
 					case 1:
-						add(dad);
+						add(dadGroup);
 						for (bg in array)
 							add(bg);
 					case 2:
-						add(boyfriend);
+						add(boyfriendGroup);
 						for (bg in array)
 							add(bg);
 				}
@@ -1782,6 +1806,10 @@ class PlayState extends MusicBeatState
 
 		if (FlxG.keys.checkStatus(evt.keyCode, JUST_PRESSED))
 		{
+			var lastConductorTime:Float = Conductor.songPosition;
+
+			Conductor.songPosition = lastConductorTime;
+
 			@:privateAccess
 			var key = FlxKey.toStringMap.get(evt.keyCode);
 
@@ -1856,6 +1884,8 @@ class PlayState extends MusicBeatState
 
 			if (songStarted && !inCutscene && !paused)
 				keyShit();
+
+			Conductor.songPosition = Conductor.rawPosition;
 		}
 	}
 
@@ -3218,7 +3248,7 @@ class PlayState extends MusicBeatState
 		{
 			// Conductor.songPosition = FlxG.sound.music.time;
 			Conductor.songPosition += FlxG.elapsed * 1000;
-			Conductor.rawPosition = #if cpp instStream.time #else inst.time #end;
+			Conductor.rawPosition += FlxG.elapsed * 1000;
 
 			#if (FEATURE_MP4VIDEOS && !html5)
 			if (videoHandler != null)
@@ -4142,13 +4172,15 @@ class PlayState extends MusicBeatState
 
 		//
 
+		var daRating:RatingWindow = Ratings.judgeNote(noteDiff);
 		var score:Float = 0;
+
 		if (FlxG.save.data.accuracyMod == 1)
 			totalNotesHit += wife;
+		else
+			totalNotesHit += daRating.accuracyBonus;
 
 		totalPlayed += 1;
-
-		var daRating:RatingWindow = Ratings.judgeNote(noteDiff);
 
 		noteDef.rating = daRating;
 
@@ -4200,7 +4232,6 @@ class PlayState extends MusicBeatState
 
 			rating.setGraphicSize(Std.int(rating.width * SONGStyle.scaleFactor * 0.7));
 		}
-		rating.screenCenter();
 
 		lastRating = daRating.name.toLowerCase();
 
@@ -4306,10 +4337,7 @@ class PlayState extends MusicBeatState
 			for (i in seperatedScore)
 			{
 				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image('hud/' + styleShit + '/num' + Std.int(i), 'shared'));
-				numScore.screenCenter();
 
-				numScore.x = rating.x + (43 * daLoop) - (16.67 * seperatedScore.length);
-				numScore.y = rating.y + 100;
 				numScore.cameras = [camRatings];
 
 				numScore.antialiasing = FlxG.save.data.antialiasing && PlayState.SONGStyle.antialiasing;
@@ -4317,6 +4345,9 @@ class PlayState extends MusicBeatState
 				numScore.setGraphicSize(Std.int(numScore.width * SONGStyle.scaleFactor));
 
 				numScore.updateHitbox();
+
+				numScore.x = rating.x + (43 * daLoop) - ((numScore.width * seperatedScore.length) / 2) + 25;
+				numScore.y = rating.y + 100;
 
 				numScore.acceleration.y = FlxG.random.int(200, 300);
 				numScore.velocity.y -= FlxG.random.int(140, 160);
@@ -6095,6 +6126,49 @@ class PlayState extends MusicBeatState
 
 						currentIndex++;
 					}
+				case 'changeChar':
+					var group:String = event.args[0];
+					var char:String = event.args[1];
+					switch (group)
+					{
+						// gf
+						case "speaker":
+							var newGF = new Character(0, 0, char);
+							if (newGF == null)
+							{
+								Debug.logWarn('${newGF} is null. Skipping.');
+								continue;
+							}
+							newGF.alpha = 0.0001;
+							gfMap.set(char, newGF);
+							gfGroup.add(newGF);
+
+						// dad
+						case "opponent":
+							var newDAD:Character;
+							newDAD = new Character(100, 100, char);
+							if (newDAD == null)
+							{
+								Debug.logWarn('${newDAD} is null. Skipping.');
+								continue;
+							}
+							newDAD.alpha = 0.0001;
+							dadMap.set(char, newDAD);
+							dadGroup.add(newDAD);
+
+						// boyfriend
+						case "player":
+							var newBF:Boyfriend;
+							newBF = new Boyfriend(100, 100, char);
+							if (newBF == null)
+							{
+								Debug.logWarn('${newBF} is null. Skipping.');
+								continue;
+							}
+							newBF.alpha = 0.0001;
+							boyfriendMap.set(char, newBF);
+							boyfriendGroup.add(newBF);
+					}
 			}
 
 			chartEventHandler.checkChartEvent(event);
@@ -6231,5 +6305,70 @@ class PlayState extends MusicBeatState
 		#end
 
 		return value;
+	}
+
+	public function changeChar(target:String, newChar:String)
+	{
+		switch (target)
+		{
+			case "speaker":
+				if (gf != null)
+				{
+					var lastAlpha:Float = gf.alpha;
+					gf.alpha = 0.00001;
+					gf = gfMap.get(newChar);
+					gf.alpha = lastAlpha;
+				}
+			case "opponent":
+				var lastAlpha:Float = dad.alpha;
+				dad.alpha = 0.00001;
+				dad = dadMap.get(newChar);
+				dad.alpha = lastAlpha;
+
+			case "player":
+				var lastAlpha:Float = boyfriend.alpha;
+				boyfriend.alpha = 0.00001;
+				boyfriend = boyfriendMap.get(newChar);
+
+				boyfriend.alpha = lastAlpha;
+		}
+
+		iconP1.changeIcon(boyfriend.healthicon);
+
+		iconP2.changeIcon(dad.healthicon);
+
+		var positions = Stage.positions[Stage.curStage];
+		if (positions != null)
+		{
+			for (char => pos in positions)
+				for (person in [boyfriend, gf, dad])
+					if (person != null)
+						if (person.curCharacter == char)
+							person.setPosition(pos[0], pos[1]);
+		}
+
+		#if FEATURE_DISCORD
+		iconRPC = newChar;
+		iconRPCBefore = iconRPC;
+		#end
+
+		if (FlxG.save.data.colour)
+		{
+			if (!PlayStateChangeables.opponentMode)
+				healthBar.createFilledBar(dad.barColor, boyfriend.barColor);
+			else
+				healthBar.createFilledBar(boyfriend.barColor, dad.barColor);
+		}
+		else
+		{
+			if (!PlayStateChangeables.opponentMode)
+				healthBar.createFilledBar(0xFFFF0000, 0xFF66FF33);
+			else
+				healthBar.createFilledBar(0xFF66FF33, 0xFFFF0000);
+		}
+		healthBar.updateBar();
+
+		songPosBar.createGradientBar([FlxColor.BLACK], [boyfriend.barColor, dad.barColor]);
+		songPosBar.updateBar();
 	}
 } // u looked :O -ides

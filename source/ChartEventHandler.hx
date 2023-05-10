@@ -69,6 +69,21 @@ class ChartEventHandler
 						type: "Array"
 					}
 				]
+			},
+			"changeChar" => {
+				func: changeCharacter,
+				displayName: "Change Character",
+				description: "",
+				args: [
+					{
+						name: "Target",
+						type: "String"
+					},
+					{
+						name: "New Character Name",
+						type: "String"
+					}
+				]
 			}
 		];
 
@@ -141,6 +156,11 @@ class ChartEventHandler
 	function changeScrollSpeed(args:Array<Dynamic>):Void
 	{
 		playState.changeScrollSpeed(args[0][0], args[0][1], FlxEase.linear);
+	}
+
+	function changeCharacter(args:Dynamic):Void
+	{
+		playState.changeChar(args[0], args[1]);
 	}
 
 	public function destroy()

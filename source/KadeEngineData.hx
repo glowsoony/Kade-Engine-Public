@@ -173,6 +173,9 @@ class KadeEngineData
 		if (FlxG.save.data.noteskin == null)
 			FlxG.save.data.noteskin = 0;
 
+		if (NoteskinHelpers.getNoteskinByID(FlxG.save.data.noteskin) == null)
+			FlxG.save.data.noteskin = 0;
+
 		if (FlxG.save.data.hgain == null)
 			FlxG.save.data.hgain = 1;
 
