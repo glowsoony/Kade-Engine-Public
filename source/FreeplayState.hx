@@ -425,14 +425,18 @@ class FreeplayState extends MusicBeatState
 						var song = Song.loadFromJsonRAW(data);
 						instance.songData.set(file.header.TITLE, [song]);
 
-						for (diff in songData.get(song.songId))
+						if (songData.get(song.songId) != null)
 						{
-							if (!songRating.exists(song.songId))
-								songRating.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1), DiffCalc.CalculateDiff(song));
+							for (diff in songData.get(song.songId))
+							{
+								if (!songRating.exists(song.songId))
+									songRating.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1),
+										DiffCalc.CalculateDiff(song));
 
-							if (!songRatingOp.exists(song.songId))
-								songRatingOp.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1),
-									DiffCalc.CalculateDiff(song, true));
+								if (!songRatingOp.exists(song.songId))
+									songRatingOp.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1),
+										DiffCalc.CalculateDiff(song, true));
+							}
 						}
 					}
 					else if (FileSystem.exists("assets/sm/" + i + "/converted.json") && file.endsWith(".sm"))
@@ -451,14 +455,18 @@ class FreeplayState extends MusicBeatState
 
 						instance.songData.set(file.header.TITLE, [song]);
 
-						for (diff in songData.get(song.songId))
+						if (songData.get(song.songId) != null)
 						{
-							if (!songRating.exists(song.songId))
-								songRating.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1), DiffCalc.CalculateDiff(song));
+							for (diff in songData.get(song.songId))
+							{
+								if (!songRating.exists(song.songId))
+									songRating.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1),
+										DiffCalc.CalculateDiff(song));
 
-							if (!songRatingOp.exists(song.songId))
-								songRatingOp.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1),
-									DiffCalc.CalculateDiff(song, true));
+								if (!songRatingOp.exists(song.songId))
+									songRatingOp.set(Highscore.formatSong(song.songId, songData.get(song.songId).indexOf(diff), 1),
+										DiffCalc.CalculateDiff(song, true));
+							}
 						}
 					}
 				}
