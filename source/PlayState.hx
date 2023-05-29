@@ -245,7 +245,7 @@ class PlayState extends MusicBeatState
 
 	public static var offsetTesting:Bool = false;
 
-	var notesHitArray:Array<Date> = [];
+	var notesHitArray:Array<Float> = [];
 
 	var idleToBeat:Bool = true; // change if bf and dad would idle to the beat of the song
 	var idleBeat:Int = 2; // how frequently bf and dad would play their idle animation(1 - every beat, 2 - every 2 beats and so on)
@@ -3030,20 +3030,25 @@ class PlayState extends MusicBeatState
 		// reverse iterate to remove oldest notes first and not invalidate the iteration
 		// stop iteration as soon as a note is not removed
 		// all notes should be kept in the correct order and this is optimal, safe to do every frame/update
-		var balls = notesHitArray.length - 1;
-		while (balls >= 0)
+		if (notesHitArray.length > 0)
 		{
-			var cock:Date = notesHitArray[balls];
+			var data = Date.now().getTime();
+			var balls = notesHitArray.length - 1;
+			while (balls >= 0)
+			{
+				var cock:Float = notesHitArray[balls];
 
-			if (cock != null && cock.getTime() + 1000 < Date.now().getTime())
-				notesHitArray.remove(cock);
-			else
-				balls = 0;
-			balls--;
+				if (cock + 1000 < data)
+					notesHitArray.remove(cock);
+				else
+					break;
+				balls--;
+			}
+			nps = notesHitArray.length;
+			if (nps > maxNPS)
+				maxNPS = nps;
 		}
-		nps = notesHitArray.length;
-		if (nps > maxNPS)
-			maxNPS = nps;
+
 		if (FlxG.keys.justPressed.NINE)
 			iconP1.swapOldIcon();
 		scoreTxt.screenCenter(X);
@@ -4889,8 +4894,12 @@ class PlayState extends MusicBeatState
 
 		// add newest note to front of notesHitArray
 		// the oldest notes are at the end and are removed first
+
 		if (!noteDef.isSustainNote)
-			notesHitArray.unshift(Date.now());
+		{
+			var noteDate:Date = Date.now();
+			notesHitArray.unshift(noteDate.getTime());
+		}
 
 		if (!resetMashViolation && mashViolations >= 1)
 			mashViolations--;
