@@ -392,7 +392,7 @@ class Paths
 
 	static public function video(key:String, type:String = VIDEO_EXT)
 	{
-		return 'assets/videos/$key.$type';
+		return 'videos:assets/videos/$key.$type';
 	}
 
 	inline static public function image(key:String, ?library:String, ?gpuRender:Bool):FlxGraphic

@@ -51,8 +51,8 @@ import Discord.DiscordClient;
 import LuaClass;
 #end
 #if (FEATURE_MP4VIDEOS && !html5)
-import hxcodec.VideoHandler;
-import hxcodec.VideoSprite;
+import hxcodec.flixel.VideoHandler;
+import hxcodec.flixel.VideoSprite;
 #end
 #if FEATURE_STEPMANIA
 import smTools.SMFile;
@@ -821,10 +821,6 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			#if (FEATURE_MP4VIDEOS && !html5)
-			add(daVideoGroup);
-			#end
-
 			if (dad.hasTrail)
 			{
 				if (FlxG.save.data.distractions)
@@ -1040,6 +1036,8 @@ class PlayState extends MusicBeatState
 
 		#if (FEATURE_MP4VIDEOS && !html5)
 		daVideoGroup = new FlxTypedGroup<VideoSprite>();
+
+		add(daVideoGroup);
 		#end
 
 		#if FEATURE_LUAMODCHART
@@ -2749,8 +2747,6 @@ class PlayState extends MusicBeatState
 					remove(gf);
 					remove(dad);
 					remove(boyfriend);
-
-					add(daVideoGroup);
 					for (vid in reserveVids)
 						daVideoGroup.add(vid);
 					add(gf);
@@ -5921,7 +5917,6 @@ class PlayState extends MusicBeatState
 			{
 				remove(bg);
 				startAndEnd();
-				daVid.dispose();
 				daVid = null;
 			};
 			#else
