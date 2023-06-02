@@ -3670,47 +3670,29 @@ class PlayState extends MusicBeatState
 						strum.y -= elapsed * 25 * leSpeed;
 				}*/
 
-				if (strumScrollType)
+				if (daNote._def.isSustainNote)
 				{
-					if (daNote._def.isSustainNote)
-					{
-						daNote.y = (strumY + Math.sin(angleDir) * daNote.distance) - (daNote.height - NoteSpr.swagWidth);
+					// If not in botplay, only clip sustain notes when properly hit, botplay gets to clip it everytime
+					if (songStarted)
+						if (daNote._def.sustainActive)
+							if ((!daNote._def.mustPress && daNote._def.prevNote.wasGoodHit)
+								|| (daNote._def.mustPress && daNote._def.prevNote.wasGoodHit || PlayStateChangeables.botPlay))
 
-						// If not in botplay, only clip sustain notes when properly hit, botplay gets to clip it everytime
-						if (songStarted)
-							if (daNote._def.sustainActive)
-								if (!daNote._def.mustPress
-									|| (daNote._def.mustPress
-										&& (holdArray[Math.floor(Math.abs(daNote._def.noteData))]
-											|| daNote._def.isSustainEnd
-											|| !daNote._def.isSustainEnd))
-									|| PlayStateChangeables.botPlay)
+							{
+								if (strumScrollType)
 								{
 									if (daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= origin)
 									{
 										// Clip to strumline
-										var swagRect = new FlxRect(0, 0, daNote.frameWidth * 2, daNote.frameHeight * 2);
+										var swagRect = new FlxRect(0, 0, daNote.frameWidth, daNote.frameHeight);
 										swagRect.height = (origin - daNote.y) / daNote.scale.y;
 										swagRect.y = daNote.frameHeight - swagRect.height;
 
 										daNote.clipRect = swagRect;
 									}
 								}
-					}
-				}
-				else
-				{
-					if (daNote._def.isSustainNote)
-					{
-						if (songStarted)
-						{
-							if (daNote._def.sustainActive)
-								if (((!daNote._def.mustPress || daNote._def.wasGoodHit))
-									|| (daNote._def.mustPress
-										&& (holdArray[Math.floor(Math.abs(daNote._def.noteData))] || daNote._def.isSustainEnd))
-									|| PlayStateChangeables.botPlay)
+								else
 								{
-									// Clip to strumline
 									if (daNote.y + daNote.offset.y * daNote.scale.y <= origin)
 									{
 										var swagRect = new FlxRect(0, 0, daNote.width / daNote.scale.x, daNote.height / daNote.scale.y);
@@ -3720,8 +3702,7 @@ class PlayState extends MusicBeatState
 										daNote.clipRect = swagRect;
 									}
 								}
-						}
-					}
+							}
 				}
 
 				if (!daNote._def.mustPress)
@@ -3772,8 +3753,6 @@ class PlayState extends MusicBeatState
 													Debug.logTrace("User failed Sustain note at the start of sustain.");
 													for (i in daNote._def.children)
 													{
-														if (i.connectedNote != null)
-															i.connectedNote.alpha = 0.3;
 														i.sustainActive = false;
 
 														health -= (0.04 * PlayStateChangeables.healthLoss) / daNote._def.children.length;
@@ -3812,8 +3791,6 @@ class PlayState extends MusicBeatState
 									Debug.logTrace("User released key while playing a sustain at: " + daNote._def.spotInLine);
 									for (i in daNote._def.parent.children)
 									{
-										if (i.connectedNote != null)
-											i.connectedNote.alpha = 0.3;
 										i.sustainActive = false;
 
 										health -= (0.08 * PlayStateChangeables.healthLoss) / daNote._def.parent.children.length;
@@ -4768,73 +4745,40 @@ class PlayState extends MusicBeatState
 				songLengthDiscord - Conductor.songPosition);
 		#end
 
-		if (noteDef.isParent)
-			for (i in noteDef.children)
-				i.sustainActive = true;
-
-		if (!PlayStateChangeables.opponentMode)
-			dad.holdTimer = 0;
-		else
-			boyfriend.holdTimer = 0;
-
-		if (PlayStateChangeables.healthDrain)
+		if (!noteDef.wasGoodHit)
 		{
-			if (!noteDef.isSustainNote)
-			{
-				updateScoreText();
-			}
+			if (noteDef.isParent)
+				for (i in noteDef.children)
+					i.sustainActive = true;
 
-			if (!noteDef.isSustainNote)
-			{
-				health -= .04 * PlayStateChangeables.healthLoss;
-				if (health <= 0.01)
-				{
-					health = 0.01;
-				}
-			}
+			if (!PlayStateChangeables.opponentMode)
+				dad.holdTimer = 0;
 			else
+				boyfriend.holdTimer = 0;
+
+			if (PlayStateChangeables.healthDrain)
 			{
-				health -= .02 * PlayStateChangeables.healthLoss;
-				if (health <= 0.01)
+				if (!noteDef.isSustainNote)
+					updateScoreText();
+
+				if (!noteDef.isSustainNote)
 				{
-					health = 0.01;
+					health -= .04 * PlayStateChangeables.healthLoss;
+					if (health <= 0.01)
+					{
+						health = 0.01;
+					}
+				}
+				else
+				{
+					health -= .02 * PlayStateChangeables.healthLoss;
+					if (health <= 0.01)
+					{
+						health = 0.01;
+					}
 				}
 			}
-		}
-		// Accessing the animation name directly to play it
-		if (!noteDef.isParent && noteDef.parent != null)
-		{
-			if (noteDef.spotInLine != noteDef.parent.children.length - 1)
-			{
-				var singData:Int = Std.int(Math.abs(noteDef.noteData));
 
-				if (FlxG.save.data.characters)
-				{
-					if (PlayStateChangeables.opponentMode)
-						boyfriend.playAnim('sing' + dataSuffix[singData] + altAnim, true);
-					else
-						dad.playAnim('sing' + dataSuffix[singData] + altAnim, true);
-				}
-
-				#if FEATURE_LUAMODCHART
-				if (luaModchart != null)
-					if (!PlayStateChangeables.opponentMode)
-						luaModchart.executeState('playerTwoSing', [Math.abs(noteDef.noteData), Conductor.songPosition]);
-					else
-						luaModchart.executeState('playerOneSing', [Math.abs(noteDef.noteData), Conductor.songPosition]);
-				#end
-
-				if (SONG.needsVoices)
-					#if cpp
-					if (vocalsStream.playing)
-						vocalsStream.volume = 1;
-					#else
-					vocals.volume = 1;
-					#end
-			}
-		}
-		else
-		{
 			var singData:Int = Std.int(Math.abs(noteDef.noteData));
 
 			if (FlxG.save.data.characters)
@@ -4863,17 +4807,20 @@ class PlayState extends MusicBeatState
 				#else
 				vocals.volume = 1;
 				#end
-		}
 
-		if (FlxG.save.data.cpuStrums)
-		{
-			cpuStrums.forEach(function(spr:StaticArrow)
+			if (FlxG.save.data.cpuStrums)
 			{
-				pressArrow(spr, spr.ID, noteDef);
-			});
-		}
+				cpuStrums.forEach(function(spr:StaticArrow)
+				{
+					pressArrow(spr, spr.ID, noteDef);
+				});
+			}
 
-		destroyNote(noteDef.connectedNote);
+			if (!noteDef.isSustainNote)
+				destroyNote(noteDef.connectedNote);
+
+			noteDef.wasGoodHit = true;
+		}
 	}
 
 	var firstHit:Bool = false;
@@ -5009,10 +4956,8 @@ class PlayState extends MusicBeatState
 			{
 				destroyNote(noteDef.connectedNote);
 			}
-			else
-			{
-				noteDef.wasGoodHit = true;
-			}
+
+			noteDef.wasGoodHit = true;
 		}
 	}
 

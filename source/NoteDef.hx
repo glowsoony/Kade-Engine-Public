@@ -34,7 +34,7 @@ class NoteDef
 
 	public var noteYOff:Float = 0;
 
-	public var beat:Float = 0;
+	public var beat:Null<Float> = null;
 
 	public var noteType:String = 'normal';
 

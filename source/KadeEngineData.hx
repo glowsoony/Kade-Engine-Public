@@ -234,6 +234,9 @@ class KadeEngineData
 		if (FlxG.save.data.characters == null)
 			FlxG.save.data.characters = true;
 
+		if (FlxG.save.data.alpha == null)
+			FlxG.save.data.alpha = 0.6;
+
 		/*if (FlxG.save.data.postProcessNotes == null)
 			{
 				FlxG.save.data.postProcessNotes = true;

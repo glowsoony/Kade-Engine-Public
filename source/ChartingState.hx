@@ -980,6 +980,9 @@ class ChartingState extends MusicBeatState
 
 		for (event in _song.events)
 		{
+			if (chartEventHandler.chartEvents.get(event.name) == null)
+				continue;
+
 			if (!groupMap.exists(event.beat))
 			{
 				groupMap.set(event.beat, []);
@@ -1589,7 +1592,9 @@ class ChartingState extends MusicBeatState
 			for (event in _song.events)
 			{
 				var eventInfo = chartEventHandler.chartEvents.get(event.name);
-				var label:String = '${eventInfo == null ? eventInfo.displayName : event.name}: ${event.beat}';
+				if (eventInfo == null)
+					continue;
+				var label:String = '${eventInfo != null ? eventInfo.displayName : event.name}: ${event.beat}';
 				eventsInSong.set(label, event);
 				eventsInSongArray.push(label);
 			}

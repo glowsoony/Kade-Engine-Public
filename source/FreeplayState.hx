@@ -944,11 +944,13 @@ class FreeplayState extends MusicBeatState
 
 		try
 		{
+			#if FEATURE_STEPMANIA
 			if (instance.songs[curSelected].songCharacter == "sm")
 			{
 				currentSongData = Song.loadFromJsonRAW(File.getContent(instance.songs[curSelected].sm.jsonPath));
 			}
 			else
+			#end
 			{
 				currentSongData = Song.loadFromJson(instance.songs[curSelected].songName,
 					CoolUtil.getSuffixFromDiff(CoolUtil.difficultyArray[CoolUtil.difficultyArray.indexOf(instance.songs[curSelected].diffs[difficulty])]));
