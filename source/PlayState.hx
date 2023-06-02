@@ -3675,9 +3675,7 @@ class PlayState extends MusicBeatState
 					// If not in botplay, only clip sustain notes when properly hit, botplay gets to clip it everytime
 					if (songStarted)
 						if (daNote._def.sustainActive)
-							if ((!daNote._def.mustPress && daNote._def.prevNote.wasGoodHit)
-								|| (daNote._def.mustPress && daNote._def.prevNote.wasGoodHit || PlayStateChangeables.botPlay))
-
+							if (daNote._def.prevNote.wasGoodHit)
 							{
 								if (strumScrollType)
 								{
