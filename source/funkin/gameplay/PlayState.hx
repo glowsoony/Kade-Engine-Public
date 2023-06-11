@@ -5063,6 +5063,18 @@ class PlayState extends MusicBeatState
 
 				if (curStep % 64 == 60 && SONG.songId == 'tutorial' && dad.curCharacter == 'gf' && curStep > 64 && curStep < 192)
 				{
+					#if cpp
+					if (vocalsStream.volume != 0)
+					{
+						boyfriend.playAnim('hey', true);
+						dad.playAnim('cheer', true);
+					}
+					else
+					{
+						dad.playAnim('sad', true);
+						FlxG.sound.play(Paths.soundRandom('GF_', 1, 4, 'shared'), 0.3);
+					}
+					#else
 					if (vocals.volume != 0)
 					{
 						boyfriend.playAnim('hey', true);
@@ -5073,6 +5085,7 @@ class PlayState extends MusicBeatState
 						dad.playAnim('sad', true);
 						FlxG.sound.play(Paths.soundRandom('GF_', 1, 4, 'shared'), 0.3);
 					}
+					#end
 				}
 			}
 
@@ -6217,7 +6230,8 @@ class PlayState extends MusicBeatState
 		#if cpp
 		instStream.speed = value;
 
-		vocalsStream.speed = value;
+		if (vocalsStream != null)
+			vocalsStream.speed = value;
 		#elseif html5
 		if (inst.playing)
 			@:privateAccess
