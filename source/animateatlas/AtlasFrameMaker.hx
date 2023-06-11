@@ -15,6 +15,8 @@ import animateatlas.displayobject.SpriteMovieClip;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFrame;
+import funkin._backend.utils.Paths;
+import funkin._backend.system.monitor.Debug;
 
 using StringTools;
 
