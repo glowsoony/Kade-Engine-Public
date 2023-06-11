@@ -15,6 +15,7 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.addons.transition.FlxTransitionableState;
 import funkin._backend.MusicBeatState;
+import funkin.gameplay.GameplayCustomizeState;
 
 class LoadingState extends MusicBeatState
 {
