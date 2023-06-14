@@ -57,6 +57,7 @@ import funkin.menus.LoadingState;
 import funkin.menus.FreeplayState;
 import funkin._backend.utils.EtternaFunctions;
 import funkin._backend.utils.HelperFunctions;
+import funkin._backend.utils.ExtendedVector;
 import flixel.util.FlxSort;
 
 using StringTools;
@@ -157,7 +158,7 @@ class PlayState extends MusicBeatState
 
 	public var notes:FlxTypedGroup<NoteSpr> = null;
 
-	public var unspawnNotes:Array<NoteDef> = [];
+	public var unspawnNotes:ExtendedVector<NoteDef>;
 
 	public var strumLine:FlxSprite = null;
 
@@ -1045,29 +1046,6 @@ class PlayState extends MusicBeatState
 			new LuaCharacter(boyfriend, "boyfriend").Register(luaModchart.lua);
 		}
 		#end
-
-		var index = 0;
-
-		if (startTime != 0)
-		{
-			var toBeRemoved = [];
-			for (i in 0...unspawnNotes.length)
-			{
-				var dunceNote:NoteDef = unspawnNotes[i];
-
-				if (dunceNote.strumTime <= startTime)
-					toBeRemoved.push(dunceNote);
-			}
-
-			for (i in toBeRemoved)
-				unspawnNotes.remove(i);
-
-			Debug.logTrace("Removed " + toBeRemoved.length + " cuz of start time");
-		}
-
-		for (i in 0...unspawnNotes.length)
-			if (unspawnNotes[i].strumTime < startTime)
-				unspawnNotes.remove(unspawnNotes[i]);
 
 		trace('generated');
 
@@ -1989,6 +1967,34 @@ class PlayState extends MusicBeatState
 
 	var debugNum:Int = 0;
 
+	public function getNotesAmount():Int
+	{
+		var count:Int = 0;
+		for (section in SONG.notes)
+		{
+			for (songNotes in section.sectionNotes)
+			{
+				var susLength:Float = songNotes[2] / songMultiplier;
+
+				var anotherCrochet:Float = Conductor.crochet;
+				var anotherStepCrochet:Float = anotherCrochet / 4;
+				susLength = susLength / anotherStepCrochet;
+
+				count++;
+
+				if (susLength > 0)
+				{
+					for (susNote in 0...Std.int(Math.max(susLength, 2)))
+					{
+						count++;
+					}
+				}
+			}
+		}
+
+		return count;
+	}
+
 	public function generateSong(dataPath:String):Void
 	{
 		// FlxG.log.add(ChartParser.parse());
@@ -2064,6 +2070,10 @@ class PlayState extends MusicBeatState
 
 		var daBeats:Int = 0; // Not exactly representative of 'daBeats' lol, just how much it has looped
 
+		unspawnNotes = new ExtendedVector<NoteDef>(getNotesAmount());
+
+		var noteIndex = 0;
+
 		for (section in noteData)
 		{
 			for (songNotes in section.sectionNotes)
@@ -2089,8 +2099,8 @@ class PlayState extends MusicBeatState
 
 				var oldNote:NoteDef;
 
-				if (unspawnNotes.length > 0)
-					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+				if (unspawnNotes.getLength() > 0)
+					oldNote = unspawnNotes.getByIndex(noteIndex);
 				else
 					oldNote = null;
 
@@ -2115,7 +2125,9 @@ class PlayState extends MusicBeatState
 				var anotherStepCrochet:Float = anotherCrochet / 4;
 				susLength = susLength / anotherStepCrochet;
 
-				unspawnNotes.push(swagNote);
+				unspawnNotes.set(noteIndex, swagNote);
+
+				noteIndex++;
 
 				if (susLength > 0)
 					swagNote.isParent = true;
@@ -2126,12 +2138,12 @@ class PlayState extends MusicBeatState
 				{
 					for (susNote in 0...Std.int(Math.max(susLength, 2)))
 					{
-						oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+						oldNote = unspawnNotes.getByIndex(noteIndex - 1);
 
 						var sustainNote:NoteDef = new NoteDef(daStrumTime + (anotherStepCrochet * susNote) + anotherStepCrochet, daNoteData, oldNote, true,
 							false, 0, daNoteType, daNoteSpeedMult, SONG.songStyle);
 
-						unspawnNotes.push(sustainNote);
+						unspawnNotes.set(noteIndex, sustainNote);
 
 						sustainNote.noteType = swagNote.noteType;
 
@@ -2142,6 +2154,7 @@ class PlayState extends MusicBeatState
 						sustainNote.spotInLine = type;
 
 						type++;
+						noteIndex++;
 					}
 				}
 
@@ -2788,34 +2801,44 @@ class PlayState extends MusicBeatState
 		if (SONG.speed < 1 || scrollSpeed < 1)
 			shit /= scrollSpeed == 1 ? SONG.speed : scrollSpeed;
 
-		while (unspawnNotes[0] != null && unspawnNotes[0].strumTime - Conductor.songPosition < shit / unspawnNotes[0].speedMultiplier)
+		if (unspawnNotes.getLength() > 0)
 		{
-			var defNote:NoteDef = unspawnNotes.shift();
-
-			// Idk if doing note pooling make creating instances safe or not.
-			var dunceNote:NoteSpr = Type.createInstance(NoteSpr, []);
-			dunceNote.setupNote(defNote);
-			dunceNote.scrollFactor.set(0, 0);
-
-			dunceNote.visible = dunceNote.active = true;
-			notes.insert(0, dunceNote);
-
-			#if FEATURE_LUAMODCHART
-			if (executeModchart)
+			while (unspawnNotes.getByIndex(0) != null
+				&& unspawnNotes.getByIndex(0).strumTime - Conductor.songPosition < shit / unspawnNotes.getByIndex(0).speedMultiplier)
 			{
-				var n = new LuaNote(dunceNote._def, currentLuaIndex);
-				n.Register(luaModchart.lua);
-				dunceNote._def.LuaNote = n;
-				dunceNote._def.luaID = currentLuaIndex;
+				var defNote:NoteDef = unspawnNotes.getNextMember();
+
+				if (notes.members[notes.length - 1] != null)
+					if (notes.members[notes.length - 1]._def == defNote)
+						break;
+
+				// Idk if doing note pooling make creating instances safe or not.
+				var dunceNote:NoteSpr = Type.createInstance(NoteSpr, []);
+				dunceNote.setupNote(defNote);
+				dunceNote.scrollFactor.set(0, 0);
+
+				dunceNote.visible = dunceNote.active = true;
+
+				#if FEATURE_LUAMODCHART
+				if (executeModchart)
+				{
+					var n = new LuaNote(dunceNote._def, currentLuaIndex);
+					n.Register(luaModchart.lua);
+					dunceNote._def.LuaNote = n;
+					dunceNote._def.luaID = currentLuaIndex;
+				}
+				#end
+
+				if (dunceNote._def.isSustainNote)
+					dunceNote.camera = camSustains;
+				else
+					dunceNote.camera = camNotes;
+
+				currentLuaIndex++;
+
+				notes.add(dunceNote);
+				unspawnNotes.removeFirstMember();
 			}
-			#end
-
-			if (dunceNote._def.isSustainNote)
-				dunceNote.camera = camSustains;
-			else
-				dunceNote.camera = camNotes;
-
-			currentLuaIndex++;
 		}
 
 		if (generatedMusic && SONG.events != null)
@@ -5174,11 +5197,6 @@ class PlayState extends MusicBeatState
 	{
 		super.beatHit();
 
-		if (generatedMusic)
-		{
-			notes.sort(FlxSort.byY, (PlayStateChangeables.useDownscroll ? FlxSort.ASCENDING : FlxSort.DESCENDING));
-		}
-
 		#if FEATURE_LUAMODCHART
 		if (executeModchart && luaModchart != null)
 		{
@@ -5903,44 +5921,6 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		while (unspawnNotes.length > 0)
-		{
-			var noteDef = unspawnNotes[0];
-			unspawnNotes.remove(noteDef);
-
-			if (!noteDef.isParent && !noteDef.isSustainNote)
-			{
-				noteDef.connectedNote = null;
-				#if FEATURE_LUAMODCHART
-				noteDef.LuaNote = null;
-				#end
-
-				noteDef = null;
-
-				return;
-			}
-
-			if (noteDef.isSustainNote)
-			{
-				for (susDef in noteDef.parent.children)
-				{
-					susDef.connectedNote = null;
-					#if FEATURE_LUAMODCHART
-					susDef.LuaNote = null;
-					#end
-					susDef = null;
-				}
-
-				noteDef.parent.connectedNote = null;
-				#if FEATURE_LUAMODCHART
-				noteDef.parent.LuaNote = null;
-				#end
-				noteDef.parent = null;
-
-				return;
-			}
-		}
-
 		chartEventHandler.destroy();
 		chartEventHandler = null;
 
@@ -6036,7 +6016,6 @@ class PlayState extends MusicBeatState
 		daNote.kill();
 		notes.remove(daNote, true);
 		daNote.destroy();
-		daNote = null;
 	}
 
 	var chartEventIndex:Int = 0;

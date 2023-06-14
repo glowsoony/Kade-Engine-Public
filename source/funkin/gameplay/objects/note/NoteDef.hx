@@ -27,13 +27,7 @@ class NoteDef
 
 	public var isSustainEnd:Bool = false;
 
-	public var noteSection:Int = 0;
-
 	public var luaID:Int = 0;
-
-	public var noteScore:Float = 1;
-
-	public var noteYOff:Float = 0;
 
 	public var beat:Null<Float> = null;
 
@@ -45,12 +39,6 @@ class NoteDef
 	public var sustainActive:Bool = false;
 
 	public var children:Array<NoteDef> = [];
-
-	public var stepHeight:Float = 0;
-
-	var leSpeed:Float = 0;
-
-	var leBpm:Float = 0;
 
 	public var rating:RatingWindow;
 
