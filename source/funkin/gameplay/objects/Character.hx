@@ -344,8 +344,8 @@ class Character extends FlxSprite
 
 				var oldNote:NoteDef;
 
-				if (PlayState.instance.unspawnNotes.length > 0)
-					oldNote = PlayState.instance.unspawnNotes[Std.int(PlayState.instance.unspawnNotes.length - 1)];
+				if (animationNotes.length > 0)
+					oldNote = animationNotes[Std.int(animationNotes.length - 1)];
 				else
 					oldNote = null;
 				var swagNote:NoteDef = new NoteDef(daStrumTime, daNoteData, oldNote, false, false, 0);

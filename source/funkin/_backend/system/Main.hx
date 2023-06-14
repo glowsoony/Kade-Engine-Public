@@ -130,6 +130,12 @@ class Main extends Sprite
 			focused = false;
 		});
 
+		FlxG.signals.postStateSwitch.add(function()
+		{
+			cpp.vm.Gc.run(false);
+			cpp.vm.Gc.compact();
+		});
+
 		#if !mobile
 		addChild(fpsCounter);
 		#end

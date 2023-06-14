@@ -69,11 +69,6 @@ class GameplayCustomizeState extends MusicBeatState
 	public var tweenManager:FlxTweenManager;
 	public var timerManager:FlxTimerManager;
 
-	var pixelShitPart1:String = '';
-	var pixelShitPart2:String = '';
-	var pixelShitPart3:String = 'shared';
-	var pixelShitPart4:String = null;
-
 	private var camHUD:FlxCamera;
 	private var camGame:FlxCamera;
 
@@ -109,8 +104,6 @@ class GameplayCustomizeState extends MusicBeatState
 	var arrowHeight:Float = 0;
 
 	var strumYBounds:FlxSprite;
-
-	public static var noteskinSprite:FlxAtlasFrames;
 
 	public override function create()
 	{
@@ -305,17 +298,9 @@ class GameplayCustomizeState extends MusicBeatState
 		playerStrums.visible = false;
 		cpuStrums.visible = false;
 
-		if (freeplayNoteStyle == 'pixel')
-		{
-			pixelShitPart1 = 'weeb/pixelUI/';
-			pixelShitPart2 = '-pixel';
-			pixelShitPart3 = 'week6';
-			pixelShitPart4 = 'week6';
-		}
-
 		FlxG.plugins.add(new FlxMouseControl());
 
-		sick = new FlxExtendedSprite(0, 0, Paths.image(pixelShitPart1 + 'sick' + pixelShitPart2, pixelShitPart3));
+		sick = new FlxExtendedSprite(0, 0, Paths.image('hud/default/sick', 'shared'));
 		sick.setGraphicSize(Std.int(sick.width * 0.7));
 		sick.scrollFactor.set();
 
@@ -346,8 +331,6 @@ class GameplayCustomizeState extends MusicBeatState
 		appearStaticArrows(true);
 
 		strumYRef = new FlxExtendedSprite(0, strumLine.y + FlxG.save.data.strumOffset.get(FlxG.save.data.downscroll ? 'downscroll' : 'upscroll'));
-
-		noteskinSprite = NoteskinHelpers.generateNoteskinSprite(FlxG.save.data.noteskin, 'normal', 'default');
 
 		strumYRef.makeGraphic(FlxG.width * 2, Std.int(arrowHeight), FlxColor.WHITE);
 		strumYRef.screenCenter(X);
@@ -474,146 +457,146 @@ class GameplayCustomizeState extends MusicBeatState
 			FlxG.save.data.changedHitY = sick.y;
 		}
 
-		if (FlxG.keys.justPressed.C)
-		{
-			var visibleCombos:Array<FlxSprite> = [];
-
-			var seperatedScore:Array<Int> = [];
-
-			var comboSplit:Array<String> = (FlxG.random.int(10, 420) + "").split('');
-
-			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2, pixelShitPart3));
-			comboSpr.screenCenter();
-			comboSpr.x = sick.x - 150;
-			comboSpr.y = sick.y + 125;
-			if (freeplayNoteStyle == 'pixel')
+		/*if (FlxG.keys.justPressed.C)
 			{
-				comboSpr.x += 142.5;
-				comboSpr.y += 65;
-			}
-			comboSpr.cameras = [camRatings];
-			comboSpr.acceleration.y = 600;
-			comboSpr.velocity.y -= 150;
+				var visibleCombos:Array<FlxSprite> = [];
 
-			comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.6));
+				var seperatedScore:Array<Int> = [];
 
-			if (FlxG.save.data.showCombo)
-				add(comboSpr);
+				var comboSplit:Array<String> = (FlxG.random.int(10, 420) + "").split('');
 
-			currentTimingShown = new FlxText(0, 0, 0, "0ms");
-			currentTimingShown.color = FlxColor.CYAN;
-			currentTimingShown.borderStyle = OUTLINE;
-			currentTimingShown.borderSize = 1;
-			currentTimingShown.borderColor = FlxColor.BLACK;
-			currentTimingShown.text = "69ms";
-			currentTimingShown.size = 20;
-
-			if (FlxG.save.data.showMs)
-				add(currentTimingShown);
-
-			currentTimingShown.screenCenter();
-			currentTimingShown.x = sick.x + 225;
-			currentTimingShown.y = sick.y + 150;
-
-			currentTimingShown.cameras = [camRatings];
-
-			// make sure we have 3 digits to display (looks weird otherwise lol)
-			if (comboSplit.length == 1)
-			{
-				seperatedScore.push(0);
-				seperatedScore.push(0);
-			}
-			else if (comboSplit.length == 2)
-				seperatedScore.push(0);
-
-			for (i in 0...comboSplit.length)
-			{
-				var str:String = comboSplit[i];
-				seperatedScore.push(Std.parseInt(str));
-			}
-
-			var daLoop:Int = 0;
-			for (i in seperatedScore)
-			{
-				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'num' + Std.int(i) + pixelShitPart2, pixelShitPart4));
-				numScore.screenCenter();
-				numScore.x = sick.x + (43 * daLoop) - 50;
-				numScore.y = sick.y + 100;
-				numScore.cameras = [camRatings];
-
-				if (freeplayNoteStyle != 'pixel')
+				var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2, pixelShitPart3));
+				comboSpr.screenCenter();
+				comboSpr.x = sick.x - 150;
+				comboSpr.y = sick.y + 125;
+				if (freeplayNoteStyle == 'pixel')
 				{
-					currentTimingShown.x -= 15;
-					currentTimingShown.y -= 15;
-					numScore.antialiasing = FlxG.save.data.antialiasing;
-					numScore.setGraphicSize(Std.int(numScore.width * 0.5));
+					comboSpr.x += 142.5;
+					comboSpr.y += 65;
 				}
-				else
-					numScore.setGraphicSize(Std.int(numScore.width));
+				comboSpr.cameras = [camRatings];
+				comboSpr.acceleration.y = 600;
+				comboSpr.velocity.y -= 150;
 
-				numScore.updateHitbox();
+				comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.6));
 
-				numScore.acceleration.y = FlxG.random.int(200, 300);
-				numScore.velocity.y -= FlxG.random.int(140, 160);
-				numScore.velocity.x = FlxG.random.float(-5, 5);
+				if (FlxG.save.data.showCombo)
+					add(comboSpr);
 
-				if (FlxG.save.data.showComboNum)
-					add(numScore);
+				currentTimingShown = new FlxText(0, 0, 0, "0ms");
+				currentTimingShown.color = FlxColor.CYAN;
+				currentTimingShown.borderStyle = OUTLINE;
+				currentTimingShown.borderSize = 1;
+				currentTimingShown.borderColor = FlxColor.BLACK;
+				currentTimingShown.text = "69ms";
+				currentTimingShown.size = 20;
 
-				visibleCombos.push(numScore);
+				if (FlxG.save.data.showMs)
+					add(currentTimingShown);
 
-				FlxTween.tween(numScore, {alpha: 0}, 0.2, {
+				currentTimingShown.screenCenter();
+				currentTimingShown.x = sick.x + 225;
+				currentTimingShown.y = sick.y + 150;
+
+				currentTimingShown.cameras = [camRatings];
+
+				// make sure we have 3 digits to display (looks weird otherwise lol)
+				if (comboSplit.length == 1)
+				{
+					seperatedScore.push(0);
+					seperatedScore.push(0);
+				}
+				else if (comboSplit.length == 2)
+					seperatedScore.push(0);
+
+				for (i in 0...comboSplit.length)
+				{
+					var str:String = comboSplit[i];
+					seperatedScore.push(Std.parseInt(str));
+				}
+
+				var daLoop:Int = 0;
+				for (i in seperatedScore)
+				{
+					var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'num' + Std.int(i) + pixelShitPart2, pixelShitPart4));
+					numScore.screenCenter();
+					numScore.x = sick.x + (43 * daLoop) - 50;
+					numScore.y = sick.y + 100;
+					numScore.cameras = [camRatings];
+
+					if (freeplayNoteStyle != 'pixel')
+					{
+						currentTimingShown.x -= 15;
+						currentTimingShown.y -= 15;
+						numScore.antialiasing = FlxG.save.data.antialiasing;
+						numScore.setGraphicSize(Std.int(numScore.width * 0.5));
+					}
+					else
+						numScore.setGraphicSize(Std.int(numScore.width));
+
+					numScore.updateHitbox();
+
+					numScore.acceleration.y = FlxG.random.int(200, 300);
+					numScore.velocity.y -= FlxG.random.int(140, 160);
+					numScore.velocity.x = FlxG.random.float(-5, 5);
+
+					if (FlxG.save.data.showComboNum)
+						add(numScore);
+
+					visibleCombos.push(numScore);
+
+					FlxTween.tween(numScore, {alpha: 0}, 0.2, {
+						onComplete: function(tween:FlxTween)
+						{
+							visibleCombos.remove(numScore);
+							numScore.destroy();
+						},
+						onUpdate: function(tween:FlxTween)
+						{
+							if (!visibleCombos.contains(numScore))
+							{
+								tween.cancel();
+								numScore.destroy();
+							}
+						},
+						startDelay: Conductor.crochet * 0.002
+					});
+
+					if (visibleCombos.length > seperatedScore.length + 20)
+					{
+						for (i in 0...seperatedScore.length - 1)
+						{
+							visibleCombos.remove(visibleCombos[visibleCombos.length - 1]);
+						}
+					}
+
+					daLoop++;
+				}
+
+				if (FlxG.save.data.showMs)
+				{
+					FlxTween.cancelTweensOf(currentTimingShown);
+
+					FlxTween.tween(currentTimingShown, {alpha: 0}, 0.2, {
+						onComplete: function(twn)
+						{
+							if (currentTimingShown != null)
+							{
+								remove(currentTimingShown);
+								currentTimingShown.destroy();
+							}
+						}
+					});
+				}
+
+				FlxTween.tween(comboSpr, {alpha: 0}, 0.2, {
 					onComplete: function(tween:FlxTween)
 					{
-						visibleCombos.remove(numScore);
-						numScore.destroy();
+						comboSpr.destroy();
 					},
-					onUpdate: function(tween:FlxTween)
-					{
-						if (!visibleCombos.contains(numScore))
-						{
-							tween.cancel();
-							numScore.destroy();
-						}
-					},
-					startDelay: Conductor.crochet * 0.002
+					startDelay: Conductor.crochet * 0.001
 				});
-
-				if (visibleCombos.length > seperatedScore.length + 20)
-				{
-					for (i in 0...seperatedScore.length - 1)
-					{
-						visibleCombos.remove(visibleCombos[visibleCombos.length - 1]);
-					}
-				}
-
-				daLoop++;
-			}
-
-			if (FlxG.save.data.showMs)
-			{
-				FlxTween.cancelTweensOf(currentTimingShown);
-
-				FlxTween.tween(currentTimingShown, {alpha: 0}, 0.2, {
-					onComplete: function(twn)
-					{
-						if (currentTimingShown != null)
-						{
-							remove(currentTimingShown);
-							currentTimingShown.destroy();
-						}
-					}
-				});
-			}
-
-			FlxTween.tween(comboSpr, {alpha: 0}, 0.2, {
-				onComplete: function(tween:FlxTween)
-				{
-					comboSpr.destroy();
-				},
-				startDelay: Conductor.crochet * 0.001
-			});
-		}
+		}*/
 
 		if (FlxG.keys.justPressed.R)
 		{
@@ -696,7 +679,8 @@ class GameplayCustomizeState extends MusicBeatState
 				noteStyleCheck = freeplayNoteStyle;
 			}
 
-			babyArrow.frames = noteskinSprite;
+			babyArrow.frames = NoteskinHelpers.generateNoteskinSprite(FlxG.save.data.noteskin, 'normal', 'default');
+
 			Debug.logTrace(babyArrow.frames);
 			for (j in 0...4)
 			{
